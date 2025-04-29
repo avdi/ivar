@@ -124,34 +124,57 @@ module Ivar
     end
   end
 
-  # Module for tracking and checking instance variables
-  module IvarTools
+  # Module for class-level instance variable tracking and checking
+  module IvarClassTools
     include IvarFinder
 
+    # Initialize class variables for tracking instance variables
+    def init_ivar_tracking
+      class_variable_set(:@@__ivar_known_ivars, nil)
+      class_variable_set(:@@__ivar_checked, false)
+    end
+
+    # Get the known instance variables
+    def known_ivars
+      class_variable_get(:@@__ivar_known_ivars)
+    end
+
+    # Set the known instance variables
+    def known_ivars=(value)
+      class_variable_set(:@@__ivar_known_ivars, value)
+    end
+
+    # Check if the class has been checked for unknown instance variables
+    def checked?
+      class_variable_get(:@@__ivar_checked)
+    end
+
+    # Mark the class as checked for unknown instance variables
+    def mark_as_checked
+      class_variable_set(:@@__ivar_checked, true)
+    end
+
+    # Update the known instance variables with new ones
+    def update_known_ivars(new_ivars, add = [])
+      self.known_ivars = if known_ivars.nil?
+        new_ivars + add
+      else
+        (known_ivars + new_ivars + add).uniq
+      end
+    end
+
+    # Check for unknown instance variables
+    def check_for_unknown_ivars_in_class(all_known_ivars)
+      check_for_unknown_ivars(self, all_known_ivars)
+      mark_as_checked
+    end
+  end
+
+  # Module for tracking and checking instance variables
+  module IvarTools
     def self.included(base)
-      # Add class variables to store known instance variables and checked status
-      base.class_variable_set(:@@__ivar_known_ivars, nil)
-      base.class_variable_set(:@@__ivar_checked, false)
-
-      # Add class method to get known instance variables
-      base.define_singleton_method(:known_ivars) do
-        class_variable_get(:@@__ivar_known_ivars)
-      end
-
-      # Add class method to set known instance variables
-      base.define_singleton_method(:known_ivars=) do |value|
-        class_variable_set(:@@__ivar_known_ivars, value)
-      end
-
-      # Add class method to check if the class has been checked
-      base.define_singleton_method(:checked?) do
-        class_variable_get(:@@__ivar_checked)
-      end
-
-      # Add class method to mark the class as checked
-      base.define_singleton_method(:mark_as_checked) do
-        class_variable_set(:@@__ivar_checked, true)
-      end
+      base.extend(IvarClassTools)
+      base.init_ivar_tracking
     end
 
     # Check instance variables for misspellings
@@ -160,25 +183,16 @@ module Ivar
       # Get the current list of instance variables
       current_ivars = instance_variables
 
-      # If this is the first time, initialize the class-level known ivars
-      self.class.known_ivars = if self.class.known_ivars.nil?
-        # Add any additional instance variables to the list
-        current_ivars + add
-      else
-        # Update the known ivars with any new ones
-        (self.class.known_ivars + current_ivars + add).uniq
-      end
+      # Update the known instance variables
+      self.class.update_known_ivars(current_ivars, add)
 
       # If the class hasn't been checked yet, check for unknown instance variables
       unless self.class.checked?
         # Get all known instance variables from the class hierarchy
-        all_known_ivars = get_all_known_ivars(self.class)
+        all_known_ivars = self.class.get_all_known_ivars(self.class)
 
         # Check for unknown instance variables
-        check_for_unknown_ivars(self.class, all_known_ivars)
-
-        # Mark the class as checked
-        self.class.mark_as_checked
+        self.class.check_for_unknown_ivars_in_class(all_known_ivars)
       end
     end
   end
@@ -186,30 +200,8 @@ module Ivar
   # Module for automatically checking instance variables
   module CheckedIvars
     def self.included(base)
-      # Add class variables to store known instance variables and checked status
-      base.class_variable_set(:@@__ivar_known_ivars, nil)
-      base.class_variable_set(:@@__ivar_checked, false)
-
-      # Add class method to get known instance variables
-      base.define_singleton_method(:known_ivars) do
-        class_variable_get(:@@__ivar_known_ivars)
-      end
-
-      # Add class method to set known instance variables
-      base.define_singleton_method(:known_ivars=) do |value|
-        class_variable_set(:@@__ivar_known_ivars, value)
-      end
-
-      # Add class method to check if the class has been checked
-      base.define_singleton_method(:checked?) do
-        class_variable_get(:@@__ivar_checked)
-      end
-
-      # Add class method to mark the class as checked
-      base.define_singleton_method(:mark_as_checked) do
-        class_variable_set(:@@__ivar_checked, true)
-      end
-
+      base.extend(IvarClassTools)
+      base.init_ivar_tracking
       base.prepend(InitializeWrapper)
     end
 
@@ -221,31 +213,20 @@ module Ivar
         # Call the original initialize method
         super
 
-        # If this is the first time, initialize the class-level known ivars
-        if self.class.known_ivars.nil?
-          # Track instance variables after initialization
-          post_init_ivars = instance_variables
+        # Get the current list of instance variables
+        current_ivars = instance_variables
 
-          # Store the known instance variables at the class level
-          self.class.known_ivars = post_init_ivars
-        else
-          # Update the known ivars with any new ones
-          self.class.known_ivars = (self.class.known_ivars + instance_variables).uniq
-        end
+        # Update the known instance variables
+        self.class.update_known_ivars(current_ivars)
 
         # If the class hasn't been checked yet, check for unknown instance variables
         unless self.class.checked?
           # Get all known instance variables from the class hierarchy
-          all_known_ivars = get_all_known_ivars(self.class)
+          all_known_ivars = self.class.get_all_known_ivars(self.class)
 
           # Check for unknown instance variables
-          check_for_unknown_ivars(self.class, all_known_ivars)
-
-          # Mark the class as checked
-          self.class.mark_as_checked
+          self.class.check_for_unknown_ivars_in_class(all_known_ivars)
         end
-
-        # Return the result of the original initialize method
       end
     end
   end
