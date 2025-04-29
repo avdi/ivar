@@ -1,0 +1,12 @@
+// See https://containers.dev/implementors/json_reference/ for configuration reference
+{
+	"name": "ivar",
+	"build": {
+		"dockerfile": "Dockerfile"
+	},
+"remoteUser": "devcontainer",
+"features": {
+	"ghcr.io/devcontainers/features/github-cli:1": {},
+	"ghcr.io/jungaretti/features/ripgrep:1": {}
+}
+}
