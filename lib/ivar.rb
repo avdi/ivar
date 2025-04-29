@@ -47,39 +47,50 @@ module Ivar
       nil
     end
 
-    # Find all instance variable references in a file
-    def find_all_ivar_references(file_path, class_name)
+    # Find all instance variable references in a class
+    def find_all_ivar_references(klass)
+      # Get the source file from the initialize method
+      source_file = klass.instance_method(:initialize).source_location[0]
+
       # Read the source code
-      source_code = File.read(source_file_for_class(file_path, class_name))
+      source_code = File.read(source_file)
 
       # Parse the source code
       result = Prism.parse(source_code)
 
       # Find all instance variable references in the entire file
-      find_ivar_references(result.value)
-    end
+      all_references = find_ivar_references(result.value)
 
-    # Find the source file for a class
-    def source_file_for_class(file_path, class_name)
-      # If the file exists and contains the class definition, use it
-      if File.exist?(file_path) && File.read(file_path).include?("class #{class_name}")
-        return file_path
+      # Get all methods defined in the class
+      method_names = klass.instance_methods(false)
+
+      # For each method, get its source location and scan for instance variables
+      method_names.each do |method_name|
+        # Skip if the method is not defined in the class
+        next unless klass.instance_method(method_name).owner == klass
+
+        # Get the method's source location
+        method_source_file = klass.instance_method(method_name).source_location&.first
+        next unless method_source_file
+
+        # If the method is defined in a different file, read that file
+        if method_source_file != source_file
+          method_source_code = File.read(method_source_file)
+          method_result = Prism.parse(method_source_code)
+          all_references.concat(find_ivar_references(method_result.value))
+        end
       end
 
-      # Otherwise, try to find the file in the current directory
-      Dir.glob("**/*.rb").each do |file|
-        content = File.read(file)
-        return file if content.include?("class #{class_name}")
-      end
-
-      # If we can't find the file, return the original file path
-      file_path
+      all_references
     end
 
     # Check for unknown instance variables
-    def check_for_unknown_ivars(file_path, class_name, known_ivars)
+    def check_for_unknown_ivars(klass, known_ivars)
       # Find all instance variable references
-      ivar_references = find_all_ivar_references(file_path, class_name)
+      ivar_references = find_all_ivar_references(klass)
+
+      # Get the source file from the initialize method
+      source_file = klass.instance_method(:initialize).source_location[0]
 
       # Check each reference against the known list
       ivar_references.each do |ivar_node|
@@ -93,7 +104,7 @@ module Ivar
         suggestion = DidYouMean::SpellChecker.new(dictionary: known_ivars).correct(ivar_name).first
         suggestion_text = suggestion ? "Did you mean: #{suggestion}?" : ""
 
-        warn "#{file_path}:#{line_number}: warning: unknown instance variable #{ivar_name}. #{suggestion_text}"
+        warn "#{source_file}:#{line_number}: warning: unknown instance variable #{ivar_name}. #{suggestion_text}"
       end
     end
 
@@ -160,15 +171,11 @@ module Ivar
 
       # If the class hasn't been checked yet, check for unknown instance variables
       unless self.class.checked?
-        # Get the class source file and name
-        source_file = self.class.instance_method(:initialize).source_location[0]
-        class_name = self.class.name.split("::").last
-
         # Get all known instance variables from the class hierarchy
         all_known_ivars = get_all_known_ivars(self.class)
 
         # Check for unknown instance variables
-        check_for_unknown_ivars(source_file, class_name, all_known_ivars)
+        check_for_unknown_ivars(self.class, all_known_ivars)
 
         # Mark the class as checked
         self.class.mark_as_checked
@@ -228,15 +235,11 @@ module Ivar
 
         # If the class hasn't been checked yet, check for unknown instance variables
         unless self.class.checked?
-          # Get the class source file and name
-          source_file = self.class.instance_method(:initialize).source_location[0]
-          class_name = self.class.name.split("::").last
-
           # Get all known instance variables from the class hierarchy
           all_known_ivars = get_all_known_ivars(self.class)
 
           # Check for unknown instance variables
-          check_for_unknown_ivars(source_file, class_name, all_known_ivars)
+          check_for_unknown_ivars(self.class, all_known_ivars)
 
           # Mark the class as checked
           self.class.mark_as_checked
