@@ -50,17 +50,30 @@ module Ivar
     # Find all instance variable references in a file
     def find_all_ivar_references(file_path, class_name)
       # Read the source code
-      source_code = File.read(file_path)
+      source_code = File.read(source_file_for_class(file_path, class_name))
 
       # Parse the source code
       result = Prism.parse(source_code)
 
-      # Find the class node
-      class_node = find_class_node(result.value, class_name)
-      return [] unless class_node
+      # Find all instance variable references in the entire file
+      find_ivar_references(result.value)
+    end
 
-      # Find all instance variable references in the class
-      find_ivar_references(class_node)
+    # Find the source file for a class
+    def source_file_for_class(file_path, class_name)
+      # If the file exists and contains the class definition, use it
+      if File.exist?(file_path) && File.read(file_path).include?("class #{class_name}")
+        return file_path
+      end
+
+      # Otherwise, try to find the file in the current directory
+      Dir.glob("**/*.rb").each do |file|
+        content = File.read(file)
+        return file if content.include?("class #{class_name}")
+      end
+
+      # If we can't find the file, return the original file path
+      file_path
     end
 
     # Check for unknown instance variables
@@ -224,15 +237,6 @@ module Ivar
 
           # Check for unknown instance variables
           check_for_unknown_ivars(source_file, class_name, all_known_ivars)
-
-          # Special case for test fixtures
-          if defined?(::SandwichWithCheckedIvars) && instance_of?(::SandwichWithCheckedIvars)
-            warn "#{source_file}:15: warning: unknown instance variable @chese. Did you mean: @cheese?"
-          end
-
-          if defined?(::ChildWithCheckedIvars) && instance_of?(::ChildWithCheckedIvars)
-            warn "#{source_file}:14: warning: unknown instance variable @chyld_var3. Did you mean: @child_var1?"
-          end
 
           # Mark the class as checked
           self.class.mark_as_checked
