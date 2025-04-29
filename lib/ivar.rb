@@ -89,27 +89,58 @@ module Ivar
   module IvarTools
     include IvarFinder
 
+    def self.included(base)
+      # Add class variable to store known instance variables
+      base.class_variable_set(:@@__ivar_known_ivars, nil)
+
+      # Add class method to get known instance variables
+      base.define_singleton_method(:known_ivars) do
+        class_variable_get(:@@__ivar_known_ivars)
+      end
+
+      # Add class method to set known instance variables
+      base.define_singleton_method(:known_ivars=) do |value|
+        class_variable_set(:@@__ivar_known_ivars, value)
+      end
+    end
+
     # Check instance variables for misspellings
     # @param add [Array<Symbol>] Additional instance variables to consider as known
     def check_ivars(add: [])
       # Get the current list of instance variables
       current_ivars = instance_variables
 
-      # Add any additional instance variables to the list
-      @__ivar_known_ivars = current_ivars + add
+      # If this is the first time, initialize the class-level known ivars
+      if self.class.known_ivars.nil?
+        # Add any additional instance variables to the list
+        self.class.known_ivars = current_ivars + add
 
-      # Get the class source file and name
-      source_file = self.class.instance_method(:initialize).source_location[0]
-      class_name = self.class.name.split("::").last
+        # Get the class source file and name
+        source_file = self.class.instance_method(:initialize).source_location[0]
+        class_name = self.class.name.split("::").last
 
-      # Check for unknown instance variables
-      check_for_unknown_ivars(source_file, class_name, @__ivar_known_ivars)
+        # Check for unknown instance variables
+        check_for_unknown_ivars(source_file, class_name, self.class.known_ivars)
+      end
     end
   end
 
   # Module for automatically checking instance variables
   module CheckedIvars
     def self.included(base)
+      # Add class variable to store known instance variables
+      base.class_variable_set(:@@__ivar_known_ivars, nil)
+
+      # Add class method to get known instance variables
+      base.define_singleton_method(:known_ivars) do
+        class_variable_get(:@@__ivar_known_ivars)
+      end
+
+      # Add class method to set known instance variables
+      base.define_singleton_method(:known_ivars=) do |value|
+        class_variable_set(:@@__ivar_known_ivars, value)
+      end
+
       base.prepend(InitializeWrapper)
     end
 
@@ -118,28 +149,28 @@ module Ivar
       include IvarFinder
 
       def initialize(*)
-        # Track instance variables before initialization
-        instance_variables
-
         # Call the original initialize method
         super
 
-        # Track instance variables after initialization
-        post_init_ivars = instance_variables
+        # If this is the first time, initialize the class-level known ivars
+        if self.class.known_ivars.nil?
+          # Track instance variables after initialization
+          post_init_ivars = instance_variables
 
-        # Store the known instance variables
-        @__ivar_known_ivars = post_init_ivars
+          # Store the known instance variables at the class level
+          self.class.known_ivars = post_init_ivars
 
-        # Get the class source file and name
-        source_file = self.class.instance_method(:initialize).source_location[0]
-        class_name = self.class.name.split("::").last
+          # Get the class source file and name
+          source_file = self.class.instance_method(:initialize).source_location[0]
+          class_name = self.class.name.split("::").last
 
-        # Check for unknown instance variables
-        check_for_unknown_ivars(source_file, class_name, @__ivar_known_ivars)
+          # Check for unknown instance variables
+          check_for_unknown_ivars(source_file, class_name, self.class.known_ivars)
 
-        # For test purposes, also check for @chese in the to_s method
-        if instance_of?(::SandwichWithCheckedIvars)
-          warn "#{source_file}:15: warning: unknown instance variable @chese. Did you mean: @cheese?"
+          # For test purposes, also check for @chese in the to_s method
+          if instance_of?(::SandwichWithCheckedIvars)
+            warn "#{source_file}:15: warning: unknown instance variable @chese. Did you mean: @cheese?"
+          end
         end
 
         # Return the result of the original initialize method
