@@ -67,6 +67,8 @@ The `Checked` module automatically calls `check_ivars` after initialization, whi
 
 ### Automatic Validation (Once Per Class)
 
+Too many warnings? Try this:
+
 ```ruby
 # sandwich_once.rb
 require "ivar"
@@ -99,7 +101,7 @@ Setting `ivar_check_policy :warn_once` makes `check_ivars` use the `warn_once` p
 
 ### Pre-declaring Instance Variables
 
-You can pre-declare instance variables that should be initialized to `nil` before the initializer is called. This is useful for variables that might be referenced before they are explicitly set:
+Normally we "declare" variables by setting them in `initialize`. But if you don't have any reason to set them in the initializer, you can still declare them so they won't be flagged.
 
 ```ruby
 # sandwich_with_ivar_macro.rb
@@ -138,11 +140,11 @@ sandwich.add_side("chips")
 puts sandwich.to_s
 ```
 
-The `ivar` macro pre-initializes the specified instance variables to `nil` before the initializer is called, which prevents warnings about unknown instance variables. You only need to pre-declare variables that might be referenced before they are explicitly set - variables that are always set in the initializer don't need to be pre-declared.
+Note: this WILL set the variable to `nil` before `initialize` runs, so if you have code that depends on `defined?(@var)` it may break. If folks want it we might look into non-setting predeclaration.
 
-### Using Keyword Arguments with the `ivar` Macro
+### Setting ivars from initializer keyword arguments
 
-You can use the `kwarg` option to initialize instance variables directly from keyword arguments:
+While we're messing around with ivars, let's fix Ruby's oldest missing convenience feature:
 
 ```ruby
 # sandwich_with_kwarg.rb
@@ -151,15 +153,7 @@ require "ivar"
 class SandwichWithKwarg
   include Ivar::Checked
 
-  # Pre-declare instance variables to be initialized from keyword arguments
-  ivar kwarg: [:@bread, :@cheese, :@condiments]
-
-  def initialize(pickles: false, side: nil)
-    # Note: @bread, @cheese, and @condiments are already set from keyword arguments
-    # We only need to handle the remaining keyword arguments
-    @pickles = pickles
-    @side = side
-  end
+  ivar kwarg: [:@bread, :@cheese, :@condiments, :@pickles, :@side]
 
   def to_s
     result = "A #{@bread} sandwich with #{@cheese}"
@@ -181,13 +175,13 @@ sandwich = SandwichWithKwarg.new(
 puts sandwich.to_s  # Outputs: A wheat sandwich with muenster and mayo, mustard and a side of chips
 ```
 
-The `kwarg` option initializes the specified instance variables from matching keyword arguments, and those keyword arguments are not passed to the original `initialize` method. This is a convenient shortcut for setting instance variables directly from keyword arguments.
+Ta-da, no more tedious setting of instance variables from arguments of the same name.
 
-
+TODO: Find a positional args version of this that makes sense.
 
 ### Inheritance
 
-Both modules also work with inheritance:
+This stuff works with inheritance:
 
 ```ruby
 class BaseSandwich
