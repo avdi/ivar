@@ -1,0 +1,6 @@
+{
+  "rubyTestExplorer.testFramework": "minitest",
+  "[ruby]": {
+    "editor.formatOnType": true
+  },
+}

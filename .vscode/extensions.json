@@ -1,0 +1,7 @@
+{
+  "recommendations": [
+    "connorshea.vscode-ruby-test-adapter",
+    "stripe.endsmart",
+    "testdouble.vscode-standard-ruby"
+  ]
+}

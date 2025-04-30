@@ -8,5 +8,14 @@
 "features": {
 	"ghcr.io/devcontainers/features/github-cli:1": {},
 	"ghcr.io/jungaretti/features/ripgrep:1": {}
+},
+"customizations": {
+	"vscode": {
+		"extensions": [
+			"connorshea.vscode-ruby-test-adapter",
+			"stripe.endsmart",
+			"testdouble.vscode-standard-ruby"
+		]
+	}
 }
 }
