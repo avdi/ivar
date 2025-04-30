@@ -139,6 +139,55 @@ puts sandwich.to_s
 
 The `ivar` macro pre-initializes the specified instance variables to `nil` before the initializer is called, which prevents warnings about unknown instance variables. You only need to pre-declare variables that might be referenced before they are explicitly set - variables that are always set in the initializer don't need to be pre-declared.
 
+### Using a Block with the `ivar` Macro
+
+You can also provide a block to the `ivar` macro that will be executed in the context of the instance before initialization. This allows you to set up instance variables with specific values before the initializer is called:
+
+```ruby
+# sandwich_with_ivar_block.rb
+require "ivar"
+
+class SandwichWithIvarBlock
+  include Ivar::Checked # or Ivar::CheckedOnce
+
+  # Pre-declare instance variables with a block that runs before initialization
+  ivar :@side do
+    @pickles = true
+    @condiments = []
+  end
+
+  def initialize
+    @bread = "wheat"
+    @cheese = "muenster"
+    # Note: @pickles is already set to true by the ivar block
+    # Note: @condiments is already initialized to an empty array by the ivar block
+    @condiments << "mayo" if !@pickles
+    @condiments << "mustard"
+    # Note: @side is not set here, but it's pre-initialized to nil
+  end
+
+  def to_s
+    result = "A #{@bread} sandwich with #{@cheese}"
+    result += " and #{@condiments.join(", ")}" unless @condiments.empty?
+    result += " with pickles" if @pickles
+    result += " and a side of #{@side}" if @side
+    result
+  end
+
+  def add_side(side)
+    @side = side
+  end
+end
+
+sandwich = SandwichWithIvarBlock.new
+puts sandwich.to_s  # Outputs: A wheat sandwich with muenster and mustard with pickles
+
+sandwich.add_side("chips")
+puts sandwich.to_s  # Outputs: A wheat sandwich with muenster and mustard with pickles and a side of chips
+```
+
+The block is executed after pre-initializing any explicitly declared instance variables to `nil`, but before the class's `initialize` method is called. This allows you to set up default values or perform other initialization tasks that should happen before the main initialization logic.
+
 ### Inheritance
 
 Both modules also work with inheritance:

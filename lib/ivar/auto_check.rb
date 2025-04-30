@@ -33,6 +33,8 @@ module Ivar
       def initialize(...)
         # Initialize pre-declared instance variables
         initialize_pre_declared_ivars
+        # Execute the initialization block if provided
+        execute_ivar_init_block
         # Call the original initialize method
         super
         # Automatically check instance variables
@@ -70,6 +72,8 @@ module Ivar
       def initialize(...)
         # Initialize pre-declared instance variables
         initialize_pre_declared_ivars
+        # Execute the initialization block if provided
+        execute_ivar_init_block
         # Call the original initialize method
         super
         # Automatically check instance variables once
