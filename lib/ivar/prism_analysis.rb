@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-require "prism"
-require "set"
+require 'prism'
+require 'set'
 
 module Ivar
   # Analyzes a class to find all instance variables using Prism
@@ -12,7 +12,7 @@ module Ivar
       @klass = klass
       @references = nil
       collect_references
-      @ivars = references_to_ivars
+      @ivars = unique_ivar_names
     end
 
     # Returns a list of hashes each representing a code reference to an ivar
@@ -36,7 +36,7 @@ module Ivar
       end
     end
 
-    def references_to_ivars
+    def unique_ivar_names
       @references.map { |ref| ref[:name] }.uniq.sort
     end
 
