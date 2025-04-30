@@ -6,6 +6,15 @@ class TestIvarMacros < Minitest::Test
   def setup
     # Clear the cache to ensure a clean test
     Ivar.clear_analysis_cache
+
+    # Capture stderr to prevent warnings from appearing in test output
+    @original_stderr = $stderr
+    $stderr = StringIO.new
+  end
+
+  def teardown
+    # Restore stderr
+    $stderr = @original_stderr
   end
 
   def test_ivar_macro_pre_initializes_variables
@@ -141,18 +150,14 @@ class TestIvarMacros < Minitest::Test
     # Replace the cached analysis
     Ivar.instance_variable_get(:@analysis_cache)[klass] = analysis
 
-    # Capture stderr output
-    original_stderr = $stderr
-    $stderr = StringIO.new
+    # Clear any previous warnings
+    $stderr.string = ""
 
     # Create an instance - this should automatically call check_ivars
     klass.new
 
     # Get the captured warnings
     warnings = $stderr.string
-
-    # Restore stderr
-    $stderr = original_stderr
 
     # Check that we didn't get warnings about the pre-initialized variable
     refute_match(/unknown instance variable @pre_initialized_var/, warnings)
