@@ -53,26 +53,10 @@ module Ivar
       instance_variable_get(:@__ivar_pre_declared_ivars) || []
     end
 
-    # Legacy method for backward compatibility
-    # @deprecated Use {#ivar_pre_declared} instead
-    # @return [Array<Symbol>] Pre-declared instance variables
-    def pre_declared_ivars
-      warn "DEPRECATION WARNING: `pre_declared_ivars` is deprecated. Use `ivar_pre_declared` instead."
-      ivar_pre_declared
-    end
-
     # Get the keyword argument mappings for this class
     # @return [Array<Symbol>] Keyword argument mappings
     def ivar_kwarg_mappings
       instance_variable_get(:@__ivar_kwarg_mappings) || []
-    end
-
-    # Legacy method for backward compatibility
-    # @deprecated Use {#ivar_kwarg_mappings} instead
-    # @return [Array<Symbol>] Keyword argument mappings
-    def kwarg_mappings
-      warn "DEPRECATION WARNING: `kwarg_mappings` is deprecated. Use `ivar_kwarg_mappings` instead."
-      ivar_kwarg_mappings
     end
 
     # Get the initialization block for this class
@@ -125,7 +109,7 @@ module Ivar
 
       all_kwarg_mappings.each do |ivar|
         # Convert @ivar_name to ivar_name for keyword lookup
-        key = ivar.to_s.delete_prefix("@").to_sym
+        key = ivar.to_s.delete_prefix('@').to_sym
 
         if remaining_kwargs.key?(key)
           instance_variable_set(ivar, remaining_kwargs[key])
