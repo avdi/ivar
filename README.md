@@ -96,6 +96,48 @@ sandwich_once.rb:15: warning: unknown instance variable @chese. Did you mean: @c
 
 The `CheckedOnce` module automatically calls `check_ivars_once` after initialization, which means it will emit warnings only for the first instance of each class.
 
+### Pre-declaring Instance Variables
+
+You can pre-declare instance variables that should be initialized to `nil` before the initializer is called. This is useful for variables that might be referenced before they are explicitly set:
+
+```ruby
+# sandwich_with_ivar_macro.rb
+require "ivar"
+
+class SandwichWithIvarMacro
+  include Ivar::Checked # or Ivar::CheckedOnce
+
+  # Pre-declare instance variables that will be used
+  ivar :@bread, :@cheese, :@condiments, :@side
+
+  def initialize
+    @bread = "wheat"
+    @cheese = "muenster"
+    @condiments = ["mayo", "mustard"]
+    # Note: @side is not set here, but it's pre-initialized to nil
+  end
+
+  def to_s
+    result = "A #{@bread} sandwich with #{@cheese} and #{@condiments.join(", ")}"
+    # This won't trigger a warning because @side is pre-initialized
+    result += " and a side of #{@side}" if @side
+    result
+  end
+
+  def add_side(side)
+    @side = side
+  end
+end
+
+sandwich = SandwichWithIvarMacro.new
+puts sandwich.to_s  # No warning about @side
+
+sandwich.add_side("chips")
+puts sandwich.to_s
+```
+
+The `ivar` macro pre-initializes the specified instance variables to `nil` before the initializer is called, which prevents warnings about unknown instance variables.
+
 ### Inheritance
 
 Both modules also work with inheritance:
@@ -104,6 +146,9 @@ Both modules also work with inheritance:
 class BaseSandwich
   include Ivar::Checked # or Ivar::CheckedOnce
 
+  # Pre-declared instance variables are inherited by subclasses
+  ivar :@bread, :@cheese
+
   def initialize
     @bread = "wheat"
     @cheese = "muenster"
@@ -111,6 +156,9 @@ class BaseSandwich
 end
 
 class SpecialtySandwich < BaseSandwich
+  # Add more pre-declared instance variables
+  ivar :@condiments
+
   def initialize
     super
     @condiments = ["mayo", "mustard"]

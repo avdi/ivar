@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative "validation"
+require_relative "macros"
 
 module Ivar
   # Provides automatic validation for instance variables
@@ -10,7 +11,9 @@ module Ivar
     # with ClassMethods and includes the Validation module
     def self.included(base)
       base.include(Validation)
+      base.include(PreInitializeIvars)
       base.extend(ClassMethods)
+      base.extend(IvarMacros)
       base.prepend(InstanceMethods)
     end
 
@@ -28,6 +31,8 @@ module Ivar
     module InstanceMethods
       # Wrap the initialize method to automatically call check_ivars
       def initialize(...)
+        # Initialize pre-declared instance variables
+        initialize_pre_declared_ivars
         # Call the original initialize method
         super
         # Automatically check instance variables
@@ -43,7 +48,9 @@ module Ivar
     # with ClassMethods and includes the Validation module
     def self.included(base)
       base.include(Validation)
+      base.include(PreInitializeIvars)
       base.extend(ClassMethods)
+      base.extend(IvarMacros)
       base.prepend(InstanceMethods)
     end
 
@@ -61,6 +68,8 @@ module Ivar
     module InstanceMethods
       # Wrap the initialize method to automatically call check_ivars_once
       def initialize(...)
+        # Initialize pre-declared instance variables
+        initialize_pre_declared_ivars
         # Call the original initialize method
         super
         # Automatically check instance variables once
