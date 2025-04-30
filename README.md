@@ -9,7 +9,7 @@
 require "ivar"
 
 class Sandwich
-  include Ivar::IvarTools
+  include Ivar::Validation
 
   def initialize
     @bread = "wheat"
