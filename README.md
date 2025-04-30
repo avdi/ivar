@@ -94,7 +94,7 @@ $ ruby sandwich_once.rb -w
 sandwich_once.rb:15: warning: unknown instance variable @chese. Did you mean: @cheese?
 ```
 
-The `CheckedOnce` module automatically calls `check_ivars_once` after initialization, which means it will emit warnings only for the first instance of each class.
+The `CheckedOnce` module automatically calls `check_ivars` with a `warn_once` policy after initialization, which means it will emit warnings only for the first instance of each class.
 
 ### Pre-declaring Instance Variables
 
@@ -228,4 +228,108 @@ SpecialtySandwich.new
 ```shell
 $ ruby inheritance_example.rb -w
 inheritance_example.rb:17: warning: unknown instance variable @condimants. Did you mean: @condiments?
+```
+
+## Checking Policies
+
+Ivar supports different policies for handling unknown instance variables. You can specify a policy at the global level, class level, or per-check level.
+
+### Available Policies
+
+- `:warn` - Emit warnings for all unknown instance variables (default)
+- `:warn_once` - Emit warnings only once per class
+- `:raise` - Raise an exception for unknown instance variables
+- `:log` - Log unknown instance variables to a logger
+
+### Setting a Global Policy
+
+```ruby
+# Set the global policy to raise exceptions
+Ivar.check_policy = :raise
+
+class Sandwich
+  include Ivar::Validation
+
+  def initialize
+    @bread = "wheat"
+    check_ivars
+  end
+
+  def to_s
+    "A #{@bread} sandwich with #{@chese}"  # This will raise an exception
+  end
+end
+
+Sandwich.new  # Raises: NameError: test_file.rb:2: unknown instance variable @chese. Did you mean: @cheese?
+```
+
+### Setting a Class-Level Policy
+
+```ruby
+class Sandwich
+  include Ivar::Validation
+  extend Ivar::CheckPolicy
+
+  # Set the class-level policy to log
+  ivar_check_policy :log, logger: Logger.new($stderr)
+
+  def initialize
+    @bread = "wheat"
+    check_ivars
+  end
+
+  def to_s
+    "A #{@bread} sandwich with #{@chese}"  # This will log a warning
+  end
+end
+
+Sandwich.new  # Logs: W, [2023-06-01T12:34:56.789123 #12345] WARN -- : test_file.rb:2: unknown instance variable @chese. Did you mean: @cheese?
+```
+
+### Setting a Per-Check Policy
+
+```ruby
+class Sandwich
+  include Ivar::Validation
+
+  def initialize
+    @bread = "wheat"
+    # Use the raise policy for this check
+    check_ivars(policy: :raise)
+  end
+
+  def to_s
+    "A #{@bread} sandwich with #{@chese}"
+  end
+end
+
+Sandwich.new  # Raises: NameError: test_file.rb:2: unknown instance variable @chese. Did you mean: @cheese?
+```
+
+### Using the Checked and CheckedOnce Modules with Policies
+
+The `Checked` and `CheckedOnce` modules set default policies:
+
+- `Checked` sets the policy to `:warn`
+- `CheckedOnce` sets the policy to `:warn_once`
+
+You can override these defaults:
+
+```ruby
+class Sandwich
+  include Ivar::Checked
+
+  # Override the default policy
+  ivar_check_policy :raise
+
+  def initialize
+    @bread = "wheat"
+  end
+
+  def to_s
+    "A #{@bread} sandwich with #{@chese}"  # This will raise an exception
+  end
+end
+
+Sandwich.new  # Raises: NameError: test_file.rb:2: unknown instance variable @chese. Did you mean: @cheese?
 ```
