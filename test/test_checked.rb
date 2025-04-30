@@ -117,10 +117,57 @@ class TestChecked < Minitest::Test
     assert_match(/unknown instance variable @child_typo/, warnings)
   end
 
-  def test_checked_only_warns_once_per_class
+  def test_checked_warns_for_every_instance
     # Create a class with a typo in an instance variable
     klass = Class.new do
       include Ivar::Checked
+
+      def initialize
+        @correct = "value"
+      end
+
+      def method_with_typo
+        @typo_veriable = "misspelled"
+      end
+    end
+
+    # Force the analysis to be created and include our method
+    analysis = Ivar::PrismAnalysis.new(klass)
+    # Monkey patch the analysis to include our typo
+    def analysis.ivar_references
+      [
+        {name: :@correct, path: "test_file.rb", line: 1, column: 1},
+        {name: :@typo_veriable, path: "test_file.rb", line: 2, column: 1}
+      ]
+    end
+    # Replace the cached analysis
+    Ivar.instance_variable_get(:@analysis_cache)[klass] = analysis
+
+    # First instance - should emit warnings
+    original_stderr = $stderr
+    $stderr = StringIO.new
+    klass.new
+    first_warnings = $stderr.string
+    $stderr = original_stderr
+
+    # Second instance - should also emit warnings (since Checked doesn't cache)
+    original_stderr = $stderr
+    $stderr = StringIO.new
+    klass.new
+    second_warnings = $stderr.string
+    $stderr = original_stderr
+
+    # Check that we got warnings for the first instance
+    assert_match(/unknown instance variable @typo_veriable/, first_warnings)
+
+    # Check that we got warnings for the second instance too (since Checked doesn't cache)
+    assert_match(/unknown instance variable @typo_veriable/, second_warnings)
+  end
+
+  def test_checked_once_warns_only_once_per_class
+    # Create a class with a typo in an instance variable
+    klass = Class.new do
+      include Ivar::CheckedOnce
 
       def initialize
         @correct = "value"

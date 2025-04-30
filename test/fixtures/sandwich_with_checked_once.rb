@@ -2,7 +2,7 @@
 
 require "ivar"
 
-class SandwichWithCheckedIvars
+class SandwichWithCheckedOnce
   include Ivar::CheckedOnce
 
   def initialize

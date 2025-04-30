@@ -3,7 +3,7 @@
 require_relative "ivar/version"
 require_relative "ivar/prism_analysis"
 require_relative "ivar/validation"
-require_relative "ivar/checked"
+require_relative "ivar/auto_check"
 require "prism"
 require "did_you_mean"
 

@@ -3,7 +3,7 @@
 require "ivar"
 
 class ParentWithCheckedIvars
-  include Ivar::CheckedIvars
+  include Ivar::CheckedOnce
 
   def initialize
     @parent_var1 = "parent1"
