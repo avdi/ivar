@@ -1,6 +1,8 @@
 {
   "rubyTestExplorer.testFramework": "minitest",
   "[ruby]": {
-    "editor.formatOnType": true
+    "editor.formatOnType": true,
+    "editor.defaultFormatter": "testdouble.vscode-standard-ruby"
   },
+  "editor.formatOnSave": true,
 }
