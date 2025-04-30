@@ -14,7 +14,8 @@
 		"extensions": [
 			"connorshea.vscode-ruby-test-adapter",
 			"stripe.endsmart",
-			"testdouble.vscode-standard-ruby"
+			"testdouble.vscode-standard-ruby",
+			"castwide.solargraph"
 		]
 	}
 }
