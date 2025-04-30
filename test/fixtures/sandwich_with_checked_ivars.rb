@@ -3,7 +3,8 @@
 require "ivar"
 
 class SandwichWithCheckedIvars
-  include Ivar::CheckedOnce
+  include Ivar::Checked
+  ivar_check_policy :warn_once
 
   def initialize
     @bread = "wheat"

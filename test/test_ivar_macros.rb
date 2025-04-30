@@ -50,10 +50,11 @@ class TestMacros < Minitest::Test
     assert_equal "normal2", values[2], "@normal_var2 should be 'normal2'"
   end
 
-  def test_ivar_macro_with_checked_once
+  def test_ivar_macro_with_checked_and_warn_once_policy
     # Create a class with the ivar macro
     klass = Class.new do
-      include Ivar::CheckedOnce
+      include Ivar::Checked
+      ivar_check_policy :warn_once
 
       ivar :@pre_initialized_var
 
@@ -264,10 +265,11 @@ class TestMacros < Minitest::Test
     assert_equal "child normal", values[3], "@child_normal_var should be 'child normal'"
   end
 
-  def test_ivar_block_with_checked_once
-    # Create a class with the ivar macro and a block using CheckedOnce
+  def test_ivar_block_with_checked_and_warn_once_policy
+    # Create a class with the ivar macro and a block using Checked with warn_once policy
     klass = Class.new do
-      include Ivar::CheckedOnce
+      include Ivar::Checked
+      ivar_check_policy :warn_once
 
       ivar do
         @block_initialized_var = "from block"

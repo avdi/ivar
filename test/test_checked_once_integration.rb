@@ -14,7 +14,7 @@ class TestCheckedOnceIntegration < Minitest::Test
     original_stderr = $stderr
     $stderr = StringIO.new
 
-    # Create a sandwich with CheckedOnce which should trigger warnings
+    # Create a sandwich with Checked and warn_once policy which should trigger warnings
     SandwichWithCheckedOnce.new
 
     # Get the captured warnings

@@ -3,13 +3,14 @@
 require "ivar"
 
 class SandwichWithCheckedOnce
-  include Ivar::CheckedOnce
+  include Ivar::Checked
+  ivar_check_policy :warn_once
 
   def initialize
     @bread = "wheat"
     @cheese = "muenster"
-    @condiments = ["mayo", "mustard"]
-    # No need for explicit check_ivars_once call
+    @condiments = %w[mayo mustard]
+    # No need for explicit check_ivars call
   end
 
   def to_s

@@ -359,10 +359,11 @@ class TestPolicies < Minitest::Test
     assert_equal :warn, klass.ivar_check_policy
   end
 
-  def test_checked_once_module_sets_warn_once_policy
-    # Create a class that includes CheckedOnce
+  def test_checked_with_warn_once_policy
+    # Create a class that includes Checked with warn_once policy
     klass = Class.new do
-      include Ivar::CheckedOnce
+      include Ivar::Checked
+      ivar_check_policy :warn_once
 
       def initialize
         @correct = "value"

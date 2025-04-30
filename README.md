@@ -72,13 +72,14 @@ The `Checked` module automatically calls `check_ivars` after initialization, whi
 require "ivar"
 
 class Sandwich
-  include Ivar::CheckedOnce
+  include Ivar::Checked
+  ivar_check_policy :warn_once
 
   def initialize
     @bread = "white"
     @cheese = "havarti"
     @condiments = ["mayo", "mustard"]
-    # no need for explicit check_ivars_once call
+    # no need for explicit check_ivars call
   end
 
   def to_s
@@ -94,7 +95,7 @@ $ ruby sandwich_once.rb -w
 sandwich_once.rb:15: warning: unknown instance variable @chese. Did you mean: @cheese?
 ```
 
-The `CheckedOnce` module automatically calls `check_ivars` with a `warn_once` policy after initialization, which means it will emit warnings only for the first instance of each class.
+Setting `ivar_check_policy :warn_once` makes `check_ivars` use the `warn_once` policy, which means it will emit warnings only for the first instance of each class.
 
 ### Pre-declaring Instance Variables
 
@@ -105,7 +106,7 @@ You can pre-declare instance variables that should be initialized to `nil` befor
 require "ivar"
 
 class SandwichWithIvarMacro
-  include Ivar::Checked # or Ivar::CheckedOnce
+  include Ivar::Checked
 
   # Pre-declare only instance variables that might be referenced before being set
   # You don't need to include variables that are always set in initialize
@@ -148,7 +149,7 @@ You can use the `kwarg` option to initialize instance variables directly from ke
 require "ivar"
 
 class SandwichWithKwarg
-  include Ivar::Checked # or Ivar::CheckedOnce
+  include Ivar::Checked
 
   # Pre-declare instance variables to be initialized from keyword arguments
   ivar kwarg: [:@bread, :@cheese, :@condiments]
@@ -190,7 +191,7 @@ Both modules also work with inheritance:
 
 ```ruby
 class BaseSandwich
-  include Ivar::Checked # or Ivar::CheckedOnce
+  include Ivar::Checked
 
   # Pre-declare only variables that might be referenced before being set
   # Variables set in initialize (@bread, @cheese) don't need to be pre-declared
@@ -306,14 +307,13 @@ end
 Sandwich.new  # Raises: NameError: test_file.rb:2: unknown instance variable @chese. Did you mean: @cheese?
 ```
 
-### Using the Checked and CheckedOnce Modules with Policies
+### Using the Checked Module with Policies
 
-The `Checked` and `CheckedOnce` modules set default policies:
+The `Checked` module sets a default policy:
 
 - `Checked` sets the policy to `:warn`
-- `CheckedOnce` sets the policy to `:warn_once`
 
-You can override these defaults:
+You can override the default policy:
 
 ```ruby
 class Sandwich
