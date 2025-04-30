@@ -1,6 +1,11 @@
 # Ivar
 
-A Ruby gem for detecting typos in instance variable names.
+Ruby instance variables are so convenient - you don't even need to declare them! But... they are also dangerous, because a mispelled variable name results in `nil` instead of an error.
+
+Why not have the best of both worlds? Ivar lets you use plain-old instance variables, and automatically checks for typos.
+
+Ivar waits until an instance is created to do the checking, then uses Prism to look for variables that don't match what was set in initialization. So it's a little bit dynamic, a little bit static. It doesn't encumber your instance variable reads and writes with any extra checking. And with the `:warn_once` policy, it won't overwhelm you with output.
+
 
 ## Usage
 
