@@ -1,8 +1,10 @@
 # Ivar
 
+A Ruby gem for detecting typos in instance variable names.
+
 ## Usage
 
-### Manual
+### Manual Validation
 
 ```ruby
 # sandwich.rb
@@ -19,7 +21,7 @@ class Sandwich
   end
 
   def to_s
-    "A #{@bread} sandwich with #{@chese} and #{condiments.join(", ")}" \
+    "A #{@bread} sandwich with #{@chese} and #{@condiments.join(", ")}" \
     (@side ? "and a side of #{@side}" : "")
   end
 end
@@ -29,17 +31,17 @@ Sandwich.new
 
 ```shell
 $ ruby sandwich.rb -w
-ivar.rb:10: warning: unknown instance variable @chese. Did you mean: @cheese?
+sandwich.rb:22: warning: unknown instance variable @chese. Did you mean: @cheese?
 ```
 
-### Automatic
+### Automatic Validation
 
 ```ruby
 # sandwich_automatic.rb
 require "ivar"
 
 class Sandwich
-  include Ivar::CheckedIvars
+  include Ivar::Checked
 
   def initialize
     @bread = "white"
@@ -47,6 +49,49 @@ class Sandwich
     @condiments = ["mayo", "mustard"]
     # no need for explicit check_ivars call
   end
-  # ...
+
+  def to_s
+    "A #{@bread} sandwich with #{@chese} and #{@condiments.join(", ")}"
+  end
 end
+
+Sandwich.new
+```
+
+```shell
+$ ruby sandwich_automatic.rb -w
+sandwich_automatic.rb:15: warning: unknown instance variable @chese. Did you mean: @cheese?
+```
+
+### Inheritance
+
+The `Checked` module also works with inheritance:
+
+```ruby
+class BaseSandwich
+  include Ivar::Checked
+
+  def initialize
+    @bread = "wheat"
+    @cheese = "muenster"
+  end
+end
+
+class SpecialtySandwich < BaseSandwich
+  def initialize
+    super
+    @condiments = ["mayo", "mustard"]
+  end
+
+  def to_s
+    "A #{@bread} sandwich with #{@cheese} and #{@condimants.join(", ")}"
+  end
+end
+
+SpecialtySandwich.new
+```
+
+```shell
+$ ruby inheritance_example.rb -w
+inheritance_example.rb:17: warning: unknown instance variable @condimants. Did you mean: @condiments?
 ```
