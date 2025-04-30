@@ -2,7 +2,13 @@
   "rubyTestExplorer.testFramework": "minitest",
   "[ruby]": {
     "editor.formatOnType": true,
-    "editor.defaultFormatter": "testdouble.vscode-standard-ruby"
   },
   "editor.formatOnSave": true,
+  "standardRuby.mode": "enableUnconditionally",
+  "solargraph.diagnostics": true,
+  "solargraph.formatting": true,
+  "solargraph.useBundler": true,
+  "standardRuby.commandPath": "/usr/local/bundle/bin/standardrb",
+  "rubyLsp.formatter": "standard",
+  "standardRuby.autofix": true,
 }
