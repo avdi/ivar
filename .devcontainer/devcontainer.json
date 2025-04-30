@@ -4,19 +4,19 @@
 	"build": {
 		"dockerfile": "Dockerfile"
 	},
-"remoteUser": "devcontainer",
-"features": {
-	"ghcr.io/devcontainers/features/github-cli:1": {},
-	"ghcr.io/jungaretti/features/ripgrep:1": {}
-},
-"customizations": {
-	"vscode": {
-		"extensions": [
-			"connorshea.vscode-ruby-test-adapter",
-			"stripe.endsmart",
-			"testdouble.vscode-standard-ruby",
-			"castwide.solargraph"
-		]
+	"remoteUser": "devcontainer",
+	"features": {
+		"ghcr.io/devcontainers/features/github-cli:1": {},
+		"ghcr.io/jungaretti/features/ripgrep:1": {}
+	},
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"connorshea.vscode-ruby-test-adapter",
+				"stripe.endsmart",
+				"testdouble.vscode-standard-ruby",
+				"castwide.solargraph",
+			]
+		}
 	}
-}
 }
