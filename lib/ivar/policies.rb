@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require "logger"
+require 'logger'
 
 module Ivar
   # Base class for all ivar checking policies
@@ -10,7 +10,7 @@ module Ivar
     # @param klass [Class] The class being checked
     # @param allowed_ivars [Array<Symbol>] List of allowed instance variables
     def handle_unknown_ivars(unknown_refs, klass, allowed_ivars)
-      raise NotImplementedError, "Subclasses must implement handle_unknown_ivars"
+      raise NotImplementedError, 'Subclasses must implement handle_unknown_ivars'
     end
 
     # Find the closest match for a variable name
@@ -29,7 +29,7 @@ module Ivar
     # @return [String] Formatted warning message
     def format_warning(ref, suggestion)
       ivar = ref[:name]
-      suggestion_text = suggestion ? "Did you mean: #{suggestion}?" : ""
+      suggestion_text = suggestion ? "Did you mean: #{suggestion}?" : ''
       "#{ref[:path]}:#{ref[:line]}: warning: unknown instance variable #{ivar}. #{suggestion_text}\n"
     end
   end
@@ -84,7 +84,7 @@ module Ivar
       ref = unknown_refs.first
       ivar = ref[:name]
       suggestion = find_closest_match(ivar, allowed_ivars)
-      suggestion_text = suggestion ? " Did you mean: #{suggestion}?" : ""
+      suggestion_text = suggestion ? " Did you mean: #{suggestion}?" : ''
 
       # Raise an exception with location information
       message = "#{ref[:path]}:#{ref[:line]}: unknown instance variable #{ivar}.#{suggestion_text}"
@@ -108,7 +108,7 @@ module Ivar
       unknown_refs.each do |ref|
         ivar = ref[:name]
         suggestion = find_closest_match(ivar, allowed_ivars)
-        suggestion_text = suggestion ? " Did you mean: #{suggestion}?" : ""
+        suggestion_text = suggestion ? " Did you mean: #{suggestion}?" : ''
         message = "#{ref[:path]}:#{ref[:line]}: unknown instance variable #{ivar}.#{suggestion_text}"
         @logger.warn(message)
       end
@@ -129,15 +129,6 @@ module Ivar
   # @return [Policy] The policy instance
   def self.get_policy(policy, **options)
     return policy if policy.is_a?(Policy)
-
-    # Handle [policy_name, options] format
-    if policy.is_a?(Array) && policy.size == 2 && policy.first.is_a?(Symbol) && policy.last.is_a?(Hash)
-      policy_name, policy_options = policy
-      policy_class = POLICY_CLASSES[policy_name]
-      raise ArgumentError, "Unknown policy: #{policy_name}" unless policy_class
-
-      return policy_class.new(**policy_options)
-    end
 
     policy_class = POLICY_CLASSES[policy]
     raise ArgumentError, "Unknown policy: #{policy}" unless policy_class
