@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require "prism"
-require "set"
 
 module Ivar
   # Analyzes a class to find all instance variables using Prism

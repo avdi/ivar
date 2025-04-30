@@ -2,7 +2,7 @@
 
 module Ivar
   # Provides macros for working with instance variables
-  module IvarMacros
+  module Macros
     # When this module is extended, it adds class methods to the extending class
     def self.extended(base)
       # Store pre-declared instance variables for this class

@@ -7,11 +7,11 @@ require_relative "fixtures/sandwich_with_validation"
 
 # These fixtures will be uncommented when the corresponding modules are implemented
 # require_relative "fixtures/sandwich_with_ivar_tools"
-# require_relative "fixtures/sandwich_with_checked_ivars"
+require_relative "fixtures/sandwich_with_checked_ivars"
 # require_relative "fixtures/parent_with_ivar_tools"
 # require_relative "fixtures/child_with_ivar_tools"
-# require_relative "fixtures/parent_with_checked_ivars"
-# require_relative "fixtures/child_with_checked_ivars"
+require_relative "fixtures/parent_with_checked_ivars"
+require_relative "fixtures/child_with_checked_ivars"
 
 class TestIvar < Minitest::Test
   def test_ivar_analysis

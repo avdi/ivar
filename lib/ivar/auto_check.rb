@@ -13,7 +13,7 @@ module Ivar
       base.include(Validation)
       base.include(PreInitializeIvars)
       base.extend(ClassMethods)
-      base.extend(IvarMacros)
+      base.extend(Macros)
       base.prepend(InstanceMethods)
     end
 
@@ -50,7 +50,7 @@ module Ivar
       base.include(Validation)
       base.include(PreInitializeIvars)
       base.extend(ClassMethods)
-      base.extend(IvarMacros)
+      base.extend(Macros)
       base.prepend(InstanceMethods)
     end
 
