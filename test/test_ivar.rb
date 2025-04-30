@@ -4,7 +4,6 @@ require_relative "test_helper"
 require_relative "fixtures/sandwich"
 require_relative "fixtures/split_class"
 require_relative "fixtures/sandwich_with_validation"
-require "stringio"
 
 # These fixtures will be uncommented when the corresponding modules are implemented
 # require_relative "fixtures/sandwich_with_ivar_tools"
@@ -95,6 +94,10 @@ class TestIvar < Minitest::Test
   end
 
   def test_check_ivars_warns_about_unknown_variables
+    # Capture stderr output
+    original_stderr = $stderr
+    $stderr = StringIO.new
+
     # Create a class that will use validation
     klass = Class.new do
       include Ivar::Validation
@@ -118,23 +121,30 @@ class TestIvar < Minitest::Test
       @unknown_var = "unknown"
     end
 
-    # Capture warnings during validation
-    output = capture_stderr do
-      # Call check_ivars again to validate
-      instance.check_ivars(add: [:@allowed_var])
-    end
+    # Call check_ivars to validate
+    instance.check_ivars(add: [:@allowed_var])
+
+    # Get the captured warnings
+    warnings = $stderr.string
+
+    # Restore stderr
+    $stderr = original_stderr
 
     # Check that we got a warning about the unknown variable
-    assert_match(/unknown instance variable @unknown_var/, output)
+    assert_match(/unknown instance variable @unknown_var/, warnings)
 
     # Check that we didn't get warnings about known variables
-    refute_match(/unknown instance variable @known_var/, output)
+    refute_match(/unknown instance variable @known_var/, warnings)
 
     # Check that we didn't get warnings about allowed variables
-    refute_match(/unknown instance variable @allowed_var/, output)
+    refute_match(/unknown instance variable @allowed_var/, warnings)
   end
 
   def test_check_ivars_suggests_corrections
+    # Capture stderr output
+    original_stderr = $stderr
+    $stderr = StringIO.new
+
     # Create a class with a typo in an instance variable
     klass = Class.new do
       include Ivar::Validation
@@ -157,25 +167,23 @@ class TestIvar < Minitest::Test
       @typo_veriable = "misspelled"
     end
 
-    # Capture warnings during validation
-    output = capture_stderr do
-      # Call check_ivars again to validate
-      instance.check_ivars
-    end
+    # Call check_ivars to validate
+    instance.check_ivars
+
+    # Get the captured warnings
+    warnings = $stderr.string
+
+    # Restore stderr
+    $stderr = original_stderr
 
     # Check that we got a warning about the typo
-    assert_match(/unknown instance variable @typo_veriable/, output)
-  end
+    assert_match(/unknown instance variable @typo_veriable/, warnings)
 
-  private
+    # Check that we get warnings for the variable
+    assert_match(/unknown instance variable @typo_veriable/, warnings)
 
-  # Helper method to capture stderr output
-  def capture_stderr
-    original_stderr = $stderr
-    $stderr = StringIO.new
-    yield
-    $stderr.string
-  ensure
-    $stderr = original_stderr
+    # We should have at least one warning
+    typo_warnings = warnings.scan(/unknown instance variable @typo_veriable/).count
+    assert typo_warnings >= 1, "Should have at least one warning for @typo_veriable"
   end
 end
