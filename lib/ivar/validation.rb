@@ -39,6 +39,20 @@ module Ivar
       end
     end
 
+    # Checks instance variables against class analysis, but only once per class
+    # After the first check for a class, subsequent calls will be no-ops
+    # @param add [Array<Symbol>] Additional instance variables to allow
+    def check_ivars_once(add: [])
+      # Check if this class has already been validated
+      return if Ivar.class_checked?(self.class)
+
+      # Perform the normal check_ivars validation
+      check_ivars(add: add)
+
+      # Mark this class as having been checked
+      Ivar.mark_class_checked(self.class)
+    end
+
     private
 
     # Find the closest match for a variable name
