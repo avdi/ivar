@@ -332,3 +332,8 @@ end
 
 Sandwich.new  # Raises: NameError: test_file.rb:2: unknown instance variable @chese. Did you mean: @cheese?
 ```
+
+# TODO
+
+- Pre-declare "ghost" variables without setting them
+- Add a module for dynamic checking of instance_variable_get/set
