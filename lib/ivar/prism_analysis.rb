@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "prism"
+require "set"
 
 module Ivar
   # Analyzes a class to find all instance variables using Prism
@@ -23,10 +24,19 @@ module Ivar
     end
 
     def source_code
-      source_location = @klass.instance_method(:initialize).source_location&.first
-      return nil unless source_location
+      # Get all instance methods
+      instance_methods = @klass.instance_methods(false) + [:initialize]
 
-      File.read(source_location)
+      # Collect source files for all methods
+      source_files = Set.new
+      instance_methods.each do |method_name|
+        next unless @klass.instance_method(method_name).source_location
+
+        source_files << @klass.instance_method(method_name).source_location.first
+      end
+
+      # Read and combine all source files
+      source_files.map { |file| File.read(file) }.join("\n")
     end
 
     def extract_ivars(program)
