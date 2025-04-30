@@ -338,7 +338,7 @@ Sandwich.new  # Raises: NameError: test_file.rb:2: unknown instance variable @ch
 Thank you to Joel Drapper, for inspiring me with [the strict_ivars gem](https://github.com/joeldrapper/strict_ivars).
 
 
-And thanks to [Augment Code](https://www.augmentcode.com/), without which this gem wouldn't exist because I don't actually have time for pleasure projects anymore.
+And thanks to [Augment Code](https://www.augmentcode.com/), without which this gem wouldn't exist because I don't actually have time for pleasure projects anymore. This project was written by a robot, under careful step-by-step direction.
 
 ## Contributing
 
