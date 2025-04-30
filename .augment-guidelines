@@ -5,5 +5,6 @@
 - De-lint (with standardrb) before committing. Use auto-fix and manually fix the rest.
 - Run all tests and fix failures before committing. 
 - Never "cheat" by making implementation code test-aware. But it is fine to make interactions with the world dependency-injectable for testing purposes.
+- Include a quote of my instruction that led to the commit in the commit message
+- Sign your commit messages with "-- Auggie".
 - Commit and push after making successful changes. 
-- Sign your commits with "-- Auggie".
