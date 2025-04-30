@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-require 'prism'
-require 'set'
+require "prism"
+require "set"
 
 module Ivar
   # Analyzes a class to find all instance variables using Prism
@@ -11,6 +11,23 @@ module Ivar
     def initialize(klass)
       @klass = klass
       @ivars = analyze_class
+    end
+
+    # Returns a list of hashes each representing a code reference to an ivar
+    # Each hash includes var name, path, and line number (and column if available)
+    def ivar_references
+      source_files = collect_source_files
+      references = []
+
+      source_files.each do |file_path|
+        code = File.read(file_path)
+        result = Prism.parse(code)
+        visitor = IvarReferenceVisitor.new(file_path)
+        result.value.accept(visitor)
+        references.concat(visitor.references)
+      end
+
+      references
     end
 
     private
@@ -24,6 +41,14 @@ module Ivar
     end
 
     def source_code
+      # Collect source files for all methods
+      source_files = collect_source_files
+
+      # Read and combine all source files
+      source_files.map { |file| File.read(file) }.join("\n")
+    end
+
+    def collect_source_files
       # Get all instance methods
       instance_methods = @klass.instance_methods(false) | @klass.private_instance_methods(false)
 
@@ -35,8 +60,7 @@ module Ivar
         source_files << @klass.instance_method(method_name).source_location.first
       end
 
-      # Read and combine all source files
-      source_files.map { |file| File.read(file) }.join("\n")
+      source_files
     end
 
     def extract_ivars(program)
@@ -72,6 +96,53 @@ module Ivar
       def visit_instance_variable_target_node(node)
         @ivars << node.name.to_sym
         true
+      end
+    end
+
+    # Visitor that collects instance variable references with location information
+    class IvarReferenceVisitor < Prism::Visitor
+      attr_reader :references
+
+      def initialize(file_path)
+        super()
+        @file_path = file_path
+        @references = []
+      end
+
+      def visit_instance_variable_read_node(node)
+        add_reference(node)
+        true
+      end
+
+      def visit_instance_variable_write_node(node)
+        add_reference(node)
+        true
+      end
+
+      def visit_instance_variable_operator_write_node(node)
+        add_reference(node)
+        true
+      end
+
+      def visit_instance_variable_target_node(node)
+        add_reference(node)
+        true
+      end
+
+      private
+
+      def add_reference(node)
+        location = node.location
+        reference = {
+          name: node.name.to_sym,
+          path: @file_path,
+          line: location.start_line
+        }
+
+        # Add column if available
+        reference[:column] = location.start_column if location.respond_to?(:start_column)
+
+        @references << reference
       end
     end
   end
