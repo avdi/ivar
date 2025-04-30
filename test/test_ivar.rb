@@ -37,7 +37,7 @@ class TestIvar < Minitest::Test
       assert_includes ref, :name
       assert_includes ref, :path
       assert_includes ref, :line
-      assert_includes ref, :column if ref.key?(:column)
+      assert_includes ref, :column
     end
 
     # Check a few specific references
@@ -49,6 +49,7 @@ class TestIvar < Minitest::Test
     assert_equal :@chese, chese_ref[:name]
     assert chese_ref[:path].end_with?("sandwich.rb")
     assert_equal 12, chese_ref[:line]
+    assert_equal 42, chese_ref[:column]
   end
 
   # Tests for inheritance will be added here when implemented

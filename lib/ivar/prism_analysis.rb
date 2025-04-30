@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-require 'prism'
-require 'set'
+require "prism"
+require "set"
 
 module Ivar
   # Analyzes a class to find all instance variables using Prism
@@ -16,7 +16,7 @@ module Ivar
     end
 
     # Returns a list of hashes each representing a code reference to an ivar
-    # Each hash includes var name, path, and line number (and column if available)
+    # Each hash includes var name, path, line number, and column number
     def ivar_references
       @references
     end
@@ -92,11 +92,9 @@ module Ivar
         reference = {
           name: node.name.to_sym,
           path: @file_path,
-          line: location.start_line
+          line: location.start_line,
+          column: location.start_column
         }
-
-        # Add column if available
-        reference[:column] = location.start_column if location.respond_to?(:start_column)
 
         @references << reference
       end
