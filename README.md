@@ -145,7 +145,7 @@ sandwich.add_side("chips")
 puts sandwich.to_s
 ```
 
-Note: this WILL set the variable to `nil` before `initialize` runs, so if you have code that depends on `defined?(@var)` it may break. If folks want it we might look into non-setting predeclaration.
+Note: this WILL set the variable to `nil` before `initialize` runs, so if you have code that depends on `defined?(@var)` it may break. Lemme know if you want a non-setting form of predeclaration. Or just submit a PR.
 
 ### Setting ivars from initializer keyword arguments
 
@@ -339,6 +339,25 @@ Thank you to Joel Drapper, for inspiring me with [the strict_ivars gem](https://
 
 
 And thanks to [Augment Code](https://www.augmentcode.com/), without which this gem wouldn't exist because I don't actually have time for pleasure projects anymore.
+
+## Contributing
+
+Bug reports and pull requests are welcome on GitHub at https://github.com/avdi/ivar.
+
+## Development
+
+After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake test` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
+
+## Releasing
+
+This project uses a standardized release process:
+
+1. Update the version number in `version.rb` according to [Semantic Versioning](https://semver.org/)
+2. Update the CHANGELOG.md with your changes under the "Unreleased" section
+3. Run the release script: `bin/release [major|minor|patch]`
+4. Push the changes and tag: `git push origin main && git push origin v{version}`
+
+For more details, see [VERSION.md](VERSION.md).
 
 # TODO
 

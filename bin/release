@@ -1,0 +1,110 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# This script helps with releasing a new version of the gem
+# Usage: bin/release [major|minor|patch]
+
+require "bundler/gem_tasks"
+require_relative "../lib/ivar/version"
+
+def error(message)
+  puts "\e[31mError: #{message}\e[0m"
+  exit 1
+end
+
+def success(message)
+  puts "\e[32m#{message}\e[0m"
+end
+
+def info(message)
+  puts "\e[34m#{message}\e[0m"
+end
+
+def get_new_version(current_version, bump_type)
+  major, minor, patch = current_version.split(".").map(&:to_i)
+  
+  case bump_type
+  when "major"
+    "#{major + 1}.0.0"
+  when "minor"
+    "#{major}.#{minor + 1}.0"
+  when "patch"
+    "#{major}.#{minor}.#{patch + 1}"
+  else
+    error "Invalid bump type. Use 'major', 'minor', or 'patch'."
+  end
+end
+
+def update_version_file(new_version)
+  version_file_path = "lib/ivar/version.rb"
+  version_content = File.read(version_file_path)
+  updated_content = version_content.gsub(/VERSION = "[0-9]+\.[0-9]+\.[0-9]+"/, "VERSION = \"#{new_version}\"")
+  File.write(version_file_path, updated_content)
+end
+
+def update_changelog(new_version)
+  changelog_path = "CHANGELOG.md"
+  changelog_content = File.read(changelog_path)
+  
+  # Check if there are unreleased changes
+  unless changelog_content.include?("## [Unreleased]")
+    error "No unreleased changes found in CHANGELOG.md. Add changes before releasing."
+  end
+  
+  # Update the changelog with the new version
+  today = Time.now.strftime("%Y-%m-%d")
+  updated_content = changelog_content.gsub(
+    "## [Unreleased]",
+    "## [Unreleased]\n\n## [#{new_version}] - #{today}"
+  )
+  
+  File.write(changelog_path, updated_content)
+end
+
+def run_tests
+  info "Running tests..."
+  system("bundle exec rake test") || error("Tests failed. Fix the tests before releasing.")
+end
+
+def run_linter
+  info "Running linter..."
+  system("bundle exec rake standard") || error("Linter found issues. Fix them before releasing.")
+end
+
+def commit_and_tag(new_version)
+  info "Committing version bump..."
+  system("git add lib/ivar/version.rb CHANGELOG.md")
+  system("git commit -m \"Bump version to #{new_version}\"")
+  
+  info "Creating tag v#{new_version}..."
+  system("git tag -a v#{new_version} -m \"Version #{new_version}\"")
+  
+  info "To push the new version, run:"
+  puts "  git push origin main && git push origin v#{new_version}"
+end
+
+# Main script
+if ARGV.empty?
+  error "Please specify a version bump type: major, minor, or patch"
+end
+
+bump_type = ARGV[0].downcase
+current_version = Ivar::VERSION
+new_version = get_new_version(current_version, bump_type)
+
+info "Current version: #{current_version}"
+info "New version: #{new_version}"
+puts "Continue? (y/n)"
+confirmation = gets.chomp.downcase
+
+if confirmation == "y"
+  run_tests
+  run_linter
+  update_version_file(new_version)
+  update_changelog(new_version)
+  commit_and_tag(new_version)
+  success "Version bumped to #{new_version}!"
+  success "Run 'git push origin main && git push origin v#{new_version}' to trigger the release workflow."
+else
+  info "Release cancelled."
+end
