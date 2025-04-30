@@ -27,7 +27,7 @@ module Ivar
     # Instance methods that will be prepended to the including class
     module InstanceMethods
       # Wrap the initialize method to automatically call check_ivars
-      def initialize(*args, **kwargs, &block)
+      def initialize(...)
         # Call the original initialize method
         super
         # Automatically check instance variables
@@ -60,7 +60,7 @@ module Ivar
     # Instance methods that will be prepended to the including class
     module InstanceMethods
       # Wrap the initialize method to automatically call check_ivars_once
-      def initialize(*args, **kwargs, &block)
+      def initialize(...)
         # Call the original initialize method
         super
         # Automatically check instance variables once
