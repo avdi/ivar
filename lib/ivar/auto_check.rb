@@ -36,14 +36,11 @@ module Ivar
         # Execute the initialization block if provided
         execute_ivar_init_block
 
-        # Process positional arguments
-        remaining_args = initialize_from_args(args)
-
         # Process keyword arguments
         remaining_kwargs = initialize_from_kwargs(kwargs)
 
         # Call the original initialize method with remaining arguments
-        super(*remaining_args, **remaining_kwargs, &block)
+        super(*args, **remaining_kwargs, &block)
 
         # Automatically check instance variables
         check_ivars
@@ -83,14 +80,11 @@ module Ivar
         # Execute the initialization block if provided
         execute_ivar_init_block
 
-        # Process positional arguments
-        remaining_args = initialize_from_args(args)
-
         # Process keyword arguments
         remaining_kwargs = initialize_from_kwargs(kwargs)
 
         # Call the original initialize method with remaining arguments
-        super(*remaining_args, **remaining_kwargs, &block)
+        super(*args, **remaining_kwargs, &block)
 
         # Automatically check instance variables once
         check_ivars_once

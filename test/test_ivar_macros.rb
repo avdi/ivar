@@ -317,62 +317,6 @@ class TestMacros < Minitest::Test
     assert_equal "data", values[2], "@extra should be set from the initialize method"
   end
 
-  def test_ivar_with_arg_option
-    # Create a class with the ivar macro and arg option
-    klass = Class.new do
-      include Ivar::Checked
-
-      ivar arg: %i[@first @second]
-
-      def initialize(third)
-        @third = third
-      end
-
-      def get_vars
-        [@first, @second, @third]
-      end
-    end
-
-    # Create an instance with positional arguments
-    instance = klass.new("one", "two", "three")
-
-    # Check that the variables have the expected values
-    values = instance.get_vars
-    assert_equal "one", values[0], "@first should be set from first positional argument"
-    assert_equal "two", values[1], "@second should be set from second positional argument"
-    assert_equal "three", values[2], "@third should be set from the initialize method"
-  end
-
-  def test_ivar_with_both_arg_and_kwarg_options
-    # Create a class with the ivar macro and both arg and kwarg options
-    klass = Class.new do
-      include Ivar::Checked
-
-      ivar arg: %i[@first @second], kwarg: %i[@name @age]
-
-      def initialize(third, extra:)
-        @third = third
-        @extra = extra
-      end
-
-      def get_vars
-        [@first, @second, @third, @name, @age, @extra]
-      end
-    end
-
-    # Create an instance with both positional and keyword arguments
-    instance = klass.new("one", "two", "three", name: "John", age: 30, extra: "data")
-
-    # Check that the variables have the expected values
-    values = instance.get_vars
-    assert_equal "one", values[0], "@first should be set from first positional argument"
-    assert_equal "two", values[1], "@second should be set from second positional argument"
-    assert_equal "three", values[2], "@third should be set from the initialize method"
-    assert_equal "John", values[3], "@name should be set from keyword argument"
-    assert_equal 30, values[4], "@age should be set from keyword argument"
-    assert_equal "data", values[5], "@extra should be set from the initialize method"
-  end
-
   def test_ivar_with_kwarg_option_and_inheritance
     # Create a parent class with the ivar macro and kwarg option
     parent_klass = Class.new do
@@ -413,47 +357,5 @@ class TestMacros < Minitest::Test
     assert_equal "Parent Extra", values[1], "@parent_extra should be set from the parent initialize method"
     assert_equal "Child", values[2], "@child_name should be set from keyword argument"
     assert_equal "Child Extra", values[3], "@child_extra should be set from the child initialize method"
-  end
-
-  def test_ivar_with_arg_option_and_inheritance
-    skip "This test is currently failing and needs to be fixed"
-    # Create a parent class with the ivar macro and arg option
-    parent_klass = Class.new do
-      include Ivar::Checked
-
-      ivar arg: [:@parent_first]
-
-      def initialize(parent_second = nil)
-        @parent_second = parent_second
-      end
-    end
-
-    # Create a child class that inherits the ivar macro and adds its own arg option
-    child_klass = Class.new(parent_klass) do
-      ivar arg: [:@child_first]
-
-      def initialize(parent_first, parent_second, child_first, child_second)
-        # Manually set the child's instance variables
-        @child_first = child_first
-        @child_second = child_second
-
-        # Call the parent's initialize with the parent's arguments
-        super(parent_first, parent_second)
-      end
-
-      def get_vars
-        [@parent_first, @parent_second, @child_first, @child_second]
-      end
-    end
-
-    # Create an instance of the child class with positional arguments
-    instance = child_klass.new("Parent First", "Parent Second", "Child First", "Child Second")
-
-    # Check that all variables have the expected values
-    values = instance.get_vars
-    assert_equal "Parent First", values[0], "@parent_first should be set from first positional argument"
-    assert_equal "Parent Second", values[1], "@parent_second should be set from the parent initialize method"
-    assert_equal "Child First", values[2], "@child_first should be set manually"
-    assert_equal "Child Second", values[3], "@child_second should be set manually"
   end
 end
