@@ -12,8 +12,13 @@ class TestValidation < Minitest::Test
       SandwichWithValidation.new
     end
 
-    # Check that we got a warning about the typo in the code
+    # Check that we got warnings about the typo in the code
     assert_match(/unknown instance variable @chese/, stderr_output)
+
+    # Check that we get multiple warnings for the same variable at different locations
+    # Count the number of occurrences of the warning for @chese
+    chese_warnings = stderr_output.scan(/unknown instance variable @chese/).count
+    assert_equal 2, chese_warnings, "Should have 2 warnings for @chese, one for each occurrence"
 
     # Check that we didn't get warnings about defined variables
     refute_match(/unknown instance variable @bread/, stderr_output)
@@ -36,7 +41,10 @@ class TestValidation < Minitest::Test
       end
 
       def use_typo
+        # First occurrence of the typo
         @typo_veriable = "misspelled"
+        # Second occurrence of the same typo
+        puts "The value is #{@typo_veriable}"
       end
     end
 
@@ -47,6 +55,10 @@ class TestValidation < Minitest::Test
 
     # Check that we got a warning about the typo
     assert_match(/unknown instance variable @typo_veriable/, output)
+
+    # Check that we get multiple warnings for the same variable at different locations
+    typo_warnings = output.scan(/unknown instance variable @typo_veriable/).count
+    assert_equal 2, typo_warnings, "Should have 2 warnings for @typo_veriable, one for each occurrence"
   end
 
   private

@@ -23,14 +23,11 @@ module Ivar
       references = analysis.ivar_references
 
       # Find references to unknown variables (those not in allowed_ivars)
-      # Group by variable name to avoid duplicate warnings
       unknown_refs = references.reject { |ref| allowed_ivars.include?(ref[:name]) }
-      unknown_refs_by_name = unknown_refs.group_by { |ref| ref[:name] }
 
-      # Emit warnings for unknown variables
-      unknown_refs_by_name.each do |ivar, refs|
-        # Use the first reference for this variable
-        ref = refs.first
+      # Emit warnings for unknown variables - one for each reference location
+      unknown_refs.each do |ref|
+        ivar = ref[:name]
 
         # Find the closest match for a suggestion
         suggestion = find_closest_match(ivar, allowed_ivars)
