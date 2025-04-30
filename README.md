@@ -139,6 +139,126 @@ puts sandwich.to_s
 
 The `ivar` macro pre-initializes the specified instance variables to `nil` before the initializer is called, which prevents warnings about unknown instance variables. You only need to pre-declare variables that might be referenced before they are explicitly set - variables that are always set in the initializer don't need to be pre-declared.
 
+### Using Keyword Arguments with the `ivar` Macro
+
+You can use the `kwarg` option to initialize instance variables directly from keyword arguments:
+
+```ruby
+# sandwich_with_kwarg.rb
+require "ivar"
+
+class SandwichWithKwarg
+  include Ivar::Checked # or Ivar::CheckedOnce
+
+  # Pre-declare instance variables to be initialized from keyword arguments
+  ivar kwarg: [:@bread, :@cheese, :@condiments]
+
+  def initialize(pickles: false, side: nil)
+    # Note: @bread, @cheese, and @condiments are already set from keyword arguments
+    # We only need to handle the remaining keyword arguments
+    @pickles = pickles
+    @side = side
+  end
+
+  def to_s
+    result = "A #{@bread} sandwich with #{@cheese}"
+    result += " and #{@condiments.join(", ")}" unless @condiments.empty?
+    result += " with pickles" if @pickles
+    result += " and a side of #{@side}" if @side
+    result
+  end
+end
+
+# Create a sandwich with keyword arguments
+sandwich = SandwichWithKwarg.new(
+  bread: "wheat",
+  cheese: "muenster",
+  condiments: ["mayo", "mustard"],
+  side: "chips"
+)
+
+puts sandwich.to_s  # Outputs: A wheat sandwich with muenster and mayo, mustard and a side of chips
+```
+
+The `kwarg` option initializes the specified instance variables from matching keyword arguments, and those keyword arguments are not passed to the original `initialize` method. This is a convenient shortcut for setting instance variables directly from keyword arguments.
+
+### Using Positional Arguments with the `ivar` Macro
+
+You can use the `arg` option to initialize instance variables directly from positional arguments:
+
+```ruby
+# sandwich_with_arg.rb
+require "ivar"
+
+class SandwichWithArg
+  include Ivar::Checked # or Ivar::CheckedOnce
+
+  # Pre-declare instance variables to be initialized from positional arguments
+  ivar arg: [:@bread, :@cheese]
+
+  def initialize(condiments = [])
+    # Note: @bread and @cheese are already set from positional arguments
+    # We only need to handle the remaining positional arguments
+    @condiments = condiments
+  end
+
+  def to_s
+    result = "A #{@bread} sandwich with #{@cheese}"
+    result += " and #{@condiments.join(", ")}" unless @condiments.empty?
+    result
+  end
+end
+
+# Create a sandwich with positional arguments
+sandwich = SandwichWithArg.new("wheat", "muenster", ["mayo", "mustard"])
+
+puts sandwich.to_s  # Outputs: A wheat sandwich with muenster and mayo, mustard
+```
+
+The `arg` option initializes the specified instance variables from positional arguments in the order they are specified, and those arguments are not passed to the original `initialize` method. This is a convenient shortcut for setting instance variables directly from positional arguments.
+
+### Using Both Argument Types with the `ivar` Macro
+
+You can use both `arg` and `kwarg` options together:
+
+```ruby
+# sandwich_with_arg_and_kwarg.rb
+require "ivar"
+
+class SandwichWithArgAndKwarg
+  include Ivar::Checked # or Ivar::CheckedOnce
+
+  # Pre-declare instance variables to be initialized from both positional and keyword arguments
+  ivar arg: [:@bread, :@cheese], kwarg: [:@condiments, :@pickles]
+
+  def initialize(side = nil)
+    # Note: @bread and @cheese are already set from positional arguments
+    # Note: @condiments and @pickles are already set from keyword arguments
+    # We only need to handle the remaining arguments
+    @side = side
+  end
+
+  def to_s
+    result = "A #{@bread} sandwich with #{@cheese}"
+    result += " and #{@condiments.join(", ")}" if @condiments && !@condiments.empty?
+    result += " with pickles" if @pickles
+    result += " and a side of #{@side}" if @side
+    result
+  end
+end
+
+# Create a sandwich with both positional and keyword arguments
+sandwich = SandwichWithArgAndKwarg.new(
+  "wheat",
+  "muenster",
+  "chips",
+  condiments: ["mayo", "mustard"],
+  pickles: true
+)
+```
+
+This allows you to initialize instance variables from both positional and keyword arguments in a single call.
+
 ### Inheritance
 
 Both modules also work with inheritance:
