@@ -49,14 +49,30 @@ module Ivar
 
     # Get the pre-declared instance variables for this class
     # @return [Array<Symbol>] Pre-declared instance variables
-    def pre_declared_ivars
+    def ivar_pre_declared
       instance_variable_get(:@__ivar_pre_declared_ivars) || []
+    end
+
+    # Legacy method for backward compatibility
+    # @deprecated Use {#ivar_pre_declared} instead
+    # @return [Array<Symbol>] Pre-declared instance variables
+    def pre_declared_ivars
+      warn "DEPRECATION WARNING: `pre_declared_ivars` is deprecated. Use `ivar_pre_declared` instead."
+      ivar_pre_declared
     end
 
     # Get the keyword argument mappings for this class
     # @return [Array<Symbol>] Keyword argument mappings
-    def kwarg_mappings
+    def ivar_kwarg_mappings
       instance_variable_get(:@__ivar_kwarg_mappings) || []
+    end
+
+    # Legacy method for backward compatibility
+    # @deprecated Use {#ivar_kwarg_mappings} instead
+    # @return [Array<Symbol>] Keyword argument mappings
+    def kwarg_mappings
+      warn "DEPRECATION WARNING: `kwarg_mappings` is deprecated. Use `ivar_kwarg_mappings` instead."
+      ivar_kwarg_mappings
     end
 
     # Get the initialization block for this class
@@ -71,8 +87,8 @@ module Ivar
     # Initialize pre-declared instance variables to nil
     def initialize_pre_declared_ivars
       klass = self.class
-      while klass.respond_to?(:pre_declared_ivars)
-        klass.pre_declared_ivars.each do |ivar|
+      while klass.respond_to?(:ivar_pre_declared)
+        klass.ivar_pre_declared.each do |ivar|
           instance_variable_set(ivar, nil) unless instance_variable_defined?(ivar)
         end
         klass = klass.superclass
@@ -94,8 +110,8 @@ module Ivar
     def all_kwarg_mappings
       mappings = []
       klass = self.class
-      while klass.respond_to?(:kwarg_mappings)
-        mappings.concat(klass.kwarg_mappings)
+      while klass.respond_to?(:ivar_kwarg_mappings)
+        mappings.concat(klass.ivar_kwarg_mappings)
         klass = klass.superclass
       end
       mappings
