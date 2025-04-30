@@ -107,8 +107,9 @@ require "ivar"
 class SandwichWithIvarMacro
   include Ivar::Checked # or Ivar::CheckedOnce
 
-  # Pre-declare instance variables that will be used
-  ivar :@bread, :@cheese, :@condiments, :@side
+  # Pre-declare only instance variables that might be referenced before being set
+  # You don't need to include variables that are always set in initialize
+  ivar :@side
 
   def initialize
     @bread = "wheat"
@@ -136,7 +137,7 @@ sandwich.add_side("chips")
 puts sandwich.to_s
 ```
 
-The `ivar` macro pre-initializes the specified instance variables to `nil` before the initializer is called, which prevents warnings about unknown instance variables.
+The `ivar` macro pre-initializes the specified instance variables to `nil` before the initializer is called, which prevents warnings about unknown instance variables. You only need to pre-declare variables that might be referenced before they are explicitly set - variables that are always set in the initializer don't need to be pre-declared.
 
 ### Inheritance
 
@@ -146,8 +147,9 @@ Both modules also work with inheritance:
 class BaseSandwich
   include Ivar::Checked # or Ivar::CheckedOnce
 
-  # Pre-declared instance variables are inherited by subclasses
-  ivar :@bread, :@cheese
+  # Pre-declare only variables that might be referenced before being set
+  # Variables set in initialize (@bread, @cheese) don't need to be pre-declared
+  ivar :@optional_topping
 
   def initialize
     @bread = "wheat"
@@ -156,8 +158,9 @@ class BaseSandwich
 end
 
 class SpecialtySandwich < BaseSandwich
-  # Add more pre-declared instance variables
-  ivar :@condiments
+  # Add more pre-declared instance variables as needed
+  # @condiments is set in initialize, so it doesn't need to be pre-declared
+  ivar :@special_sauce
 
   def initialize
     super
@@ -165,7 +168,12 @@ class SpecialtySandwich < BaseSandwich
   end
 
   def to_s
-    "A #{@bread} sandwich with #{@cheese} and #{@condimants.join(", ")}"
+    result = "A #{@bread} sandwich with #{@cheese} and #{@condimants.join(", ")}"
+    # @special_sauce is pre-declared, so this won't trigger a warning
+    result += " with #{@special_sauce}" if @special_sauce
+    # @optional_topping is inherited from the parent class
+    result += " and #{@optional_topping}" if @optional_topping
+    result
   end
 end
 

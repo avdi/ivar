@@ -13,27 +13,32 @@ class TestIvarMacros < Minitest::Test
     klass = Class.new do
       include Ivar::Checked
 
-      ivar :@pre_initialized_var1, :@pre_initialized_var2
+      # Only pre-declare variables that might be referenced before being set
+      # No need to include variables that are always set in initialize
+      ivar :@pre_initialized_var
 
       def initialize
-        # We don't set @pre_initialized_var1 or @pre_initialized_var2 here
-        @normal_var = "normal"
+        # We don't set @pre_initialized_var here
+        # But we do set these normal variables
+        @normal_var1 = "normal1"
+        @normal_var2 = "normal2"
       end
 
-      def method_with_pre_initialized_vars
-        # These should be pre-initialized to nil
-        [@pre_initialized_var1, @pre_initialized_var2, @normal_var]
+      def method_with_vars
+        # This should be pre-initialized to nil
+        [@pre_initialized_var, @normal_var1, @normal_var2]
       end
     end
 
     # Create an instance
     instance = klass.new
 
-    # Check that the pre-initialized variables exist and are nil
-    values = instance.method_with_pre_initialized_vars
-    assert_nil values[0], "@pre_initialized_var1 should be nil"
-    assert_nil values[1], "@pre_initialized_var2 should be nil"
-    assert_equal "normal", values[2], "@normal_var should be 'normal'"
+    # Check that the pre-initialized variable exists and is nil
+    # while the normal variables have their expected values
+    values = instance.method_with_vars
+    assert_nil values[0], "@pre_initialized_var should be nil"
+    assert_equal "normal1", values[1], "@normal_var1 should be 'normal1'"
+    assert_equal "normal2", values[2], "@normal_var2 should be 'normal2'"
   end
 
   def test_ivar_macro_with_checked_once

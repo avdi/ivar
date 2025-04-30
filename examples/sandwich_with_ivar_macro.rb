@@ -5,14 +5,15 @@ require "ivar"
 class SandwichWithIvarMacro
   include Ivar::Checked
 
-  # Pre-declare instance variables that will be used
-  ivar :@bread, :@cheese, :@condiments, :@side
+  # Pre-declare only instance variables that might be referenced before being set
+  # You don't need to include variables that are always set in initialize
+  ivar :@side
 
   def initialize
     @bread = "wheat"
     @cheese = "muenster"
-    @condiments = ["mayo", "mustard"]
-    # Note: @side is not set here, but it's pre-initialized to nil
+    @condiments = %w[mayo mustard]
+    # NOTE: @side is not set here, but it's pre-initialized to nil
   end
 
   def to_s
