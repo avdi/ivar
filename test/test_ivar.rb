@@ -52,4 +52,43 @@ class TestIvar < Minitest::Test
   end
 
   # Tests for inheritance will be added here when implemented
+
+  def setup_analysis_cache
+    # Clear the cache to ensure a clean test
+    Ivar.clear_analysis_cache
+  end
+
+  def test_get_analysis_returns_prism_analysis
+    setup_analysis_cache
+    analysis = Ivar.get_analysis(Sandwich)
+    assert_instance_of Ivar::PrismAnalysis, analysis
+    assert_equal %i[@bread @cheese @chese @condiments @side], analysis.ivars
+  end
+
+  def test_get_analysis_caches_results
+    setup_analysis_cache
+    # First call should create a new analysis
+    first_analysis = Ivar.get_analysis(Sandwich)
+
+    # Second call should return the cached analysis (same object)
+    second_analysis = Ivar.get_analysis(Sandwich)
+    assert_equal first_analysis.object_id, second_analysis.object_id
+  end
+
+  def test_get_analysis_creates_separate_cache_entries_for_different_classes
+    setup_analysis_cache
+    sandwich_analysis = Ivar.get_analysis(Sandwich)
+    split_class_analysis = Ivar.get_analysis(SplitClass)
+
+    # Different classes should have different analyses
+    refute_equal sandwich_analysis.object_id, split_class_analysis.object_id
+
+    # Each class should have the correct ivars
+    assert_equal %i[@bread @cheese @chese @condiments @side], sandwich_analysis.ivars
+    assert_equal %i[@part1_var1 @part1_var2 @part2_var1 @part2_var2 @part2_var3], split_class_analysis.ivars
+
+    # Calling again with the same class should return the cached analysis
+    second_split_class_analysis = Ivar.get_analysis(SplitClass)
+    assert_equal split_class_analysis.object_id, second_split_class_analysis.object_id
+  end
 end
