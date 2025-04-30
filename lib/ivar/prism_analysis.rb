@@ -10,42 +10,34 @@ module Ivar
 
     def initialize(klass)
       @klass = klass
-      @ivars = analyze_class
+      @references = nil
+      collect_references
+      @ivars = references_to_ivars
     end
 
     # Returns a list of hashes each representing a code reference to an ivar
     # Each hash includes var name, path, and line number (and column if available)
     def ivar_references
+      @references
+    end
+
+    private
+
+    def collect_references
       source_files = collect_source_files
-      references = []
+      @references = []
 
       source_files.each do |file_path|
         code = File.read(file_path)
         result = Prism.parse(code)
         visitor = IvarReferenceVisitor.new(file_path)
         result.value.accept(visitor)
-        references.concat(visitor.references)
+        @references.concat(visitor.references)
       end
-
-      references
     end
 
-    private
-
-    def analyze_class
-      code = source_code
-      return [] unless code
-
-      result = Prism.parse(code)
-      extract_ivars(result.value)
-    end
-
-    def source_code
-      # Collect source files for all methods
-      source_files = collect_source_files
-
-      # Read and combine all source files
-      source_files.map { |file| File.read(file) }.join("\n")
+    def references_to_ivars
+      @references.map { |ref| ref[:name] }.uniq.sort
     end
 
     def collect_source_files
@@ -61,42 +53,6 @@ module Ivar
       end
 
       source_files
-    end
-
-    def extract_ivars(program)
-      visitor = IvarVisitor.new
-      program.accept(visitor)
-      visitor.ivars.uniq.sort
-    end
-
-    # Visitor that collects instance variable references from Prism AST
-    class IvarVisitor < Prism::Visitor
-      attr_reader :ivars
-
-      def initialize
-        super
-        @ivars = []
-      end
-
-      def visit_instance_variable_read_node(node)
-        @ivars << node.name.to_sym
-        true
-      end
-
-      def visit_instance_variable_write_node(node)
-        @ivars << node.name.to_sym
-        true
-      end
-
-      def visit_instance_variable_operator_write_node(node)
-        @ivars << node.name.to_sym
-        true
-      end
-
-      def visit_instance_variable_target_node(node)
-        @ivars << node.name.to_sym
-        true
-      end
     end
 
     # Visitor that collects instance variable references with location information
