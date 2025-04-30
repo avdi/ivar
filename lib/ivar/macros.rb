@@ -109,7 +109,7 @@ module Ivar
 
       all_kwarg_mappings.each do |ivar|
         # Convert @ivar_name to ivar_name for keyword lookup
-        key = ivar.to_s.delete_prefix('@').to_sym
+        key = ivar.to_s.delete_prefix("@").to_sym
 
         if remaining_kwargs.key?(key)
           instance_variable_set(ivar, remaining_kwargs[key])

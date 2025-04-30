@@ -1,14 +1,14 @@
 # frozen_string_literal: true
 
-require_relative 'lib/ivar/version'
+require_relative "lib/ivar/version"
 
 Gem::Specification.new do |spec|
-  spec.name = 'ivar'
+  spec.name = "ivar"
   spec.version = Ivar::VERSION
-  spec.authors = ['Avdi Grimm']
-  spec.email = ['avdi@avdi.codes']
+  spec.authors = ["Avdi Grimm"]
+  spec.email = ["avdi@avdi.codes"]
 
-  spec.summary = 'Automatically check instance variables for typos.'
+  spec.summary = "Automatically check instance variables for typos."
   spec.description = <<~EOF
     Ruby instance variables are so convenient - you don't even need to declare them!
     But... they are also dangerous, because a mispelled variable name results in `nil`
@@ -24,15 +24,15 @@ Gem::Specification.new do |spec|
     you with output.
   EOF
 
-  spec.homepage = 'https://github.com/avdi/ivar'
-  spec.license = 'MIT'
-  spec.required_ruby_version = '>= 3.4.0'
+  spec.homepage = "https://github.com/avdi/ivar"
+  spec.license = "MIT"
+  spec.required_ruby_version = ">= 3.4.0"
 
-  spec.metadata['allowed_push_host'] = 'https://rubygems.org'
+  spec.metadata["allowed_push_host"] = "https://rubygems.org"
 
-  spec.metadata['homepage_uri'] = spec.homepage
-  spec.metadata['source_code_uri'] = 'https://github.com/avdi/ivar'
-  spec.metadata['changelog_uri'] = 'https://github.com/avdi/ivar/blob/main/CHANGELOG.md'
+  spec.metadata["homepage_uri"] = spec.homepage
+  spec.metadata["source_code_uri"] = "https://github.com/avdi/ivar"
+  spec.metadata["changelog_uri"] = "https://github.com/avdi/ivar/blob/main/CHANGELOG.md"
 
   # Specify which files should be added to the gem when it is released.
   # The `git ls-files -z` loads the files in the RubyGem that have been added into git.
@@ -42,8 +42,8 @@ Gem::Specification.new do |spec|
         f.start_with?(*%w[bin/ test/ spec/ features/ .git .circleci appveyor Gemfile])
     end
   end
-  spec.require_paths = ['lib']
+  spec.require_paths = ["lib"]
 
   # Dependencies
-  spec.add_dependency 'prism', '~> 1.2'
+  spec.add_dependency "prism", "~> 1.2"
 end

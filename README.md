@@ -333,6 +333,12 @@ end
 Sandwich.new  # Raises: NameError: test_file.rb:2: unknown instance variable @chese. Did you mean: @cheese?
 ```
 
+# Acknowledgements
+
+Thank you to Joel Drapper, for inspiring me with [the strict_ivars gem](https://github.com/joeldrapper/strict_ivars).
+
+
+
 # TODO
 
 - Pre-declare "ghost" variables without setting them
