@@ -338,8 +338,10 @@ Sandwich.new  # Raises: NameError: test_file.rb:2: unknown instance variable @ch
 Thank you to Joel Drapper, for inspiring me with [the strict_ivars gem](https://github.com/joeldrapper/strict_ivars).
 
 
+And thanks to [Augment Code](https://www.augmentcode.com/), without which this gem wouldn't exist because I don't actually have time for pleasure projects anymore.
 
 # TODO
 
 - Pre-declare "ghost" variables without setting them
 - Add a module for dynamic checking of instance_variable_get/set
+- Audit and improve code the robot wrote
