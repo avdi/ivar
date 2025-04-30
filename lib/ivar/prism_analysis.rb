@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-require "prism"
-require "set"
+require 'prism'
+require 'set'
 
 module Ivar
   # Analyzes a class to find all instance variables using Prism
@@ -25,7 +25,7 @@ module Ivar
 
     def source_code
       # Get all instance methods
-      instance_methods = @klass.instance_methods(false) + [:initialize]
+      instance_methods = @klass.instance_methods(false) | @klass.private_instance_methods(false)
 
       # Collect source files for all methods
       source_files = Set.new
