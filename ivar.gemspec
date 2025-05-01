@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
 
   spec.summary = "Automatically check instance variables for typos."
   spec.description = <<~DESCRIPTION
-    Ruby instance variables are so convenient - you don"t even need to declare them!
+    Ruby instance variables are so convenient - you don't even need to declare them!
     But... they are also dangerous, because a mispelled variable name results in `nil`
     instead of an error.
 
@@ -18,9 +18,9 @@ Gem::Specification.new do |spec|
     and automatically checks for typos.
 
     Ivar waits until an instance is created to do the checking, then uses Prism to look
-    for variables that don"t match what was set in initialization. So it"s a little bit
-    dynamic, a little bit static. It doesn"t encumber your instance variable reads and
-    writes with any extra checking. And with the `:warn_once` policy, it won"t overwhelm
+    for variables that don't match what was set in initialization. So it's a little bit
+    dynamic, a little bit static. It doesn't encumber your instance variable reads and
+    writes with any extra checking. And with the `:warn_once` policy, it won't overwhelm
     you with output.
   DESCRIPTION
 
