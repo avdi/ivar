@@ -364,3 +364,4 @@ For more details, see [VERSION.md](VERSION.md).
 - Pre-declare "ghost" variables without setting them
 - Add a module for dynamic checking of instance_variable_get/set
 - Audit and improve code the robot wrote
+- Thread-safety
