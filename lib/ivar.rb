@@ -12,7 +12,7 @@ require "did_you_mean"
 module Ivar
   @analysis_cache = {}
   @checked_classes = {}
-  @default_check_policy = :warn
+  @default_check_policy = :warn_once
 
   # Returns a cached analysis for the given class or module
   # Creates a new analysis if one doesn't exist in the cache
