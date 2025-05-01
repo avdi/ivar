@@ -1,6 +1,35 @@
 # Ivar
 
+## Synopsis
+
+```ruby
+require "ivar"
+
+class Pizza
+  include Ivar::Checked
+
+  def initialize(toppings)
+    @toppings = toppings
+  end
+
+  def to_s
+    "A pizza with #{@topings.join(", ")}"
+  end
+end
+
+Pizza.new(["pepperoni", "mushrooms"])
+```
+
+```shell
+$ ruby pizza.rb
+pizza.rb:10: warning: unknown instance variable @topings. Did you mean: @toppings?
+```
+
+## Instroduction
+
 Ruby instance variables are so convenient - you don't even need to declare them! But... they are also dangerous, because a mispelled variable name results in `nil` instead of an error.
+
+For this reason it's often recommended to wrap every instance variable in getter and setter methods with `attr_accessor`. But this added ceremony is exactly what self-declaring instance variables are there to avoid.
 
 Why not have the best of both worlds? Ivar lets you use plain-old instance variables, and automatically checks for typos.
 
@@ -42,7 +71,6 @@ sandwich.rb:22: warning: unknown instance variable @chese. Did you mean: @cheese
 ### Automatic Validation (Every Instance)
 
 ```ruby
-# sandwich_automatic.rb
 require "ivar"
 
 class Sandwich
@@ -54,18 +82,8 @@ class Sandwich
     @condiments = ["mayo", "mustard"]
     # no need for explicit check_ivars call
   end
-
-  def to_s
-    "A #{@bread} sandwich with #{@chese} and #{@condiments.join(", ")}"
-  end
+  # ...
 end
-
-Sandwich.new
-```
-
-```shell
-$ ruby sandwich_automatic.rb -w
-sandwich_automatic.rb:15: warning: unknown instance variable @chese. Did you mean: @cheese?
 ```
 
 The `Checked` module automatically calls `check_ivars` after initialization, which means it will emit warnings for every instance of the class.
@@ -75,74 +93,45 @@ The `Checked` module automatically calls `check_ivars` after initialization, whi
 Too many warnings? Try this:
 
 ```ruby
-# sandwich_once.rb
 require "ivar"
 
 class Sandwich
   include Ivar::Checked
   ivar_check_policy :warn_once
 
-  def initialize
-    @bread = "white"
-    @cheese = "havarti"
-    @condiments = ["mayo", "mustard"]
-    # no need for explicit check_ivars call
-  end
-
-  def to_s
-    "A #{@bread} sandwich with #{@chese} and #{@condiments.join(", ")}"
-  end
-end
-
-Sandwich.new
+  # ...
 ```
 
-```shell
-$ ruby sandwich_once.rb -w
-sandwich_once.rb:15: warning: unknown instance variable @chese. Did you mean: @cheese?
-```
+The `warn_once` policy means it will emit warnings only for the first instance of each class.
 
-Setting `ivar_check_policy :warn_once` makes `check_ivars` use the `warn_once` policy, which means it will emit warnings only for the first instance of each class.
-
-### Pre-declaring Instance Variables
+### Declare Instance Variables
 
 Normally we "declare" variables by setting them in `initialize`. But if you don't have any reason to set them in the initializer, you can still declare them so they won't be flagged.
 
 ```ruby
-# sandwich_with_ivar_macro.rb
 require "ivar"
 
 class SandwichWithIvarMacro
   include Ivar::Checked
 
-  # Pre-declare only instance variables that might be referenced before being set
-  # You don't need to include variables that are always set in initialize
-  ivar :@side
+  # Don't warn about @side even though it's not mentioned in initialize
+  ivar :@side 
 
   def initialize
     @bread = "wheat"
     @cheese = "muenster"
     @condiments = ["mayo", "mustard"]
-    # Note: @side is not set here, but it's pre-initialized to nil
-  end
-
-  def to_s
-    result = "A #{@bread} sandwich with #{@cheese} and #{@condiments.join(", ")}"
-    # This won't trigger a warning because @side is pre-initialized
-    result += " and a side of #{@side}" if @side
-    result
   end
 
   def add_side(side)
     @side = side
   end
+
+  def to_s
+    "A #{@bread} sandwich with #{@cheese} and #{@condiments.join(", ")}" \
+      " and a side of #{@side}" if @side
+  end
 end
-
-sandwich = SandwichWithIvarMacro.new
-puts sandwich.to_s  # No warning about @side
-
-sandwich.add_side("chips")
-puts sandwich.to_s
 ```
 
 Note: this WILL set the variable to `nil` before `initialize` runs, so if you have code that depends on `defined?(@var)` it may break. Lemme know if you want a non-setting form of predeclaration. Or just submit a PR.
@@ -152,7 +141,6 @@ Note: this WILL set the variable to `nil` before `initialize` runs, so if you ha
 While we're messing around with ivars, let's fix Ruby's oldest missing convenience feature:
 
 ```ruby
-# sandwich_with_kwarg.rb
 require "ivar"
 
 class SandwichWithKwarg
@@ -184,53 +172,7 @@ Ta-da, no more tedious setting of instance variables from arguments of the same 
 
 TODO: Find a positional args version of this that makes sense.
 
-### Inheritance
-
-This stuff works with inheritance:
-
-```ruby
-class BaseSandwich
-  include Ivar::Checked
-
-  # Pre-declare only variables that might be referenced before being set
-  # Variables set in initialize (@bread, @cheese) don't need to be pre-declared
-  ivar :@optional_topping
-
-  def initialize
-    @bread = "wheat"
-    @cheese = "muenster"
-  end
-end
-
-class SpecialtySandwich < BaseSandwich
-  # Add more pre-declared instance variables as needed
-  # @condiments is set in initialize, so it doesn't need to be pre-declared
-  ivar :@special_sauce
-
-  def initialize
-    super
-    @condiments = ["mayo", "mustard"]
-  end
-
-  def to_s
-    result = "A #{@bread} sandwich with #{@cheese} and #{@condimants.join(", ")}"
-    # @special_sauce is pre-declared, so this won't trigger a warning
-    result += " with #{@special_sauce}" if @special_sauce
-    # @optional_topping is inherited from the parent class
-    result += " and #{@optional_topping}" if @optional_topping
-    result
-  end
-end
-
-SpecialtySandwich.new
-```
-
-```shell
-$ ruby inheritance_example.rb -w
-inheritance_example.rb:17: warning: unknown instance variable @condimants. Did you mean: @condiments?
-```
-
-## Checking Policies
+## Check Policies
 
 Ivar supports different policies for handling unknown instance variables. You can specify a policy at the global level, class level, or per-check level.
 
