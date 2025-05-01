@@ -186,4 +186,66 @@ class TestIvar < Minitest::Test
     typo_warnings = warnings.scan(/unknown instance variable @typo_veriable/).count
     assert typo_warnings >= 1, "Should have at least one warning for @typo_veriable"
   end
+
+  def test_thread_safety_of_analysis_cache
+    setup_analysis_cache
+
+    # Create a bunch of test classes
+    test_classes = 10.times.map do |i|
+      Class.new do
+        define_method(:initialize) do
+          instance_variable_set(:"@var_#{i}", "value")
+        end
+      end
+    end
+
+    # Run multiple threads that access the cache simultaneously
+    threads = 5.times.map do
+      Thread.new do
+        # Each thread will get analysis for all classes in random order
+        test_classes.shuffle.each do |klass|
+          analysis = Ivar.get_analysis(klass)
+          # Verify the analysis is correct for this class
+          assert_instance_of Ivar::PrismAnalysis, analysis
+        end
+      end
+    end
+
+    # Wait for all threads to complete
+    threads.each(&:join)
+
+    # Verify each class has an entry in the cache
+    test_classes.each do |klass|
+      assert Ivar.instance_variable_get(:@analysis_cache).key?(klass)
+    end
+  end
+
+  def test_thread_safety_of_checked_classes
+    setup_analysis_cache
+
+    # Create a bunch of test classes
+    test_classes = 10.times.map do |_i|
+      Class.new
+    end
+
+    # Run multiple threads that mark classes as checked simultaneously
+    threads = 5.times.map do
+      Thread.new do
+        # Each thread will mark all classes in random order
+        test_classes.shuffle.each do |klass|
+          Ivar.mark_class_checked(klass)
+          # Verify the class is marked as checked
+          assert Ivar.class_checked?(klass)
+        end
+      end
+    end
+
+    # Wait for all threads to complete
+    threads.each(&:join)
+
+    # Verify each class is marked as checked
+    test_classes.each do |klass|
+      assert Ivar.class_checked?(klass)
+    end
+  end
 end
