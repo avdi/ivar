@@ -21,7 +21,9 @@ module Ivar
     #   Example: ivar :@foo, :@bar, value: 123
     # @param ivar_values [Hash] Individual initial values for instance variables
     #   Example: ivar "@foo": 123, "@bar": 456
-    def ivar(*ivars, value: UNSET, **ivar_values)
+    # @yield [varname] Block to generate initial values based on variable name
+    #   Example: ivar(:@foo, :@bar) { |varname| "#{varname} default" }
+    def ivar(*ivars, value: UNSET, **ivar_values, &block)
       # Handle both regular declarations and declarations with initial values
       declared = instance_variable_get(:@__ivar_declared_ivars) || []
       initial_values = instance_variable_get(:@__ivar_initial_values) || {}
@@ -30,9 +32,14 @@ module Ivar
       new_ivars = ivars.map(&:to_sym)
       instance_variable_set(:@__ivar_declared_ivars, declared + new_ivars)
 
+      # If a block is given, use it to generate initial values for each variable
+      if block_given?
+        new_ivars.each do |ivar_name|
+          initial_values[ivar_name] = yield(ivar_name.to_s)
+        end
       # If the value: parameter was explicitly provided (even if it's nil or false),
       # apply it to all declared variables
-      if value != UNSET
+      elsif value != UNSET
         new_ivars.each do |ivar_name|
           initial_values[ivar_name] = value
         end
