@@ -38,17 +38,10 @@ class TestCheckIvarsOnce < Minitest::Test
     Ivar.instance_variable_get(:@analysis_cache)[klass] = analysis
 
     # Capture stderr output
-    original_stderr = $stderr
-    $stderr = StringIO.new
-
-    # Call check_ivars_once to validate
-    instance.check_ivars_once
-
-    # Get the captured warnings
-    warnings = $stderr.string
-
-    # Restore stderr
-    $stderr = original_stderr
+    warnings = capture_stderr do
+      # Call check_ivars_once to validate
+      instance.check_ivars_once
+    end
 
     # Check that we got a warning about the typo
     assert_match(/unknown instance variable @typo_veriable/, warnings)
@@ -84,18 +77,14 @@ class TestCheckIvarsOnce < Minitest::Test
     Ivar.instance_variable_get(:@analysis_cache)[klass] = analysis
 
     # First call to check_ivars_once (should emit warnings)
-    original_stderr = $stderr
-    $stderr = StringIO.new
-    instance.check_ivars_once
-    first_warnings = $stderr.string
-    $stderr = original_stderr
+    first_warnings = capture_stderr do
+      instance.check_ivars_once
+    end
 
     # Second call to check_ivars_once (should not emit warnings)
-    original_stderr = $stderr
-    $stderr = StringIO.new
-    instance.check_ivars_once
-    second_warnings = $stderr.string
-    $stderr = original_stderr
+    second_warnings = capture_stderr do
+      instance.check_ivars_once
+    end
 
     # Check that we got warnings the first time
     assert_match(/unknown instance variable @typo_veriable/, first_warnings)
@@ -159,18 +148,14 @@ class TestCheckIvarsOnce < Minitest::Test
     Ivar.instance_variable_get(:@analysis_cache)[klass2] = analysis2
 
     # First call to check_ivars_once for instance1 (should emit warnings)
-    original_stderr = $stderr
-    $stderr = StringIO.new
-    instance1.check_ivars_once
-    first_class_warnings = $stderr.string
-    $stderr = original_stderr
+    first_class_warnings = capture_stderr do
+      instance1.check_ivars_once
+    end
 
     # First call to check_ivars_once for instance2 (should emit warnings)
-    original_stderr = $stderr
-    $stderr = StringIO.new
-    instance2.check_ivars_once
-    second_class_warnings = $stderr.string
-    $stderr = original_stderr
+    second_class_warnings = capture_stderr do
+      instance2.check_ivars_once
+    end
 
     # Check that we got warnings for the first class
     assert_match(/unknown instance variable @typo_in_class1/, first_class_warnings)
@@ -179,18 +164,14 @@ class TestCheckIvarsOnce < Minitest::Test
     assert_match(/unknown instance variable @typo_in_class2/, second_class_warnings)
 
     # Second call to check_ivars_once for instance1 (should not emit warnings)
-    original_stderr = $stderr
-    $stderr = StringIO.new
-    instance1.check_ivars_once
-    first_class_second_call = $stderr.string
-    $stderr = original_stderr
+    first_class_second_call = capture_stderr do
+      instance1.check_ivars_once
+    end
 
     # Second call to check_ivars_once for instance2 (should not emit warnings)
-    original_stderr = $stderr
-    $stderr = StringIO.new
-    instance2.check_ivars_once
-    second_class_second_call = $stderr.string
-    $stderr = original_stderr
+    second_class_second_call = capture_stderr do
+      instance2.check_ivars_once
+    end
 
     # Check that we didn't get warnings for either class on the second call
     assert_empty first_class_second_call
@@ -229,17 +210,10 @@ class TestCheckIvarsOnce < Minitest::Test
     Ivar.instance_variable_get(:@analysis_cache)[klass] = analysis
 
     # Capture stderr output
-    original_stderr = $stderr
-    $stderr = StringIO.new
-
-    # Call check_ivars_once to validate
-    instance.check_ivars_once(add: [:@allowed_var])
-
-    # Get the captured warnings
-    warnings = $stderr.string
-
-    # Restore stderr
-    $stderr = original_stderr
+    warnings = capture_stderr do
+      # Call check_ivars_once to validate
+      instance.check_ivars_once(add: [:@allowed_var])
+    end
 
     # Check that we got a warning about the unknown variable
     assert_match(/unknown instance variable @unknown_var/, warnings)

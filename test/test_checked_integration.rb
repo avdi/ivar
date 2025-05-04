@@ -13,17 +13,10 @@ class TestCheckedIntegration < Minitest::Test
 
   def test_sandwich_with_checked_ivars
     # Capture stderr output
-    original_stderr = $stderr
-    $stderr = StringIO.new
-
-    # Create a sandwich with Checked which should trigger warnings
-    SandwichWithCheckedIvars.new
-
-    # Get the captured warnings
-    warnings = $stderr.string
-
-    # Restore stderr
-    $stderr = original_stderr
+    warnings = capture_stderr do
+      # Create a sandwich with Checked which should trigger warnings
+      SandwichWithCheckedIvars.new
+    end
 
     # Check that we got warnings about the typo in the code
     assert_match(/unknown instance variable @chese/, warnings)
@@ -39,17 +32,10 @@ class TestCheckedIntegration < Minitest::Test
     Ivar.clear_analysis_cache
 
     # Capture stderr output
-    original_stderr = $stderr
-    $stderr = StringIO.new
-
-    # Create a child instance which should trigger warnings
-    ChildWithCheckedIvars.new
-
-    # Get the captured warnings
-    warnings = $stderr.string
-
-    # Restore stderr
-    $stderr = original_stderr
+    warnings = capture_stderr do
+      # Create a child instance which should trigger warnings
+      ChildWithCheckedIvars.new
+    end
 
     # Check that we got warnings about the typo in the child class
     assert_match(/unknown instance variable @chyld_var3/, warnings)
@@ -57,30 +43,16 @@ class TestCheckedIntegration < Minitest::Test
 
   def test_checked_only_warns_once_per_class
     # Capture stderr output for first instance
-    original_stderr = $stderr
-    $stderr = StringIO.new
-
-    # Create first sandwich instance
-    SandwichWithCheckedIvars.new
-
-    # Get the captured warnings
-    first_warnings = $stderr.string
-
-    # Restore stderr
-    $stderr = original_stderr
+    first_warnings = capture_stderr do
+      # Create first sandwich instance
+      SandwichWithCheckedIvars.new
+    end
 
     # Capture stderr output for second instance
-    original_stderr = $stderr
-    $stderr = StringIO.new
-
-    # Create second sandwich instance
-    SandwichWithCheckedIvars.new
-
-    # Get the captured warnings
-    second_warnings = $stderr.string
-
-    # Restore stderr
-    $stderr = original_stderr
+    second_warnings = capture_stderr do
+      # Create second sandwich instance
+      SandwichWithCheckedIvars.new
+    end
 
     # Check that we got warnings for the first instance
     assert_match(/unknown instance variable @chese/, first_warnings)

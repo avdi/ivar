@@ -35,17 +35,10 @@ class TestChecked < Minitest::Test
     Ivar.instance_variable_get(:@analysis_cache)[klass] = analysis
 
     # Capture stderr output
-    original_stderr = $stderr
-    $stderr = StringIO.new
-
-    # Create an instance - this should automatically call check_ivars
-    klass.new
-
-    # Get the captured warnings
-    warnings = $stderr.string
-
-    # Restore stderr
-    $stderr = original_stderr
+    warnings = capture_stderr do
+      # Create an instance - this should automatically call check_ivars
+      klass.new
+    end
 
     # Check that we got a warning about the typo
     assert_match(/unknown instance variable @typo_veriable/, warnings)
@@ -100,17 +93,10 @@ class TestChecked < Minitest::Test
     Ivar.instance_variable_get(:@analysis_cache)[child_klass] = child_analysis
 
     # Capture stderr output
-    original_stderr = $stderr
-    $stderr = StringIO.new
-
-    # Create an instance of the child class - this should automatically call check_ivars
-    child_klass.new
-
-    # Get the captured warnings
-    warnings = $stderr.string
-
-    # Restore stderr
-    $stderr = original_stderr
+    warnings = capture_stderr do
+      # Create an instance of the child class - this should automatically call check_ivars
+      child_klass.new
+    end
 
     # Check that we got warnings about the typos
     assert_match(/unknown instance variable @parent_typo/, warnings)
@@ -144,18 +130,14 @@ class TestChecked < Minitest::Test
     Ivar.instance_variable_get(:@analysis_cache)[klass] = analysis
 
     # First instance - should emit warnings
-    original_stderr = $stderr
-    $stderr = StringIO.new
-    klass.new
-    first_warnings = $stderr.string
-    $stderr = original_stderr
+    first_warnings = capture_stderr do
+      klass.new
+    end
 
     # Second instance - should also emit warnings (since Checked doesn't cache)
-    original_stderr = $stderr
-    $stderr = StringIO.new
-    klass.new
-    second_warnings = $stderr.string
-    $stderr = original_stderr
+    second_warnings = capture_stderr do
+      klass.new
+    end
 
     # Check that we got warnings for the first instance
     assert_match(/unknown instance variable @typo_veriable/, first_warnings)
@@ -192,18 +174,14 @@ class TestChecked < Minitest::Test
     Ivar.instance_variable_get(:@analysis_cache)[klass] = analysis
 
     # First instance - should emit warnings
-    original_stderr = $stderr
-    $stderr = StringIO.new
-    klass.new
-    first_warnings = $stderr.string
-    $stderr = original_stderr
+    first_warnings = capture_stderr do
+      klass.new
+    end
 
     # Second instance - should not emit warnings
-    original_stderr = $stderr
-    $stderr = StringIO.new
-    klass.new
-    second_warnings = $stderr.string
-    $stderr = original_stderr
+    second_warnings = capture_stderr do
+      klass.new
+    end
 
     # Check that we got warnings for the first instance
     assert_match(/unknown instance variable @typo_veriable/, first_warnings)

@@ -39,17 +39,10 @@ class TestPolicies < Minitest::Test
     Ivar.instance_variable_get(:@analysis_cache)[klass] = analysis
 
     # Capture stderr output
-    original_stderr = $stderr
-    $stderr = StringIO.new
-
-    # Call check_ivars with warn policy
-    instance.check_ivars(policy: :warn)
-
-    # Get the captured warnings
-    warnings = $stderr.string
-
-    # Restore stderr
-    $stderr = original_stderr
+    warnings = capture_stderr do
+      # Call check_ivars with warn policy
+      instance.check_ivars(policy: :warn)
+    end
 
     # Check that we got a warning about the typo
     assert_match(/unknown instance variable @typo_veriable/, warnings)
@@ -85,18 +78,14 @@ class TestPolicies < Minitest::Test
     Ivar.instance_variable_get(:@analysis_cache)[klass] = analysis
 
     # First call to check_ivars with warn_once policy
-    original_stderr = $stderr
-    $stderr = StringIO.new
-    instance.check_ivars(policy: :warn_once)
-    first_warnings = $stderr.string
-    $stderr = original_stderr
+    first_warnings = capture_stderr do
+      instance.check_ivars(policy: :warn_once)
+    end
 
     # Second call to check_ivars with warn_once policy
-    original_stderr = $stderr
-    $stderr = StringIO.new
-    instance.check_ivars(policy: :warn_once)
-    second_warnings = $stderr.string
-    $stderr = original_stderr
+    second_warnings = capture_stderr do
+      instance.check_ivars(policy: :warn_once)
+    end
 
     # Check that we got warnings for the first call
     assert_match(/unknown instance variable @typo_veriable/, first_warnings)
@@ -217,17 +206,10 @@ class TestPolicies < Minitest::Test
     Ivar.instance_variable_get(:@analysis_cache)[klass] = analysis
 
     # Capture stderr output
-    original_stderr = $stderr
-    $stderr = StringIO.new
-
-    # Call check_ivars without specifying a policy - should use the class-level policy
-    instance.check_ivars
-
-    # Get the captured warnings
-    warnings = $stderr.string
-
-    # Restore stderr
-    $stderr = original_stderr
+    warnings = capture_stderr do
+      # Call check_ivars without specifying a policy - should use the class-level policy
+      instance.check_ivars
+    end
 
     # Check that we got a warning about the typo
     assert_match(/unknown instance variable @typo_veriable/, warnings)
@@ -325,17 +307,10 @@ class TestPolicies < Minitest::Test
     Ivar.instance_variable_get(:@analysis_cache)[child_klass] = analysis
 
     # Capture stderr output
-    original_stderr = $stderr
-    $stderr = StringIO.new
-
-    # Call check_ivars without specifying a policy - should use the inherited policy
-    instance.check_ivars
-
-    # Get the captured warnings
-    warnings = $stderr.string
-
-    # Restore stderr
-    $stderr = original_stderr
+    warnings = capture_stderr do
+      # Call check_ivars without specifying a policy - should use the inherited policy
+      instance.check_ivars
+    end
 
     # Check that we got a warning about the typo
     assert_match(/unknown instance variable @typo_veriable/, warnings)

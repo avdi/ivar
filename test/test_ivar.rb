@@ -94,41 +94,33 @@ class TestIvar < Minitest::Test
   end
 
   def test_check_ivars_warns_about_unknown_variables
-    # Capture stderr output
-    original_stderr = $stderr
-    $stderr = StringIO.new
+    warnings = capture_stderr do
+      # Create a class that will use validation
+      klass = Class.new do
+        include Ivar::Validation
 
-    # Create a class that will use validation
-    klass = Class.new do
-      include Ivar::Validation
+        def initialize
+          @known_var = "known"
+          check_ivars(add: [:@allowed_var])
+        end
 
-      def initialize
-        @known_var = "known"
-        check_ivars(add: [:@allowed_var])
+        def method_with_typo
+          # This variable is not defined in initialize, so it should trigger a warning
+          @unknown_var = "unknown"
+        end
       end
 
-      def method_with_typo
-        # This variable is not defined in initialize, so it should trigger a warning
+      # Create an instance to define the class
+      instance = klass.new
+
+      # Add the method_with_typo method to the analysis
+      def instance.method_with_typo
         @unknown_var = "unknown"
       end
+
+      # Call check_ivars to validate
+      instance.check_ivars(add: [:@allowed_var])
     end
-
-    # Create an instance to define the class
-    instance = klass.new
-
-    # Add the method_with_typo method to the analysis
-    def instance.method_with_typo
-      @unknown_var = "unknown"
-    end
-
-    # Call check_ivars to validate
-    instance.check_ivars(add: [:@allowed_var])
-
-    # Get the captured warnings
-    warnings = $stderr.string
-
-    # Restore stderr
-    $stderr = original_stderr
 
     # Check that we got a warning about the unknown variable
     assert_match(/unknown instance variable @unknown_var/, warnings)
@@ -141,40 +133,32 @@ class TestIvar < Minitest::Test
   end
 
   def test_check_ivars_suggests_corrections
-    # Capture stderr output
-    original_stderr = $stderr
-    $stderr = StringIO.new
+    warnings = capture_stderr do
+      # Create a class with a typo in an instance variable
+      klass = Class.new do
+        include Ivar::Validation
 
-    # Create a class with a typo in an instance variable
-    klass = Class.new do
-      include Ivar::Validation
+        def initialize
+          @correct = "value"
+          check_ivars
+        end
 
-      def initialize
-        @correct = "value"
-        check_ivars
+        def method_with_typo
+          @typo_veriable = "misspelled"
+        end
       end
 
-      def method_with_typo
+      # Create an instance to define the class
+      instance = klass.new
+
+      # Add the method_with_typo method to the analysis
+      def instance.method_with_typo
         @typo_veriable = "misspelled"
       end
+
+      # Call check_ivars to validate
+      instance.check_ivars
     end
-
-    # Create an instance to define the class
-    instance = klass.new
-
-    # Add the method_with_typo method to the analysis
-    def instance.method_with_typo
-      @typo_veriable = "misspelled"
-    end
-
-    # Call check_ivars to validate
-    instance.check_ivars
-
-    # Get the captured warnings
-    warnings = $stderr.string
-
-    # Restore stderr
-    $stderr = original_stderr
 
     # Check that we got a warning about the typo
     assert_match(/unknown instance variable @typo_veriable/, warnings)

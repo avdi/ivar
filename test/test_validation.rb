@@ -6,17 +6,10 @@ require_relative "fixtures/sandwich_with_validation"
 class TestValidation < Minitest::Test
   def test_check_ivars_warns_about_unknown_variables
     # Capture stderr output
-    original_stderr = $stderr
-    $stderr = StringIO.new
-
-    # Create a sandwich with validation which should trigger warnings
-    SandwichWithValidation.new
-
-    # Get the captured warnings
-    warnings = $stderr.string
-
-    # Restore stderr
-    $stderr = original_stderr
+    warnings = capture_stderr do
+      # Create a sandwich with validation which should trigger warnings
+      SandwichWithValidation.new
+    end
 
     # Check that we got warnings about the typo in the code
     assert_match(/unknown instance variable @chese/, warnings)
@@ -57,17 +50,10 @@ class TestValidation < Minitest::Test
     end
 
     # Capture stderr output
-    original_stderr = $stderr
-    $stderr = StringIO.new
-
-    # Create an instance to trigger the warnings
-    klass.new
-
-    # Get the captured warnings
-    warnings = $stderr.string
-
-    # Restore stderr
-    $stderr = original_stderr
+    warnings = capture_stderr do
+      # Create an instance to trigger the warnings
+      klass.new
+    end
 
     # Check that we got a warning about the typo
     assert_match(/unknown instance variable @typo_veriable/, warnings)

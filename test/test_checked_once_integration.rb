@@ -11,17 +11,10 @@ class TestCheckedOnceIntegration < Minitest::Test
 
   def test_sandwich_with_checked_once
     # Capture stderr output
-    original_stderr = $stderr
-    $stderr = StringIO.new
-
-    # Create a sandwich with Checked and warn_once policy which should trigger warnings
-    SandwichWithCheckedOnce.new
-
-    # Get the captured warnings
-    warnings = $stderr.string
-
-    # Restore stderr
-    $stderr = original_stderr
+    warnings = capture_stderr do
+      # Create a sandwich with Checked and warn_once policy which should trigger warnings
+      SandwichWithCheckedOnce.new
+    end
 
     # Check that we got warnings about the typo in the code
     assert_match(/unknown instance variable @chese/, warnings)
@@ -34,30 +27,16 @@ class TestCheckedOnceIntegration < Minitest::Test
 
   def test_checked_once_only_warns_once
     # Capture stderr output for first instance
-    original_stderr = $stderr
-    $stderr = StringIO.new
-
-    # Create first sandwich instance
-    SandwichWithCheckedOnce.new
-
-    # Get the captured warnings
-    first_warnings = $stderr.string
-
-    # Restore stderr
-    $stderr = original_stderr
+    first_warnings = capture_stderr do
+      # Create first sandwich instance
+      SandwichWithCheckedOnce.new
+    end
 
     # Capture stderr output for second instance
-    original_stderr = $stderr
-    $stderr = StringIO.new
-
-    # Create second sandwich instance
-    SandwichWithCheckedOnce.new
-
-    # Get the captured warnings
-    second_warnings = $stderr.string
-
-    # Restore stderr
-    $stderr = original_stderr
+    second_warnings = capture_stderr do
+      # Create second sandwich instance
+      SandwichWithCheckedOnce.new
+    end
 
     # Check that we got warnings for the first instance
     assert_match(/unknown instance variable @chese/, first_warnings)
