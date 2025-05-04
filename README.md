@@ -25,7 +25,7 @@ $ ruby pizza.rb
 pizza.rb:10: warning: unknown instance variable @topings. Did you mean: @toppings?
 ```
 
-## Instroduction
+## Introduction
 
 Ruby instance variables are so convenient - you don't even need to declare them! But... they are also dangerous, because a mispelled variable name results in `nil` instead of an error.
 
@@ -94,6 +94,8 @@ Note that the `:warn_once` policy is the default, meaning that this will emit a 
 
 With Ivar we "declare" variables implicitly by setting them in `initialize`. But if you don't have any reason to set them in the initializer, you can explicitly declare them so they won't be flagged.
 
+#### Basic Declaration
+
 ```ruby
 require "ivar"
 
@@ -113,13 +115,161 @@ class SandwichWithIvarMacro
   end
 
   def to_s
-    "A #{@bread} sandwich with #{@cheese} and #{@condiments.join(", ")}" \
-      (@side ? "and a side of #{@side}" : "")
+    result = "A #{@bread} sandwich with #{@cheese} and #{@condiments.join(", ")}"
+    result += " and a side of #{@side}" if defined?(@side) && @side
+    result
   end
 end
 ```
 
 Declared instance variables are not initialized to `nil`. They are simply added to a list of variables that are considered valid when checking for unknown instance variables.
+
+#### Declaration with Initial Values
+
+You can declare instance variables with initial values using hash syntax:
+
+```ruby
+class SandwichWithInitialValues
+  include Ivar::Checked
+
+  # Declare instance variables with initial values
+  ivar "@bread": "wheat",
+    "@cheese": "muenster",
+    "@condiments": ["mayo", "mustard"],
+    "@pickles": true
+
+  # Declare a variable without an initial value
+  ivar :@side
+
+  def initialize(extra_condiments = [])
+    # The declared variables are already initialized with their values
+    # We can modify them here
+    @condiments += extra_condiments unless extra_condiments.empty?
+
+    # We can also check if pickles were requested and adjust condiments
+    @condiments.delete("mayo") if @pickles
+  end
+
+  def to_s
+    result = "A #{@bread} sandwich with #{@cheese}"
+    result += " and #{@condiments.join(", ")}" unless @condiments.empty?
+    result += " with pickles" if @pickles
+    result += " and a side of #{@side}" if defined?(@side) && @side
+    result
+  end
+end
+```
+
+#### Declaration with Shared Values
+
+You can declare multiple instance variables with the same initial value:
+
+```ruby
+class SandwichWithSharedValues
+  include Ivar::Checked
+
+  # Declare multiple condiments with the same initial value (true)
+  ivar :@mayo, :@mustard, :@ketchup, value: true
+
+  # Declare bread and cheese with individual values
+  ivar "@bread": "wheat", "@cheese": "cheddar"
+
+  def initialize(options = {})
+    # Override any condiments based on options
+    @mayo = false if options[:no_mayo]
+    @mustard = false if options[:no_mustard]
+    @ketchup = false if options[:no_ketchup]
+  end
+
+  def to_s
+    result = "A #{@bread} sandwich with #{@cheese}"
+
+    condiments = []
+    condiments << "mayo" if @mayo
+    condiments << "mustard" if @mustard
+    condiments << "ketchup" if @ketchup
+
+    result += " with #{condiments.join(", ")}" unless condiments.empty?
+    result
+  end
+end
+```
+
+#### Declaration with Block-Based Values
+
+You can use a block to generate initial values based on the variable name:
+
+```ruby
+class SandwichWithBlockValues
+  include Ivar::Checked
+
+  # Declare condiments with a block that generates default values based on the variable name
+  ivar(:@mayo, :@mustard, :@ketchup) { |varname| !varname.include?("mayo") }
+
+  # Declare bread and cheese with individual values
+  ivar "@bread": "wheat", "@cheese": "cheddar"
+
+  def initialize(options = {})
+    # Override any condiments based on options
+    @mayo = true if options[:add_mayo]
+  end
+
+  def to_s
+    result = "A #{@bread} sandwich with #{@cheese}"
+
+    condiments = []
+    condiments << "mayo" if @mayo
+    condiments << "mustard" if @mustard
+    condiments << "ketchup" if @ketchup
+
+    result += " with #{condiments.join(", ")}" unless condiments.empty?
+    result
+  end
+end
+```
+
+#### Declaration with Accessor Methods
+
+You can automatically create reader, writer, or accessor methods for your instance variables:
+
+```ruby
+class SandwichWithAccessors
+  include Ivar::Checked
+
+  # Declare instance variables with accessors
+  ivar :@bread, :@cheese, accessor: true, value: "default"
+
+  # Declare condiments with a reader
+  ivar :@condiments, reader: true, value: ["mayo", "mustard"]
+
+  # Declare pickles with a writer
+  ivar :@pickles, writer: true, value: true
+
+  def initialize(options = {})
+    # Override defaults if options provided
+    @bread = options[:bread] if options[:bread]
+    @cheese = options[:cheese] if options[:cheese]
+  end
+
+  def to_s
+    result = "A #{@bread} sandwich with #{@cheese}"
+    result += " and #{@condiments.join(", ")}" unless @condiments.empty?
+    result += " with pickles" if @pickles
+    result
+  end
+
+  # Custom method to toggle pickles
+  def toggle_pickles
+    @pickles = !@pickles
+  end
+end
+
+# Usage example
+sandwich = SandwichWithAccessors.new
+puts "Bread: #{sandwich.bread}"  # Reader method
+sandwich.bread = "rye"           # Writer method
+puts "Updated bread: #{sandwich.bread}"
+```
 
 ## Check Policies
 
