@@ -57,11 +57,29 @@ module Ivar
     module InstanceMethods
       # Wrap the initialize method to automatically call check_ivars
       def initialize(*args, **kwargs, &block)
+        # Initialize declared instance variables with their initial values
+        initialize_declared_ivars
+
         # Call the original initialize method with all arguments
         super
 
         # Automatically check instance variables
         check_ivars
+      end
+
+      private
+
+      # Initialize declared instance variables with their initial values
+      def initialize_declared_ivars
+        return unless self.class.respond_to?(:ivar_initial_values)
+
+        # Get the initial values for declared instance variables
+        initial_values = self.class.ivar_initial_values
+
+        # Set each instance variable to its initial value
+        initial_values.each do |ivar_name, value|
+          instance_variable_set(ivar_name, value)
+        end
       end
     end
   end

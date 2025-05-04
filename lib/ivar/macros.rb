@@ -7,15 +7,38 @@ module Ivar
     def self.extended(base)
       # Store declared instance variables for this class
       base.instance_variable_set(:@__ivar_declared_ivars, [])
+      # Store initial values for declared instance variables
+      base.instance_variable_set(:@__ivar_initial_values, {})
     end
 
     # Declares instance variables that should be considered valid
     # without being explicitly initialized
-    # @param ivars [Array<Symbol>] Instance variables to declare
-    def ivar(*ivars)
-      # Store the declared instance variables
+    # @param ivars [Array<Symbol>, Hash] Instance variables to declare
+    #   When a hash is provided, keys should be instance variable names as strings (":@name")
+    #   and values are the initial values to set before initialize is called
+    def ivar(*ivars, **ivar_values)
+      # Handle both regular declarations and declarations with initial values
       declared = instance_variable_get(:@__ivar_declared_ivars) || []
-      instance_variable_set(:@__ivar_declared_ivars, declared + ivars)
+      initial_values = instance_variable_get(:@__ivar_initial_values) || {}
+
+      # Process regular declarations (symbols)
+      new_ivars = ivars.map(&:to_sym)
+      instance_variable_set(:@__ivar_declared_ivars, declared + new_ivars)
+
+      # Process declarations with initial values (hash)
+      ivar_values.each do |key, value|
+        # Convert string keys like ":@name" to symbols :@name
+        ivar_name = key.to_s.delete_prefix(":").to_sym
+        initial_values[ivar_name] = value
+        # Also add to declared ivars if not already included
+        unless declared.include?(ivar_name) || new_ivars.include?(ivar_name)
+          new_ivars << ivar_name
+        end
+      end
+
+      # Update the declared ivars and initial values
+      instance_variable_set(:@__ivar_declared_ivars, declared + new_ivars)
+      instance_variable_set(:@__ivar_initial_values, initial_values)
     end
 
     # Hook method called when the module is included
@@ -24,12 +47,22 @@ module Ivar
       # Copy declared instance variables to subclass
       parent_ivars = instance_variable_get(:@__ivar_declared_ivars) || []
       subclass.instance_variable_set(:@__ivar_declared_ivars, parent_ivars.dup)
+
+      # Copy initial values to subclass
+      parent_values = instance_variable_get(:@__ivar_initial_values) || {}
+      subclass.instance_variable_set(:@__ivar_initial_values, parent_values.dup)
     end
 
     # Get the declared instance variables for this class
     # @return [Array<Symbol>] Declared instance variables
     def ivar_declared
       instance_variable_get(:@__ivar_declared_ivars) || []
+    end
+
+    # Get the initial values for declared instance variables
+    # @return [Hash] Initial values for declared instance variables
+    def ivar_initial_values
+      instance_variable_get(:@__ivar_initial_values) || {}
     end
   end
 end
