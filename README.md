@@ -38,7 +38,7 @@ Ivar waits until an instance is created to do the checking, then uses Prism to l
 
 ## Usage
 
-### Manual Validation
+### Explicit Validation
 
 ```ruby
 # sandwich.rb
@@ -68,7 +68,7 @@ $ ruby sandwich.rb -w
 sandwich.rb:22: warning: unknown instance variable @chese. Did you mean: @cheese?
 ```
 
-### Automatic Validation (Every Instance)
+### Automatic Validation
 
 ```ruby
 require "ivar"
@@ -86,27 +86,13 @@ class Sandwich
 end
 ```
 
-The `Checked` module automatically calls `check_ivars` after initialization, which means it will emit warnings for every instance of the class.
+The `Checked` module automatically calls `check_ivars` after initialization.
 
-### Automatic Validation (Once Per Class)
-
-Too many warnings? Try this:
-
-```ruby
-require "ivar"
-
-class Sandwich
-  include Ivar::Checked
-  ivar_check_policy :warn_once
-
-  # ...
-```
-
-The `warn_once` policy means it will emit warnings only for the first instance of each class.
+Note that the `:warn_once` policy is the default, meaning that this will emit a warning the first time an instance is created, but not for later instances. 
 
 ### Declare Instance Variables
 
-Normally we "declare" variables by setting them in `initialize`. But if you don't have any reason to set them in the initializer, you can still declare them so they won't be flagged.
+With Ivar we "declare" variables implicitly by setting them in `initialize`. But if you don't have any reason to set them in the initializer, you can explicitly declare them so they won't be flagged.
 
 ```ruby
 require "ivar"
@@ -114,7 +100,6 @@ require "ivar"
 class SandwichWithIvarMacro
   include Ivar::Checked
 
-  # Don't warn about @side even though it's not mentioned in initialize
   ivar :@side 
 
   def initialize
@@ -129,48 +114,12 @@ class SandwichWithIvarMacro
 
   def to_s
     "A #{@bread} sandwich with #{@cheese} and #{@condiments.join(", ")}" \
-      " and a side of #{@side}" if @side
+      (@side ? "and a side of #{@side}" : "")
   end
 end
 ```
 
-Note: this WILL set the variable to `nil` before `initialize` runs, so if you have code that depends on `defined?(@var)` it may break. Lemme know if you want a non-setting form of predeclaration. Or just submit a PR.
-
-### Setting ivars from initializer keyword arguments
-
-While we're messing around with ivars, let's fix Ruby's oldest missing convenience feature:
-
-```ruby
-require "ivar"
-
-class SandwichWithKwarg
-  include Ivar::Checked
-
-  ivar kwarg: [:@bread, :@cheese, :@condiments, :@pickles, :@side]
-
-  def to_s
-    result = "A #{@bread} sandwich with #{@cheese}"
-    result += " and #{@condiments.join(", ")}" unless @condiments.empty?
-    result += " with pickles" if @pickles
-    result += " and a side of #{@side}" if @side
-    result
-  end
-end
-
-# Create a sandwich with keyword arguments
-sandwich = SandwichWithKwarg.new(
-  bread: "wheat",
-  cheese: "muenster",
-  condiments: ["mayo", "mustard"],
-  side: "chips"
-)
-
-puts sandwich.to_s  # Outputs: A wheat sandwich with muenster and mayo, mustard and a side of chips
-```
-
-Ta-da, no more tedious setting of instance variables from arguments of the same name.
-
-TODO: Find a positional args version of this that makes sense.
+Note: this WILL set the variable to `nil` before `initialize` runs, so if you have code that depends on `defined?(@var)` it may break. This may change in a future release.
 
 ## Check Policies
 
@@ -303,7 +252,6 @@ For more details, see [VERSION.md](VERSION.md).
 
 # TODO
 
-- Pre-declare "ghost" variables without setting them
+- Pre-declare variables without setting them to nil
 - Add a module for dynamic checking of instance_variable_get/set
 - Audit and improve code the robot wrote
-- Thread-safety
