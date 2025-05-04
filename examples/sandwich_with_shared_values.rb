@@ -9,7 +9,7 @@ class SandwichWithSharedValues
   ivar :@mayo, :@mustard, :@ketchup, value: true
 
   # Declare bread and cheese with individual values
-  ivar ":@bread": "wheat", ":@cheese": "cheddar"
+  ivar "@bread": "wheat", "@cheese": "cheddar"
 
   # Declare a variable without an initial value
   ivar :@side

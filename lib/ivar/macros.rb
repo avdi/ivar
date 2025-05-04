@@ -16,11 +16,11 @@ module Ivar
 
     # Declares instance variables that should be considered valid
     # without being explicitly initialized
-    # @param ivars [Array<Symbol>, Hash] Instance variables to declare
-    #   When a hash is provided, keys should be instance variable names as strings (":@name")
-    #   and values are the initial values to set before initialize is called
+    # @param ivars [Array<Symbol>] Instance variables to declare
     # @param value [Object] Optional value to initialize all declared variables with
     #   Example: ivar :@foo, :@bar, value: 123
+    # @param ivar_values [Hash] Individual initial values for instance variables
+    #   Example: ivar "@foo": 123, "@bar": 456
     def ivar(*ivars, value: UNSET, **ivar_values)
       # Handle both regular declarations and declarations with initial values
       declared = instance_variable_get(:@__ivar_declared_ivars) || []
@@ -40,8 +40,8 @@ module Ivar
 
       # Process declarations with individual initial values (hash)
       ivar_values.each do |key, val|
-        # Convert string keys like ":@name" to symbols :@name
-        ivar_name = key.to_s.delete_prefix(":").to_sym
+        # Handle string keys like "@name" by converting to symbols :@name
+        ivar_name = key.is_a?(String) ? key.to_sym : key
         initial_values[ivar_name] = val
         # Also add to declared ivars if not already included
         unless declared.include?(ivar_name) || new_ivars.include?(ivar_name)

@@ -23,7 +23,7 @@ class TestIvarWithInitialValues < Minitest::Test
       include Ivar::Checked
 
       # Declare instance variables with initial values
-      ivar ":@foo": 123, ":@bar": 456
+      ivar "@foo": 123, "@bar": 456
 
       def initialize
         # The values should already be set before this method is called
@@ -51,7 +51,7 @@ class TestIvarWithInitialValues < Minitest::Test
 
       # Declare some variables with initial values and some without
       ivar :@regular_var
-      ivar ":@initialized_var": "initial value"
+      ivar "@initialized_var": "initial value"
 
       def initialize
         # We don't set @regular_var here
@@ -92,7 +92,7 @@ class TestIvarWithInitialValues < Minitest::Test
       include Ivar::Checked
 
       # Declare instance variables with initial values in parent
-      ivar ":@parent_var": "parent value"
+      ivar "@parent_var": "parent value"
 
       def initialize
         # The value should already be set
@@ -103,7 +103,7 @@ class TestIvarWithInitialValues < Minitest::Test
     # Create a child class that inherits and adds its own initial values
     child_klass = Class.new(parent_klass) do
       # Declare instance variables with initial values in child
-      ivar ":@child_var": "child value"
+      ivar "@child_var": "child value"
 
       def initialize
         # Call parent initialize first
@@ -133,9 +133,9 @@ class TestIvarWithInitialValues < Minitest::Test
       include Ivar::Checked
 
       # Declare instance variables with complex initial values
-      ivar ":@array": [1, 2, 3],
-        ":@hash": {a: 1, b: 2},
-        ":@nested": {list: [4, 5, 6], data: {c: 3}}
+      ivar "@array": [1, 2, 3],
+        "@hash": {a: 1, b: 2},
+        "@nested": {list: [4, 5, 6], data: {c: 3}}
 
       def initialize
         # Modify the complex values
@@ -165,7 +165,7 @@ class TestIvarWithInitialValues < Minitest::Test
       include Ivar::Checked
 
       # Declare instance variables with initial values
-      ivar ":@shared_var": "parent value"
+      ivar "@shared_var": "parent value"
 
       def initialize
         # No modifications here
@@ -175,7 +175,7 @@ class TestIvarWithInitialValues < Minitest::Test
     # Create a child class that overrides the initial value
     child_klass = Class.new(parent_klass) do
       # Override the initial value from the parent
-      ivar ":@shared_var": "child value"
+      ivar "@shared_var": "child value"
 
       def initialize
         super
@@ -203,7 +203,7 @@ class TestIvarWithInitialValues < Minitest::Test
       include Ivar::Checked
 
       # Declare an instance variable with nil as the initial value
-      ivar ":@nil_var": nil
+      ivar "@nil_var": nil
       # Declare a regular variable without an initial value
       ivar :@undefined_var
 
@@ -252,7 +252,7 @@ class TestIvarWithInitialValues < Minitest::Test
       ivar :@foo, :@bar, value: 123
 
       # Also declare a variable with a different value
-      ivar ":@baz": 456
+      ivar "@baz": 456
 
       def initialize
         # Modify one of the variables
@@ -294,7 +294,7 @@ class TestIvarWithInitialValues < Minitest::Test
       ivar :@a, :@b, :@c, value: "shared"
 
       # Override one of the variables with a different value
-      ivar ":@b": "override"
+      ivar "@b": "override"
 
       def initialize
         # No modifications

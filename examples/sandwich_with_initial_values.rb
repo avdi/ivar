@@ -6,10 +6,10 @@ class SandwichWithInitialValues
   include Ivar::Checked
 
   # Declare instance variables with initial values
-  ivar ":@bread": "wheat",
-    ":@cheese": "muenster",
-    ":@condiments": ["mayo", "mustard"],
-    ":@pickles": true
+  ivar "@bread": "wheat",
+    "@cheese": "muenster",
+    "@condiments": ["mayo", "mustard"],
+    "@pickles": true
 
   # Declare a variable without an initial value
   ivar :@side
