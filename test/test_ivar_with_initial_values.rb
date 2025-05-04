@@ -65,6 +65,10 @@ class TestIvarWithInitialValues < Minitest::Test
           @initialized_var
         ]
       end
+
+      def instance_vars
+        instance_variables
+      end
     end
 
     # Create an instance
@@ -75,6 +79,11 @@ class TestIvarWithInitialValues < Minitest::Test
     values = instance.values
     assert_equal "undefined", values[0], "@regular_var should be undefined"
     assert_equal "INITIAL VALUE", values[1], "@initialized_var should be 'INITIAL VALUE'"
+
+    # Check that only the initialized variable appears in instance_variables
+    instance_vars = instance.instance_vars
+    refute_includes instance_vars, :@regular_var, "@regular_var should not be in instance_variables"
+    assert_includes instance_vars, :@initialized_var, "@initialized_var should be in instance_variables"
   end
 
   def test_ivar_with_initial_values_inheritance
@@ -186,5 +195,51 @@ class TestIvarWithInitialValues < Minitest::Test
 
     # Check that the child instance has the child value
     assert_equal "child value", child_instance.value
+  end
+
+  def test_ivar_with_explicit_nil_value
+    # Create a class with an ivar explicitly set to nil
+    klass = Class.new do
+      include Ivar::Checked
+
+      # Declare an instance variable with nil as the initial value
+      ivar ":@nil_var": nil
+      # Declare a regular variable without an initial value
+      ivar :@undefined_var
+
+      def initialize
+        # No modifications here
+      end
+
+      def check_vars
+        {
+          nil_var_defined: defined?(@nil_var),
+          nil_var_value: @nil_var,
+          undefined_var_defined: defined?(@undefined_var)
+        }
+      end
+
+      def instance_vars
+        instance_variables
+      end
+    end
+
+    # Create an instance
+    instance = klass.new
+
+    # Check the variables
+    result = instance.check_vars
+
+    # @nil_var should be defined and have a nil value
+    assert_equal "instance-variable", result[:nil_var_defined], "@nil_var should be defined"
+    assert_nil result[:nil_var_value], "@nil_var should be nil"
+
+    # @undefined_var should be undefined
+    assert_nil result[:undefined_var_defined], "@undefined_var should be undefined"
+
+    # Check instance_variables list
+    instance_vars = instance.instance_vars
+    assert_includes instance_vars, :@nil_var, "@nil_var should be in instance_variables"
+    refute_includes instance_vars, :@undefined_var, "@undefined_var should not be in instance_variables"
   end
 end
