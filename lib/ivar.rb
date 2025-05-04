@@ -6,6 +6,7 @@ require_relative "ivar/policies"
 require_relative "ivar/validation"
 require_relative "ivar/macros"
 require_relative "ivar/auto_check"
+require_relative "ivar/check_all"
 require "prism"
 require "did_you_mean"
 
