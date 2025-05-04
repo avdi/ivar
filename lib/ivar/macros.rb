@@ -78,7 +78,7 @@ module Ivar
       # Create attribute methods if requested
       if reader || writer || accessor
         # Get all ivar names (both from regular declarations and hash keys)
-        all_ivars = new_ivars + ivar_values.keys
+        all_ivars = new_ivars
 
         # Convert @name to name by removing the @ symbol
         attr_names = all_ivars.map { |ivar_name| ivar_name.to_s.delete_prefix("@") }
