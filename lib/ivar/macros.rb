@@ -26,17 +26,27 @@ module Ivar
     # @param ivars [Array<Symbol>] Instance variables to declare
     # @param value [Object] Optional value to initialize all declared variables with
     #   Example: ivar :@foo, :@bar, value: 123
+    # @param reader [Boolean] If true, creates attr_reader for all declared variables
+    #   Example: ivar :@foo, :@bar, reader: true
+    # @param writer [Boolean] If true, creates attr_writer for all declared variables
+    #   Example: ivar :@foo, :@bar, writer: true
+    # @param accessor [Boolean] If true, creates attr_accessor for all declared variables
+    #   Example: ivar :@foo, :@bar, accessor: true
     # @param ivar_values [Hash] Individual initial values for instance variables
     #   Example: ivar "@foo": 123, "@bar": 456
     # @yield [varname] Block to generate initial values based on variable name
     #   Example: ivar(:@foo, :@bar) { |varname| "#{varname} default" }
-    def ivar(*ivars, value: UNSET, **ivar_values, &block)
+    def ivar(*ivars, value: UNSET, reader: false, writer: false, accessor: false, **ivar_values, &block)
       # Handle both regular declarations and declarations with initial values
       declared = instance_variable_get(:@__ivar_declared_ivars) || []
       initial_values = instance_variable_get(:@__ivar_initial_values) || {}
 
       # Process regular declarations (symbols)
-      new_ivars = ivars.map(&:to_sym)
+      # Ensure all ivar names start with @
+      new_ivars = ivars.map do |ivar|
+        ivar_sym = ivar.to_sym
+        ivar_sym.to_s.start_with?("@") ? ivar_sym : :"@#{ivar_sym}"
+      end
       instance_variable_set(:@__ivar_declared_ivars, declared + new_ivars)
 
       # If a block is given, use it to generate initial values for each variable
@@ -55,7 +65,11 @@ module Ivar
       # Process declarations with individual initial values (hash)
       ivar_values.each do |key, val|
         # Handle string keys like "@name" by converting to symbols :@name
-        ivar_name = key.is_a?(String) ? key.to_sym : key
+        key_str = key.to_s
+        # Ensure the key starts with @
+        key_str = "@#{key_str}" unless key_str.start_with?("@")
+        ivar_name = key_str.to_sym
+
         initial_values[ivar_name] = val
         # Also add to declared ivars if not already included
         unless declared.include?(ivar_name) || new_ivars.include?(ivar_name)
@@ -66,6 +80,15 @@ module Ivar
       # Update the declared ivars and initial values
       instance_variable_set(:@__ivar_declared_ivars, declared + new_ivars)
       instance_variable_set(:@__ivar_initial_values, initial_values)
+
+      # Create attribute methods if requested
+      attr_names = (new_ivars + ivar_values.keys.map { |k| k.is_a?(String) ? k.to_sym : k }).map do |ivar_name|
+        # Convert :@name to :name by removing the @ symbol
+        ivar_name.to_s.sub(/^@/, "").to_sym
+      end
+
+      attr_reader(*attr_names) if reader || accessor
+      attr_writer(*attr_names) if writer || accessor
     end
 
     # Hook method called when the module is included
