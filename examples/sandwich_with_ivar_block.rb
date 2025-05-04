@@ -5,17 +5,14 @@ require "ivar"
 class SandwichWithIvarBlock
   include Ivar::Checked
 
-  # Pre-declare instance variables with a block that runs before initialization
-  ivar :@side do
-    @pickles = true
-    @condiments = []
-  end
+  # Pre-declare instance variables
+  ivar :@side
 
   def initialize
     @bread = "wheat"
     @cheese = "muenster"
-    # Note: @pickles is already set to true by the ivar block
-    # Note: @condiments is already initialized to an empty array by the ivar block
+    @pickles = true
+    @condiments = []
     @condiments << "mayo" if !@pickles
     @condiments << "mustard"
     # Note: @side is not set here, but it's pre-initialized to nil

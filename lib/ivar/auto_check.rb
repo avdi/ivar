@@ -60,8 +60,6 @@ module Ivar
       def initialize(*args, **kwargs, &block)
         # Initialize pre-declared instance variables
         initialize_pre_declared_ivars
-        # Execute the initialization block if provided
-        execute_ivar_init_block
 
         # Process keyword arguments
         remaining_kwargs = initialize_from_kwargs(kwargs)

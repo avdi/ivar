@@ -7,8 +7,6 @@ module Ivar
     def self.extended(base)
       # Store pre-declared instance variables for this class
       base.instance_variable_set(:@__ivar_pre_declared_ivars, [])
-      # Store initialization block
-      base.instance_variable_set(:@__ivar_init_block, nil)
       # Store keyword argument mappings
       base.instance_variable_set(:@__ivar_kwarg_mappings, [])
     end
@@ -17,8 +15,7 @@ module Ivar
     # before the initializer is called
     # @param ivars [Array<Symbol>] Instance variables to pre-initialize
     # @param kwarg [Array<Symbol>] Instance variables to initialize from keyword arguments
-    # @yield Optional block to execute in the context of the instance before initialization
-    def ivar(*ivars, kwarg: [], &block)
+    def ivar(*ivars, kwarg: [])
       # Store the pre-declared instance variables
       pre_declared = instance_variable_get(:@__ivar_pre_declared_ivars) || []
       instance_variable_set(:@__ivar_pre_declared_ivars, pre_declared + ivars)
@@ -26,9 +23,6 @@ module Ivar
       # Store the keyword argument mappings
       kwarg_mappings = instance_variable_get(:@__ivar_kwarg_mappings) || []
       instance_variable_set(:@__ivar_kwarg_mappings, kwarg_mappings + Array(kwarg))
-
-      # Store the initialization block if provided
-      instance_variable_set(:@__ivar_init_block, block) if block
     end
 
     # Hook method called when the module is included
@@ -41,10 +35,6 @@ module Ivar
       # Copy keyword argument mappings to subclass
       parent_kwarg_mappings = instance_variable_get(:@__ivar_kwarg_mappings) || []
       subclass.instance_variable_set(:@__ivar_kwarg_mappings, parent_kwarg_mappings.dup)
-
-      # Copy initialization block to subclass
-      parent_block = instance_variable_get(:@__ivar_init_block)
-      subclass.instance_variable_set(:@__ivar_init_block, parent_block) if parent_block
     end
 
     # Get the pre-declared instance variables for this class
@@ -58,12 +48,6 @@ module Ivar
     def ivar_kwarg_mappings
       instance_variable_get(:@__ivar_kwarg_mappings) || []
     end
-
-    # Get the initialization block for this class
-    # @return [Proc, nil] The initialization block or nil if none was provided
-    def ivar_init_block
-      instance_variable_get(:@__ivar_init_block)
-    end
   end
 
   # Module to pre-initialize instance variables
@@ -75,16 +59,6 @@ module Ivar
         klass.ivar_pre_declared.each do |ivar|
           instance_variable_set(ivar, nil) unless instance_variable_defined?(ivar)
         end
-        klass = klass.superclass
-      end
-    end
-
-    # Execute the initialization block in the context of the instance
-    def execute_ivar_init_block
-      klass = self.class
-      while klass.respond_to?(:ivar_init_block)
-        block = klass.ivar_init_block
-        instance_eval(&block) if block
         klass = klass.superclass
       end
     end
