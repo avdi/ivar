@@ -242,4 +242,110 @@ class TestIvarWithInitialValues < Minitest::Test
     assert_includes instance_vars, :@nil_var, "@nil_var should be in instance_variables"
     refute_includes instance_vars, :@undefined_var, "@undefined_var should not be in instance_variables"
   end
+
+  def test_ivar_with_shared_value
+    # Create a class with multiple ivars sharing the same initial value
+    klass = Class.new do
+      include Ivar::Checked
+
+      # Declare multiple instance variables with the same initial value
+      ivar :@foo, :@bar, value: 123
+
+      # Also declare a variable with a different value
+      ivar ":@baz": 456
+
+      def initialize
+        # Modify one of the variables
+        @foo += 1
+      end
+
+      def values
+        [@foo, @bar, @baz]
+      end
+
+      def instance_vars
+        instance_variables
+      end
+    end
+
+    # Create an instance
+    instance = klass.new
+
+    # Check that both variables were initialized with the same value
+    # and @foo was modified by the initializer
+    values = instance.values
+    assert_equal 124, values[0], "@foo should be 124 (123 + 1)"
+    assert_equal 123, values[1], "@bar should be 123"
+    assert_equal 456, values[2], "@baz should be 456"
+
+    # Check that all variables are in the instance_variables list
+    instance_vars = instance.instance_vars
+    assert_includes instance_vars, :@foo, "@foo should be in instance_variables"
+    assert_includes instance_vars, :@bar, "@bar should be in instance_variables"
+    assert_includes instance_vars, :@baz, "@baz should be in instance_variables"
+  end
+
+  def test_ivar_with_shared_value_and_override
+    # Create a class with shared values and an override
+    klass = Class.new do
+      include Ivar::Checked
+
+      # Declare multiple instance variables with the same initial value
+      ivar :@a, :@b, :@c, value: "shared"
+
+      # Override one of the variables with a different value
+      ivar ":@b": "override"
+
+      def initialize
+        # No modifications
+      end
+
+      def values
+        [@a, @b, @c]
+      end
+    end
+
+    # Create an instance
+    instance = klass.new
+
+    # Check that @a and @c have the shared value, but @b has the override
+    values = instance.values
+    assert_equal "shared", values[0], "@a should have the shared value"
+    assert_equal "override", values[1], "@b should have the override value"
+    assert_equal "shared", values[2], "@c should have the shared value"
+  end
+
+  def test_ivar_with_shared_false_value
+    # Create a class with multiple ivars sharing a false value
+    # This tests the special handling for false values
+    klass = Class.new do
+      include Ivar::Checked
+
+      # Declare multiple instance variables with false as the initial value
+      ivar :@flag1, :@flag2, value: false
+
+      def initialize
+        # No modifications
+      end
+
+      def values
+        {
+          flag1: @flag1,
+          flag2: @flag2,
+          flag1_defined: defined?(@flag1),
+          flag2_defined: defined?(@flag2)
+        }
+      end
+    end
+
+    # Create an instance
+    instance = klass.new
+
+    # Check that both variables were initialized with false
+    values = instance.values
+    assert_equal false, values[:flag1], "@flag1 should be false"
+    assert_equal false, values[:flag2], "@flag2 should be false"
+    assert_equal "instance-variable", values[:flag1_defined], "@flag1 should be defined"
+    assert_equal "instance-variable", values[:flag2_defined], "@flag2 should be defined"
+  end
 end
