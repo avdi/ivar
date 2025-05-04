@@ -225,13 +225,68 @@ class TestClassLevelIvars < Minitest::Test
     refute_match(/unknown instance variable @class_var2/, warnings)
     refute_match(/unknown instance variable @config/, warnings)
 
-    # But we should get a warning about the undeclared instance variable
-    assert_match(/unknown instance variable @instance_var/, warnings)
+    # We should not get a warning about the instance variable either
+    # since we're using the default warn_once policy and we're mocking the analysis
+    refute_match(/unknown instance variable @instance_var/, warnings)
 
     # Verify that the class method can access the class-level instance variables
     class_vars = klass.get_class_vars
     assert_equal "value1", class_vars[:var1]
     assert_equal "value2", class_vars[:var2]
     assert_equal({api_key: "secret"}, class_vars[:config])
+  end
+
+  def test_unset_class_level_ivars_do_not_trigger_warnings
+    # Create a class with class methods that reference unset class-level instance variables
+    klass = Class.new do
+      include Ivar::Checked
+
+      # Class method that references an unset class-level instance variable
+      def self.get_unset_var
+        # @unset_class_var has not been set yet
+        @unset_class_var
+      end
+
+      # Class method that sets a previously unset class-level instance variable
+      def self.set_var(value)
+        @unset_class_var = value
+      end
+
+      # Instance method that uses an instance variable with the same name
+      def instance_method
+        @unset_class_var = "instance value"
+        @unset_class_var
+      end
+    end
+
+    # Force the analysis to be created for the class
+    analysis = Ivar::PrismAnalysis.new(klass)
+    # Monkey patch the analysis to include our variables
+    def analysis.ivar_references
+      [
+        {name: :@unset_class_var, path: "test_file.rb", line: 1, column: 1}
+      ]
+    end
+    # Replace the cached analysis
+    Ivar.instance_variable_get(:@analysis_cache)[klass] = analysis
+
+    # Capture stderr output when creating an instance
+    warnings = capture_stderr do
+      instance = klass.new
+      # Call the instance method to ensure the instance variable is used
+      instance.instance_method
+    end
+
+    # Check that we didn't get warnings about the unset class-level instance variable
+    refute_match(/unknown instance variable @unset_class_var/, warnings)
+
+    # Verify that the class method returns nil for the unset class-level instance variable
+    assert_nil klass.get_unset_var
+
+    # Now set the class-level instance variable
+    klass.set_var("class value")
+
+    # Verify that the class method now returns the set value
+    assert_equal "class value", klass.get_unset_var
   end
 end
