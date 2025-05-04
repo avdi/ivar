@@ -37,12 +37,6 @@ module Ivar
       policy_instance.handle_unknown_ivars(unknown_refs, self.class, allowed_ivars)
     end
 
-    # For backward compatibility - delegates to check_ivars with warn_once policy
-    # @param add [Array<Symbol>] Additional instance variables to allow
-    def check_ivars_once(add: [])
-      check_ivars(add: add, policy: :warn_once)
-    end
-
     private
 
     # Get the check policy for this instance
@@ -66,11 +60,6 @@ module Ivar
         # If the class responds to ivar_declared, add its declared ivars
         if klass.respond_to?(:ivar_declared)
           declared_ivars.concat(klass.ivar_declared)
-        end
-
-        # For backward compatibility, also check for ivar_pre_declared
-        if klass.respond_to?(:ivar_pre_declared) && klass.method(:ivar_pre_declared).owner != Ivar::Macros
-          declared_ivars.concat(klass.ivar_pre_declared)
         end
 
         # Move up to the superclass

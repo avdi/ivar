@@ -34,7 +34,6 @@ module Ivar
     # with ClassMethods and includes the Validation module
     def self.included(base)
       base.include(Validation)
-      base.include(PreInitializeIvars)
       base.extend(ClassMethods)
       base.extend(CheckPolicy)
       base.extend(Macros)

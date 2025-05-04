@@ -30,10 +30,8 @@ module Ivar
       def initialize(*args, **kwargs, &block)
         # Call the original initialize method
         super
-        # Automatically check instance variables
-        # We need to collect all instance variables from the current object
-        # and pass them to check_ivars_once to ensure they're all recognized
-        check_ivars_once
+        # Automatically check instance variables with warn_once policy
+        check_ivars(policy: :warn_once)
       end
     end
   end

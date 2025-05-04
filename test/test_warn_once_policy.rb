@@ -2,7 +2,7 @@
 
 require_relative "test_helper"
 
-class TestCheckIvarsOnce < Minitest::Test
+class TestWarnOncePolicy < Minitest::Test
   def setup
     # Clear the cache to ensure a clean test
     Ivar.clear_analysis_cache
@@ -39,8 +39,8 @@ class TestCheckIvarsOnce < Minitest::Test
 
     # Capture stderr output
     warnings = capture_stderr do
-      # Call check_ivars_once to validate
-      instance.check_ivars_once
+      # Call check_ivars with warn_once policy
+      instance.check_ivars(policy: :warn_once)
     end
 
     # Check that we got a warning about the typo
@@ -76,14 +76,14 @@ class TestCheckIvarsOnce < Minitest::Test
     # Replace the cached analysis
     Ivar.instance_variable_get(:@analysis_cache)[klass] = analysis
 
-    # First call to check_ivars_once (should emit warnings)
+    # First call to check_ivars with warn_once policy (should emit warnings)
     first_warnings = capture_stderr do
-      instance.check_ivars_once
+      instance.check_ivars(policy: :warn_once)
     end
 
-    # Second call to check_ivars_once (should not emit warnings)
+    # Second call to check_ivars with warn_once policy (should not emit warnings)
     second_warnings = capture_stderr do
-      instance.check_ivars_once
+      instance.check_ivars(policy: :warn_once)
     end
 
     # Check that we got warnings the first time
@@ -147,14 +147,14 @@ class TestCheckIvarsOnce < Minitest::Test
     # Replace the cached analysis
     Ivar.instance_variable_get(:@analysis_cache)[klass2] = analysis2
 
-    # First call to check_ivars_once for instance1 (should emit warnings)
+    # First call to check_ivars with warn_once policy for instance1 (should emit warnings)
     first_class_warnings = capture_stderr do
-      instance1.check_ivars_once
+      instance1.check_ivars(policy: :warn_once)
     end
 
-    # First call to check_ivars_once for instance2 (should emit warnings)
+    # First call to check_ivars with warn_once policy for instance2 (should emit warnings)
     second_class_warnings = capture_stderr do
-      instance2.check_ivars_once
+      instance2.check_ivars(policy: :warn_once)
     end
 
     # Check that we got warnings for the first class
@@ -163,14 +163,14 @@ class TestCheckIvarsOnce < Minitest::Test
     # Check that we got warnings for the second class
     assert_match(/unknown instance variable @typo_in_class2/, second_class_warnings)
 
-    # Second call to check_ivars_once for instance1 (should not emit warnings)
+    # Second call to check_ivars with warn_once policy for instance1 (should not emit warnings)
     first_class_second_call = capture_stderr do
-      instance1.check_ivars_once
+      instance1.check_ivars(policy: :warn_once)
     end
 
-    # Second call to check_ivars_once for instance2 (should not emit warnings)
+    # Second call to check_ivars with warn_once policy for instance2 (should not emit warnings)
     second_class_second_call = capture_stderr do
-      instance2.check_ivars_once
+      instance2.check_ivars(policy: :warn_once)
     end
 
     # Check that we didn't get warnings for either class on the second call
@@ -211,8 +211,8 @@ class TestCheckIvarsOnce < Minitest::Test
 
     # Capture stderr output
     warnings = capture_stderr do
-      # Call check_ivars_once to validate
-      instance.check_ivars_once(add: [:@allowed_var])
+      # Call check_ivars with warn_once policy to validate
+      instance.check_ivars(add: [:@allowed_var], policy: :warn_once)
     end
 
     # Check that we got a warning about the unknown variable

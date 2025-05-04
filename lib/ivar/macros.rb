@@ -32,13 +32,4 @@ module Ivar
       instance_variable_get(:@__ivar_declared_ivars) || []
     end
   end
-
-  # Legacy module kept for backward compatibility
-  # No longer initializes instance variables to nil
-  module PreInitializeIvars
-    # This method is now a no-op for backward compatibility
-    def initialize_pre_declared_ivars
-      # No longer initializes instance variables to nil
-    end
-  end
 end
