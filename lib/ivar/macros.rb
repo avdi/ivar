@@ -63,13 +63,7 @@ module Ivar
       end
 
       # Process declarations with individual initial values (hash)
-      ivar_values.each do |key, val|
-        # Handle string keys like "@name" by converting to symbols :@name
-        key_str = key.to_s
-        # Ensure the key starts with @
-        key_str = "@#{key_str}" unless key_str.start_with?("@")
-        ivar_name = key_str.to_sym
-
+      ivar_values.each do |ivar_name, val|
         initial_values[ivar_name] = val
         # Also add to declared ivars if not already included
         unless declared.include?(ivar_name) || new_ivars.include?(ivar_name)

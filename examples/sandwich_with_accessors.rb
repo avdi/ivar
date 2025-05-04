@@ -7,13 +7,13 @@ class SandwichWithAccessors
 
   # Declare instance variables with accessors
   ivar :@bread, :@cheese, accessor: true, value: "default"
-  
+
   # Declare condiments with a reader
   ivar :@condiments, reader: true, value: ["mayo", "mustard"]
-  
+
   # Declare pickles with a writer
   ivar :@pickles, writer: true, value: true
-  
+
   # Declare a variable without any accessors
   ivar :@side
 
@@ -21,17 +21,17 @@ class SandwichWithAccessors
     # Override defaults if options provided
     @bread = options[:bread] if options[:bread]
     @cheese = options[:cheese] if options[:cheese]
-    
+
     # Add extra condiments if provided
     @condiments += options[:extra_condiments] if options[:extra_condiments]
-    
+
     # Set pickles based on options
     @pickles = options[:pickles] if options.key?(:pickles)
-    
+
     # Set side if provided
     @side = options[:side] if options[:side]
   end
-  
+
   def to_s
     result = "A #{@bread} sandwich with #{@cheese}"
     result += " and #{@condiments.join(", ")}" unless @condiments.empty?
@@ -39,12 +39,10 @@ class SandwichWithAccessors
     result += " and a side of #{@side}" if defined?(@side) && @side
     result
   end
-  
+
   # Custom reader for side since we didn't create an accessor
-  def side
-    @side
-  end
-  
+  attr_reader :side
+
   # Custom method to toggle pickles
   def toggle_pickles
     @pickles = !@pickles
