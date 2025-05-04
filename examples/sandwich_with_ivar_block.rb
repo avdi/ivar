@@ -5,7 +5,7 @@ require "ivar"
 class SandwichWithIvarBlock
   include Ivar::Checked
 
-  # Pre-declare instance variables
+  # Declare instance variables
   ivar :@side
 
   def initialize
@@ -15,14 +15,14 @@ class SandwichWithIvarBlock
     @condiments = []
     @condiments << "mayo" if !@pickles
     @condiments << "mustard"
-    # Note: @side is not set here, but it's pre-initialized to nil
+    # Note: @side is not set here and remains undefined
   end
 
   def to_s
     result = "A #{@bread} sandwich with #{@cheese}"
     result += " and #{@condiments.join(", ")}" unless @condiments.empty?
     result += " with pickles" if @pickles
-    result += " and a side of #{@side}" if @side
+    result += " and a side of #{@side}" if defined?(@side) && @side
     result
   end
 

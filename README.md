@@ -88,7 +88,7 @@ end
 
 The `Checked` module automatically calls `check_ivars` after initialization.
 
-Note that the `:warn_once` policy is the default, meaning that this will emit a warning the first time an instance is created, but not for later instances. 
+Note that the `:warn_once` policy is the default, meaning that this will emit a warning the first time an instance is created, but not for later instances.
 
 ### Declare Instance Variables
 
@@ -100,7 +100,7 @@ require "ivar"
 class SandwichWithIvarMacro
   include Ivar::Checked
 
-  ivar :@side 
+  ivar :@side
 
   def initialize
     @bread = "wheat"
@@ -119,7 +119,7 @@ class SandwichWithIvarMacro
 end
 ```
 
-Note: this WILL set the variable to `nil` before `initialize` runs, so if you have code that depends on `defined?(@var)` it may break. This may change in a future release.
+Declared instance variables are not initialized to `nil`. They are simply added to a list of variables that are considered valid when checking for unknown instance variables.
 
 ## Check Policies
 
@@ -252,6 +252,5 @@ For more details, see [VERSION.md](VERSION.md).
 
 # TODO
 
-- Pre-declare variables without setting them to nil
 - Add a module for dynamic checking of instance_variable_get/set
 - Audit and improve code the robot wrote

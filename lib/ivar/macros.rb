@@ -5,45 +5,40 @@ module Ivar
   module Macros
     # When this module is extended, it adds class methods to the extending class
     def self.extended(base)
-      # Store pre-declared instance variables for this class
-      base.instance_variable_set(:@__ivar_pre_declared_ivars, [])
+      # Store declared instance variables for this class
+      base.instance_variable_set(:@__ivar_declared_ivars, [])
     end
 
-    # Declares instance variables that should be pre-initialized to nil
-    # before the initializer is called
-    # @param ivars [Array<Symbol>] Instance variables to pre-initialize
+    # Declares instance variables that should be considered valid
+    # without being explicitly initialized
+    # @param ivars [Array<Symbol>] Instance variables to declare
     def ivar(*ivars)
-      # Store the pre-declared instance variables
-      pre_declared = instance_variable_get(:@__ivar_pre_declared_ivars) || []
-      instance_variable_set(:@__ivar_pre_declared_ivars, pre_declared + ivars)
+      # Store the declared instance variables
+      declared = instance_variable_get(:@__ivar_declared_ivars) || []
+      instance_variable_set(:@__ivar_declared_ivars, declared + ivars)
     end
 
     # Hook method called when the module is included
     def inherited(subclass)
       super
-      # Copy pre-declared instance variables to subclass
-      parent_ivars = instance_variable_get(:@__ivar_pre_declared_ivars) || []
-      subclass.instance_variable_set(:@__ivar_pre_declared_ivars, parent_ivars.dup)
+      # Copy declared instance variables to subclass
+      parent_ivars = instance_variable_get(:@__ivar_declared_ivars) || []
+      subclass.instance_variable_set(:@__ivar_declared_ivars, parent_ivars.dup)
     end
 
-    # Get the pre-declared instance variables for this class
-    # @return [Array<Symbol>] Pre-declared instance variables
-    def ivar_pre_declared
-      instance_variable_get(:@__ivar_pre_declared_ivars) || []
+    # Get the declared instance variables for this class
+    # @return [Array<Symbol>] Declared instance variables
+    def ivar_declared
+      instance_variable_get(:@__ivar_declared_ivars) || []
     end
   end
 
-  # Module to pre-initialize instance variables
+  # Legacy module kept for backward compatibility
+  # No longer initializes instance variables to nil
   module PreInitializeIvars
-    # Initialize pre-declared instance variables to nil
+    # This method is now a no-op for backward compatibility
     def initialize_pre_declared_ivars
-      klass = self.class
-      while klass.respond_to?(:ivar_pre_declared)
-        klass.ivar_pre_declared.each do |ivar|
-          instance_variable_set(ivar, nil) unless instance_variable_defined?(ivar)
-        end
-        klass = klass.superclass
-      end
+      # No longer initializes instance variables to nil
     end
   end
 end

@@ -58,9 +58,6 @@ module Ivar
     module InstanceMethods
       # Wrap the initialize method to automatically call check_ivars
       def initialize(*args, **kwargs, &block)
-        # Initialize pre-declared instance variables
-        initialize_pre_declared_ivars
-
         # Call the original initialize method with all arguments
         super
 

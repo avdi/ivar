@@ -19,8 +19,11 @@ module Ivar
       # These are the ones the user has explicitly defined before calling check_ivars
       defined_ivars = instance_variables.map(&:to_sym)
 
+      # Get all declared instance variables from the class hierarchy
+      declared_ivars = collect_declared_ivars
+
       # Add any additional allowed variables
-      allowed_ivars = defined_ivars + add
+      allowed_ivars = defined_ivars + declared_ivars + add
 
       # Get all instance variable references from the analysis
       # This includes location information for each reference
@@ -50,6 +53,31 @@ module Ivar
 
       # Otherwise, use the global default
       Ivar.check_policy
+    end
+
+    # Collect all declared instance variables from the class hierarchy
+    # @return [Array<Symbol>] All declared instance variables
+    def collect_declared_ivars
+      klass = self.class
+      declared_ivars = []
+
+      # Walk up the inheritance chain
+      while klass
+        # If the class responds to ivar_declared, add its declared ivars
+        if klass.respond_to?(:ivar_declared)
+          declared_ivars.concat(klass.ivar_declared)
+        end
+
+        # For backward compatibility, also check for ivar_pre_declared
+        if klass.respond_to?(:ivar_pre_declared) && klass.method(:ivar_pre_declared).owner != Ivar::Macros
+          declared_ivars.concat(klass.ivar_pre_declared)
+        end
+
+        # Move up to the superclass
+        klass = klass.superclass
+      end
+
+      declared_ivars.uniq
     end
   end
 end
