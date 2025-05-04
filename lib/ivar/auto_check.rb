@@ -61,11 +61,8 @@ module Ivar
         # Initialize pre-declared instance variables
         initialize_pre_declared_ivars
 
-        # Process keyword arguments
-        remaining_kwargs = initialize_from_kwargs(kwargs)
-
-        # Call the original initialize method with remaining arguments
-        super(*args, **remaining_kwargs, &block)
+        # Call the original initialize method with all arguments
+        super
 
         # Automatically check instance variables
         check_ivars

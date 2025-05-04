@@ -7,22 +7,15 @@ module Ivar
     def self.extended(base)
       # Store pre-declared instance variables for this class
       base.instance_variable_set(:@__ivar_pre_declared_ivars, [])
-      # Store keyword argument mappings
-      base.instance_variable_set(:@__ivar_kwarg_mappings, [])
     end
 
     # Declares instance variables that should be pre-initialized to nil
     # before the initializer is called
     # @param ivars [Array<Symbol>] Instance variables to pre-initialize
-    # @param kwarg [Array<Symbol>] Instance variables to initialize from keyword arguments
-    def ivar(*ivars, kwarg: [])
+    def ivar(*ivars)
       # Store the pre-declared instance variables
       pre_declared = instance_variable_get(:@__ivar_pre_declared_ivars) || []
       instance_variable_set(:@__ivar_pre_declared_ivars, pre_declared + ivars)
-
-      # Store the keyword argument mappings
-      kwarg_mappings = instance_variable_get(:@__ivar_kwarg_mappings) || []
-      instance_variable_set(:@__ivar_kwarg_mappings, kwarg_mappings + Array(kwarg))
     end
 
     # Hook method called when the module is included
@@ -31,22 +24,12 @@ module Ivar
       # Copy pre-declared instance variables to subclass
       parent_ivars = instance_variable_get(:@__ivar_pre_declared_ivars) || []
       subclass.instance_variable_set(:@__ivar_pre_declared_ivars, parent_ivars.dup)
-
-      # Copy keyword argument mappings to subclass
-      parent_kwarg_mappings = instance_variable_get(:@__ivar_kwarg_mappings) || []
-      subclass.instance_variable_set(:@__ivar_kwarg_mappings, parent_kwarg_mappings.dup)
     end
 
     # Get the pre-declared instance variables for this class
     # @return [Array<Symbol>] Pre-declared instance variables
     def ivar_pre_declared
       instance_variable_get(:@__ivar_pre_declared_ivars) || []
-    end
-
-    # Get the keyword argument mappings for this class
-    # @return [Array<Symbol>] Keyword argument mappings
-    def ivar_kwarg_mappings
-      instance_variable_get(:@__ivar_kwarg_mappings) || []
     end
   end
 
@@ -61,37 +44,6 @@ module Ivar
         end
         klass = klass.superclass
       end
-    end
-
-    # Get all keyword argument mappings from the class hierarchy
-    # @return [Array<Symbol>] All keyword argument mappings
-    def all_kwarg_mappings
-      mappings = []
-      klass = self.class
-      while klass.respond_to?(:ivar_kwarg_mappings)
-        mappings.concat(klass.ivar_kwarg_mappings)
-        klass = klass.superclass
-      end
-      mappings
-    end
-
-    # Initialize instance variables from keyword arguments
-    # @param kwargs [Hash] Keyword arguments
-    # @return [Hash] Remaining keyword arguments
-    def initialize_from_kwargs(kwargs)
-      remaining_kwargs = kwargs.dup
-
-      all_kwarg_mappings.each do |ivar|
-        # Convert @ivar_name to ivar_name for keyword lookup
-        key = ivar.to_s.delete_prefix("@").to_sym
-
-        if remaining_kwargs.key?(key)
-          instance_variable_set(ivar, remaining_kwargs[key])
-          remaining_kwargs.delete(key)
-        end
-      end
-
-      remaining_kwargs
     end
   end
 end
