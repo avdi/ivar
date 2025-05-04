@@ -33,6 +33,12 @@ module Ivar
       internal_ivars = [:@__ivar_check_policy, :@__ivar_declared_ivars, :@__ivar_initial_values]
       allowed_ivars += internal_ivars
 
+      # Get class-level instance variables (defined on the class itself)
+      class_level_ivars = self.class.instance_variables.map(&:to_sym)
+
+      # Add class-level instance variables to the allowed list
+      allowed_ivars += class_level_ivars
+
       # Find references to unknown variables (those not in allowed_ivars)
       unknown_refs = references.reject { |ref| allowed_ivars.include?(ref[:name]) }
 
