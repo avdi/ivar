@@ -12,6 +12,13 @@ module Ivar
       base.instance_variable_set(:@__ivar_declared_ivars, [])
       # Store initial values for declared instance variables
       base.instance_variable_set(:@__ivar_initial_values, {})
+
+      # Declare the internal instance variables used by this module
+      # This prevents warnings about unknown instance variables
+      if base.respond_to?(:ivar)
+        # Add the module's own internal instance variables to the declared list
+        base.ivar :@__ivar_declared_ivars, :@__ivar_initial_values
+      end
     end
 
     # Declares instance variables that should be considered valid
@@ -71,6 +78,13 @@ module Ivar
       # Copy initial values to subclass
       parent_values = instance_variable_get(:@__ivar_initial_values) || {}
       subclass.instance_variable_set(:@__ivar_initial_values, parent_values.dup)
+
+      # Declare the internal instance variables in the subclass
+      # This prevents warnings about unknown instance variables
+      if subclass.respond_to?(:ivar)
+        # Add the module's own internal instance variables to the declared list
+        subclass.ivar :@__ivar_declared_ivars, :@__ivar_initial_values
+      end
     end
 
     # Get the declared instance variables for this class

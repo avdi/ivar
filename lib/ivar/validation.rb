@@ -29,6 +29,10 @@ module Ivar
       # This includes location information for each reference
       references = analysis.ivar_references
 
+      # Add internal instance variables to the allowed list
+      internal_ivars = [:@__ivar_check_policy, :@__ivar_declared_ivars, :@__ivar_initial_values]
+      allowed_ivars += internal_ivars
+
       # Find references to unknown variables (those not in allowed_ivars)
       unknown_refs = references.reject { |ref| allowed_ivars.include?(ref[:name]) }
 

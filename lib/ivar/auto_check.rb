@@ -6,6 +6,15 @@ require_relative "macros"
 module Ivar
   # Module for adding ivar_check_policy to classes
   module CheckPolicy
+    # When this module is extended, declare its internal instance variables
+    def self.extended(base)
+      # Declare the internal instance variable used for check policy
+      # This prevents warnings about unknown instance variables
+      if base.respond_to?(:ivar)
+        base.ivar :@__ivar_check_policy
+      end
+    end
+
     # Set the check policy for this class
     # @param policy [Symbol, Policy] The check policy
     # @return [Symbol, Policy] The check policy
@@ -50,6 +59,12 @@ module Ivar
         super
         # Ensure subclasses also get the initialize wrapper
         subclass.prepend(Ivar::Checked::InstanceMethods)
+
+        # Declare internal instance variables in the subclass
+        # This prevents warnings about unknown instance variables
+        if subclass.respond_to?(:ivar)
+          subclass.ivar :@__ivar_check_policy
+        end
       end
     end
 
