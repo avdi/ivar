@@ -16,6 +16,8 @@
 				"stripe.endsmart",
 				"testdouble.vscode-standard-ruby",
 				"castwide.solargraph",
+				"github.vscode-github-actions",
+				"Shopify.ruby-lsp"
 			]
 		}
 	},

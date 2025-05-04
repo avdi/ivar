@@ -3,6 +3,8 @@
     "connorshea.vscode-ruby-test-adapter",
     "stripe.endsmart",
     "testdouble.vscode-standard-ruby",
-    "castwide.solargraph"
+    "castwide.solargraph",
+    "github.vscode-github-actions",
+    "qwtel.sqlite-viewer"
   ]
 }
