@@ -82,13 +82,16 @@ module Ivar
       instance_variable_set(:@__ivar_initial_values, initial_values)
 
       # Create attribute methods if requested
-      attr_names = (new_ivars + ivar_values.keys.map { |k| k.is_a?(String) ? k.to_sym : k }).map do |ivar_name|
-        # Convert :@name to :name by removing the @ symbol
-        ivar_name.to_s.sub(/^@/, "").to_sym
-      end
+      if reader || writer || accessor
+        # Get all ivar names (both from regular declarations and hash keys)
+        all_ivars = new_ivars + ivar_values.keys
 
-      attr_reader(*attr_names) if reader || accessor
-      attr_writer(*attr_names) if writer || accessor
+        # Convert @name to name by removing the @ symbol
+        attr_names = all_ivars.map { |ivar_name| ivar_name.to_s.delete_prefix("@") }
+
+        attr_reader(*attr_names) if reader || accessor
+        attr_writer(*attr_names) if writer || accessor
+      end
     end
 
     # Hook method called when the module is included
