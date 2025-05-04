@@ -3,6 +3,9 @@
 module Ivar
   # Provides macros for working with instance variables
   module Macros
+    # Special flag object to detect when a parameter is not provided
+    UNSET = Object.new.freeze
+
     # When this module is extended, it adds class methods to the extending class
     def self.extended(base)
       # Store declared instance variables for this class
@@ -18,7 +21,7 @@ module Ivar
     #   and values are the initial values to set before initialize is called
     # @param value [Object] Optional value to initialize all declared variables with
     #   Example: ivar :@foo, :@bar, value: 123
-    def ivar(*ivars, value: nil, **ivar_values)
+    def ivar(*ivars, value: UNSET, **ivar_values)
       # Handle both regular declarations and declarations with initial values
       declared = instance_variable_get(:@__ivar_declared_ivars) || []
       initial_values = instance_variable_get(:@__ivar_initial_values) || {}
@@ -27,8 +30,9 @@ module Ivar
       new_ivars = ivars.map(&:to_sym)
       instance_variable_set(:@__ivar_declared_ivars, declared + new_ivars)
 
-      # If a shared value is provided, apply it to all declared variables
-      if !value.nil? || value.equal?(false)
+      # If the value: parameter was explicitly provided (even if it's nil or false),
+      # apply it to all declared variables
+      if value != UNSET
         new_ivars.each do |ivar_name|
           initial_values[ivar_name] = value
         end
