@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Support for initializing instance variables from keyword arguments using `ivar :@foo, init: :kwarg` or `ivar :@foo, init: :keyword`
+- Proper inheritance handling for keyword argument initialization, with child class declarations taking precedence over parent class declarations
 
 ### Changed
 - Centralized handling of internal variables (those starting with `@__ivar_`) to avoid explicit declarations
