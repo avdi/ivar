@@ -36,14 +36,8 @@ module Ivar
       # Get class-level instance variables (defined on the class itself)
       class_level_ivars = self.class.instance_variables.map(&:to_sym)
 
-      # Get class method names to check for class-level instance variables
-      class_methods = self.class.methods(false) | self.class.private_methods(false)
-
-      # Get class-level instance variables referenced in class methods
-      class_method_ivars = collect_class_method_ivars(class_methods)
-
       # Add class-level instance variables to the allowed list
-      allowed_ivars += class_level_ivars + class_method_ivars
+      allowed_ivars += class_level_ivars
 
       # Find references to unknown variables (those not in allowed_ivars)
       unknown_refs = references.reject { |ref| allowed_ivars.include?(ref[:name]) }
@@ -83,78 +77,6 @@ module Ivar
       end
 
       declared_ivars.uniq
-    end
-
-    # Collect instance variables referenced in class methods
-    # @param class_methods [Array<Symbol>] Class method names to check
-    # @return [Array<Symbol>] Instance variables referenced in class methods
-    def collect_class_method_ivars(class_methods)
-      class_method_ivars = []
-
-      # For each class method, try to extract its source and analyze it for instance variables
-      class_methods.each do |method_name|
-        # Skip methods without source location (built-in methods)
-        next unless self.class.method(method_name).source_location
-
-        begin
-          # Get the method object
-          method_obj = self.class.method(method_name)
-
-          # Get the source file
-          source_file = method_obj.source_location&.first
-          next unless source_file && File.exist?(source_file)
-
-          # Read the source file
-          source = File.read(source_file)
-
-          # Parse the source with Prism
-          result = Prism.parse(source)
-
-          # Create a visitor to collect instance variables
-          visitor = ClassMethodIvarVisitor.new
-
-          # Visit the AST to collect instance variables
-          result.value.accept(visitor)
-
-          # Add the collected instance variables to our list
-          class_method_ivars.concat(visitor.ivars)
-        rescue
-          # If anything goes wrong, just continue to the next method
-          next
-        end
-      end
-
-      class_method_ivars.uniq
-    end
-
-    # Visitor that collects instance variable references in class methods
-    class ClassMethodIvarVisitor < Prism::Visitor
-      attr_reader :ivars
-
-      def initialize
-        super
-        @ivars = []
-      end
-
-      def visit_instance_variable_read_node(node)
-        @ivars << node.name.to_sym
-        true
-      end
-
-      def visit_instance_variable_write_node(node)
-        @ivars << node.name.to_sym
-        true
-      end
-
-      def visit_instance_variable_operator_write_node(node)
-        @ivars << node.name.to_sym
-        true
-      end
-
-      def visit_instance_variable_target_node(node)
-        @ivars << node.name.to_sym
-        true
-      end
     end
   end
 end
