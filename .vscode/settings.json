@@ -30,11 +30,14 @@
     "definition": true,
     "workspaceSymbol": true
   },
-  "rubyLsp.rubyVersionManager": "auto",
+  "rubyLsp.rubyVersionManager": {
+    "identifier": "auto"
+  },
   "rubyLsp.addonSettings": {
     "rubocop": {
       "command": "standardrb",
       "except": []
     }
-  }
+  },
+  "solargraph.bundlerPath": "/usr/local/bin/bundle"
 }
