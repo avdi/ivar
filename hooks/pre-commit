@@ -1,0 +1,54 @@
+#!/bin/sh
+
+# Get list of staged Ruby files
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep "\.rb$")
+
+# Exit if no Ruby files are staged
+if [ -z "$STAGED_FILES" ]; then
+  echo "No Ruby files staged for commit. Skipping linting."
+  exit 0
+fi
+
+# Check if there are any linting issues
+echo "Checking for linting issues..."
+bundle exec standardrb --no-fix $STAGED_FILES
+LINT_RESULT=$?
+
+# If there are linting issues, try to fix them automatically
+if [ $LINT_RESULT -ne 0 ]; then
+  echo "Linting issues found. Attempting to fix automatically..."
+  
+  # Stash unstaged changes
+  git stash -q --keep-index
+  
+  # Run standardrb with auto-fix
+  bundle exec standardrb --fix $STAGED_FILES
+  FIX_RESULT=$?
+  
+  # If auto-fix was successful, add the fixed files back to staging
+  if [ $FIX_RESULT -eq 0 ]; then
+    echo "Auto-fix successful. Adding fixed files to staging area..."
+    git add $STAGED_FILES
+  else
+    echo "Auto-fix failed. Please fix the issues manually."
+    # Restore unstaged changes
+    git stash pop -q
+    exit 1
+  fi
+  
+  # Restore unstaged changes
+  git stash pop -q 2>/dev/null || true
+fi
+
+# Run a final check to make sure everything is fixed
+echo "Running final linting check..."
+bundle exec standardrb --no-fix $STAGED_FILES
+FINAL_RESULT=$?
+
+if [ $FINAL_RESULT -ne 0 ]; then
+  echo "Linting issues still exist after auto-fix. Please fix them manually."
+  exit 1
+fi
+
+echo "Linting passed. Proceeding with commit."
+exit 0
