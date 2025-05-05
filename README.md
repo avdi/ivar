@@ -334,6 +334,8 @@ And thanks to [Augment Code](https://www.augmentcode.com/), without which this g
 
 Bug reports and pull requests are welcome on GitHub at https://github.com/avdi/ivar.
 
+Fair warning: If you contribute a lot I might nominate you to be a maintainer. I know my limitations; I'm good at launching libraries, but not so good at maintaining them.
+
 ## Development
 
 After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake test` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
