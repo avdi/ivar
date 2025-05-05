@@ -2,7 +2,10 @@
 # frozen_string_literal: true
 
 # This script helps with releasing a new version of the gem
-# Usage: script/release [major|minor|patch]
+# Usage: script/release [major|minor|patch] [options]
+#
+# Options:
+#   --yes, -y    Skip confirmation prompt
 
 require "bundler/gem_tasks"
 require_relative "../lib/ivar/version"
@@ -96,14 +99,26 @@ end
 # Main script
 error "Please specify a version bump type: major, minor, or patch" if ARGV.empty?
 
-bump_type = ARGV[0].downcase
+# Parse arguments
+args = ARGV.dup
+skip_confirmation = args.delete("--yes") || args.delete("-y")
+bump_type = args[0].downcase if args[0]
+
+error "Please specify a version bump type: major, minor, or patch" unless bump_type
+
 current_version = Ivar::VERSION
 new_version = get_new_version(current_version, bump_type)
 
 info "Current version: #{current_version}"
 info "New version: #{new_version}"
-puts "Continue? (y/n)"
-confirmation = $stdin.gets.chomp.downcase
+
+# Skip confirmation if --yes/-y option is provided
+confirmation = "y" if skip_confirmation
+
+unless confirmation
+  puts "Continue? (y/n)"
+  confirmation = $stdin.gets.chomp.downcase
+end
 
 if confirmation == "y"
   clean_build_artifacts
