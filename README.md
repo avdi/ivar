@@ -357,6 +357,65 @@ end
 Sandwich.new  # Raises: NameError: test_file.rb:2: unknown instance variable @chese. Did you mean: @cheese?
 ```
 
+## Project-Wide Checking
+
+If you want to enable checking for all classes and modules in your project without having to include `Ivar::Checked` in each one, you can use the `Ivar.check_all` method:
+
+```ruby
+# Enable checking for all classes and modules defined in the project
+require "ivar"
+Ivar.check_all
+
+# Now any class or module defined in the project will have Ivar::Checked included
+class Sandwich
+  # No need to include Ivar::Checked manually
+
+  def initialize
+    @bread = "wheat"
+    @cheese = "muenster"
+  end
+
+  def to_s
+    "A #{@bread} sandwich with #{@chese}"  # This will trigger a warning
+  end
+end
+
+Sandwich.new  # Warning: unknown instance variable @chese. Did you mean: @cheese?
+```
+
+You can also use `Ivar.check_all` with a block to limit its scope:
+
+```ruby
+require "ivar"
+
+# Only classes defined within this block will have Ivar::Checked included
+Ivar.check_all do
+  class Sandwich
+    # ...
+  end
+
+  module Toppings
+    # ...
+  end
+end
+
+# Classes defined outside the block won't have Ivar::Checked included
+class Drink
+  # ...
+end
+```
+
+For convenience, you can also simply require `ivar/check_all` to enable project-wide checking:
+
+```ruby
+# This automatically enables Ivar.check_all
+require "ivar/check_all"
+
+# Now all classes and modules defined in the project will have Ivar::Checked included
+```
+
+Note that only classes and modules defined in files within the project root (as determined by `Ivar.project_root`) will have `Ivar::Checked` included. This prevents the feature from affecting code in gems or the standard library.
+
 # Acknowledgements
 
 Thank you to Joel Drapper, for inspiring me with [the strict_ivars gem](https://github.com/joeldrapper/strict_ivars).
