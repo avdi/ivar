@@ -10,9 +10,10 @@ module Ivar
     def self.extended(base)
       base.instance_variable_set(:@__ivar_declared_ivars, [])
       base.instance_variable_set(:@__ivar_initial_values, {})
+      base.instance_variable_set(:@__ivar_init_methods, {})
 
       if base.respond_to?(:ivar)
-        base.ivar :@__ivar_declared_ivars, :@__ivar_initial_values
+        base.ivar :@__ivar_declared_ivars, :@__ivar_initial_values, :@__ivar_init_methods
       end
     end
 
@@ -21,6 +22,9 @@ module Ivar
     # @param ivars [Array<Symbol>] Instance variables to declare
     # @param value [Object] Optional value to initialize all declared variables with
     #   Example: ivar :@foo, :@bar, value: 123
+    # @param init [Symbol] Initialization method for the variable
+    #   :kwarg or :keyword - initializes from a keyword argument with the same name
+    #   Example: ivar :@foo, init: :kwarg
     # @param reader [Boolean] If true, creates attr_reader for all declared variables
     #   Example: ivar :@foo, :@bar, reader: true
     # @param writer [Boolean] If true, creates attr_writer for all declared variables
@@ -31,15 +35,23 @@ module Ivar
     #   Example: ivar "@foo": 123, "@bar": 456
     # @yield [varname] Block to generate initial values based on variable name
     #   Example: ivar(:@foo, :@bar) { |varname| "#{varname} default" }
-    def ivar(*ivars, value: UNSET, reader: false, writer: false, accessor: false, **ivar_values, &block)
+    def ivar(*ivars, value: UNSET, init: nil, reader: false, writer: false, accessor: false, **ivar_values, &block)
       declared = instance_variable_get(:@__ivar_declared_ivars) || []
       initial_values = instance_variable_get(:@__ivar_initial_values) || {}
+      init_methods = instance_variable_get(:@__ivar_init_methods) || {}
 
       new_ivars = ivars.map do |ivar|
         ivar_sym = ivar.to_sym
         ivar_sym.to_s.start_with?("@") ? ivar_sym : :"@#{ivar_sym}"
       end
       instance_variable_set(:@__ivar_declared_ivars, declared + new_ivars)
+
+      # Handle init method settings
+      if init
+        new_ivars.each do |ivar_name|
+          init_methods[ivar_name] = init
+        end
+      end
 
       if block
         new_ivars.each do |ivar_name|
@@ -60,6 +72,7 @@ module Ivar
 
       instance_variable_set(:@__ivar_declared_ivars, declared + new_ivars)
       instance_variable_set(:@__ivar_initial_values, initial_values)
+      instance_variable_set(:@__ivar_init_methods, init_methods)
 
       if reader || writer || accessor
         all_ivars = new_ivars
@@ -79,8 +92,11 @@ module Ivar
       parent_values = instance_variable_get(:@__ivar_initial_values) || {}
       subclass.instance_variable_set(:@__ivar_initial_values, parent_values.dup)
 
+      parent_init_methods = instance_variable_get(:@__ivar_init_methods) || {}
+      subclass.instance_variable_set(:@__ivar_init_methods, parent_init_methods.dup)
+
       if subclass.respond_to?(:ivar)
-        subclass.ivar :@__ivar_declared_ivars, :@__ivar_initial_values
+        subclass.ivar :@__ivar_declared_ivars, :@__ivar_initial_values, :@__ivar_init_methods
       end
     end
 
@@ -94,6 +110,12 @@ module Ivar
     # @return [Hash] Initial values for declared instance variables
     def ivar_initial_values
       instance_variable_get(:@__ivar_initial_values) || {}
+    end
+
+    # Get the initialization methods for declared instance variables
+    # @return [Hash] Initialization methods for declared instance variables
+    def ivar_init_methods
+      instance_variable_get(:@__ivar_init_methods) || {}
     end
   end
 end

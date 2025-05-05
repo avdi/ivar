@@ -65,7 +65,8 @@ module Ivar
       # Wrap the initialize method to automatically call check_ivars
       def initialize(*args, **kwargs, &block)
         initialize_declared_ivars
-        super
+        remaining_kwargs = initialize_from_kwargs(kwargs)
+        super(*args, **remaining_kwargs, &block)
         check_ivars
       end
 
@@ -82,6 +83,39 @@ module Ivar
         initial_values.each do |ivar_name, value|
           instance_variable_set(ivar_name, value)
         end
+      end
+
+      # Valid initialization methods for keyword arguments
+      KWARG_INIT_METHODS = [:kwarg, :keyword].freeze
+
+      # Initialize instance variables from keyword arguments
+      # @param kwargs [Hash] Keyword arguments passed to initialize
+      # @return [Hash] Remaining keyword arguments after peeling off those used for ivar initialization
+      def initialize_from_kwargs(kwargs)
+        return kwargs unless self.class.respond_to?(:ivar_init_methods)
+
+        # Get the initialization methods for declared instance variables
+        init_methods = self.class.ivar_init_methods
+
+        # Create a copy of kwargs that we'll modify
+        remaining_kwargs = kwargs.dup
+
+        # Process each ivar with an init method
+        init_methods.each do |ivar_name, init_method|
+          next unless KWARG_INIT_METHODS.include?(init_method)
+
+          # Convert @var_name to var_name for keyword lookup
+          kwarg_name = ivar_name.to_s.delete_prefix("@").to_sym
+
+          # If the keyword argument is present, set the instance variable
+          # and remove it from the remaining kwargs
+          if remaining_kwargs.key?(kwarg_name)
+            instance_variable_set(ivar_name, remaining_kwargs[kwarg_name])
+            remaining_kwargs.delete(kwarg_name)
+          end
+        end
+
+        remaining_kwargs
       end
     end
   end

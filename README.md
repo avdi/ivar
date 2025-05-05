@@ -221,6 +221,40 @@ sandwich.bread = "rye"           # Writer method
 puts "Updated bread: #{sandwich.bread}"
 ```
 
+#### Keyword Argument Initialization
+
+You can initialize instance variables directly from keyword arguments using the `init: :kwarg` option:
+
+```ruby
+class SandwichWithKwargInit
+  include Ivar::Checked
+
+  # Declare instance variables with keyword argument initialization
+  ivar :@bread, :@cheese, init: :kwarg
+
+  # Declare pickles with both a default value and kwarg initialization
+  ivar :@pickles, value: false, init: :kwarg
+
+  # Note: Don't define parameters for the peeled-off keywords
+  def initialize(extra_condiments: [])
+    # The declared variables are already initialized with their values
+    # from keyword arguments or defaults
+    # ...
+  end
+end
+
+# Create a sandwich with custom bread and cheese
+custom_sandwich = SandwichWithKwargInit.new(bread: "rye", cheese: "swiss")
+```
+
+You can also use `init: :keyword` as an alias for `init: :kwarg`.
+
+The keyword argument name is derived from the instance variable name by removing the `@` prefix. For example, `@bread` will look for a keyword argument named `bread:`.
+
+If the keyword argument is not provided, the instance variable will be initialized with the default value from the `:value` option (if provided).
+
+**Important**: Keyword arguments used for `init: :kwarg` are "peeled off" and not passed to the `initialize` method. This means you should not define parameters for these keywords in your `initialize` method. Only define parameters for keyword arguments that are not used for ivar initialization.
+
 ## Check Policies
 
 Ivar supports different policies for handling unknown instance variables. You can specify a policy at the global level, class level, or per-check level.
