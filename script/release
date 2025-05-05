@@ -103,7 +103,7 @@ new_version = get_new_version(current_version, bump_type)
 info "Current version: #{current_version}"
 info "New version: #{new_version}"
 puts "Continue? (y/n)"
-confirmation = gets.chomp.downcase
+confirmation = $stdin.gets.chomp.downcase
 
 if confirmation == "y"
   clean_build_artifacts
