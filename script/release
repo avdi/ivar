@@ -2,7 +2,7 @@
 # frozen_string_literal: true
 
 # This script helps with releasing a new version of the gem
-# Usage: bin/release [major|minor|patch]
+# Usage: script/release [major|minor|patch]
 
 require "bundler/gem_tasks"
 require_relative "../lib/ivar/version"

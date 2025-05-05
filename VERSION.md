@@ -17,7 +17,7 @@ To release a new version:
 1. Make sure all changes are documented in the `CHANGELOG.md` file under the "Unreleased" section
 2. Run the release script with the appropriate version bump type:
    ```
-   bin/release [major|minor|patch]
+   script/release [major|minor|patch]
    ```
 3. The script will:
    - Run tests and linter to ensure everything is working

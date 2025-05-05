@@ -338,7 +338,7 @@ Fair warning: If you contribute a lot I might nominate you to be a maintainer. I
 
 ## Development
 
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake test` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
+After checking out the repo, run `script/setup` to install dependencies. Then, run `rake test` to run the tests. You can also run `script/console` for an interactive prompt that will allow you to experiment.
 
 ## Releasing
 
@@ -346,7 +346,7 @@ This project uses a standardized release process:
 
 1. Update the version number in `version.rb` according to [Semantic Versioning](https://semver.org/)
 2. Update the CHANGELOG.md with your changes under the "Unreleased" section
-3. Run the release script: `bin/release [major|minor|patch]`
+3. Run the release script: `script/release [major|minor|patch]`
 4. Push the changes and tag: `git push origin main && git push origin v{version}`
 
 For more details, see [VERSION.md](VERSION.md).
