@@ -8,6 +8,7 @@ require_relative "ivar/macros"
 require_relative "ivar/auto_check"
 require "prism"
 require "did_you_mean"
+require "pathname"
 
 module Ivar
   @analysis_cache = {}
@@ -103,23 +104,14 @@ module Ivar
   # @param start_dir [String] Directory to start the search from
   # @return [String] The project root directory
   def self.find_project_root(start_dir)
-    current_dir = start_dir
+    path = Pathname.new(start_dir)
 
-    # Walk up the directory tree until we find a project root indicator
-    loop do
+    # Use Pathname#ascend to walk up the directory tree
+    path.ascend do |dir|
       # Check for each indicator file
       PROJECT_ROOT_INDICATORS.each do |indicator|
-        indicator_path = File.join(current_dir, indicator)
-        return current_dir if File.exist?(indicator_path)
+        return dir.to_s if dir.join(indicator).exist?
       end
-
-      # Move up to the parent directory
-      parent_dir = File.dirname(current_dir)
-
-      # If we've reached the root directory, stop searching
-      break if parent_dir == current_dir
-
-      current_dir = parent_dir
     end
 
     # If no project root found, return the starting directory
