@@ -143,11 +143,8 @@ module Ivar
 
       # Collect all keyword-initialized ivars from the entire ancestor chain
       # @return [Array<Symbol>] An array of instance variable names
-      def collect_kwarg_ivars_from_ancestors
-        all_kwarg_ivars = []
-        ancestors_with_init_methods = find_ancestors_with_init_methods
-        collect_kwarg_ivars_from_ancestors_list(ancestors_with_init_methods, all_kwarg_ivars)
-        all_kwarg_ivars
+      def collect_kwarg_ivars_from_ancestors(ancestors = find_ancestors_with_init_methods)
+        collect_kwarg_ivars_from_ancestors_list(ancestors)
       end
 
       # Find all ancestors that have defined initialization methods
@@ -161,16 +158,15 @@ module Ivar
 
       # Collect keyword-initialized ivars from the given ancestors
       # @param ancestors [Array<Class>] Ancestors with init methods
-      # @param result [Array<Symbol>] Array to store the collected ivar names
-      def collect_kwarg_ivars_from_ancestors_list(ancestors, result)
-        ancestors.reverse_each do |ancestor|
+      def collect_kwarg_ivars_from_ancestors_list(ancestors)
+        ancestors.reverse.flat_map { |ancestor|
           init_methods = ancestor.ivar_init_methods
-          init_methods.each do |ivar_name, init_method|
-            if KWARG_INIT_METHODS.include?(init_method)
-              result << ivar_name unless result.include?(ivar_name)
+          init_methods.filter_map { |ivar_name, init_method|
+            case init_method
+            when *KWARG_INIT_METHODS then ivar_name
             end
-          end
-        end
+          }
+        }.uniq
       end
     end
   end
