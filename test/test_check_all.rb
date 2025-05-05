@@ -8,14 +8,14 @@ class TestCheckAll < Minitest::Test
 
   def setup
     # Clear any existing trace points
-    Ivar.send(:disable_check_all) if Ivar.instance_variable_get(:@check_all_trace_point)
+    Ivar.send(:disable_check_all)
     # Clear the analysis cache to ensure fresh tests
     Ivar.clear_analysis_cache
   end
 
   def teardown
     # Clean up after tests
-    Ivar.send(:disable_check_all) if Ivar.instance_variable_get(:@check_all_trace_point)
+    Ivar.send(:disable_check_all)
     Ivar.clear_analysis_cache
   end
 
@@ -23,8 +23,11 @@ class TestCheckAll < Minitest::Test
     # Enable check_all
     Ivar.check_all
 
+    # Get the check_all_manager
+    manager = Ivar.instance_variable_get(:@check_all_manager)
+
     # Verify that a trace point is created and enabled
-    trace_point = Ivar.instance_variable_get(:@check_all_trace_point)
+    trace_point = manager.trace_point
     refute_nil trace_point
     assert trace_point.enabled?
   end
@@ -33,27 +36,39 @@ class TestCheckAll < Minitest::Test
     # Enable check_all
     Ivar.check_all
 
+    # Get the check_all_manager
+    manager = Ivar.instance_variable_get(:@check_all_manager)
+
     # Verify that check_all is enabled
-    refute_nil Ivar.instance_variable_get(:@check_all_trace_point)
+    refute_nil manager.trace_point
+    assert manager.enabled?
 
     # Disable check_all
     Ivar.send(:disable_check_all)
 
     # Verify that check_all is disabled
-    assert_nil Ivar.instance_variable_get(:@check_all_trace_point)
+    assert_nil manager.trace_point
+    refute manager.enabled?
   end
 
   def test_check_all_with_block_scope
     # Use check_all with a block
     Ivar.check_all do
+      # Get the check_all_manager
+      manager = Ivar.instance_variable_get(:@check_all_manager)
+
       # Verify that check_all is enabled within the block
-      trace_point = Ivar.instance_variable_get(:@check_all_trace_point)
+      trace_point = manager.trace_point
       refute_nil trace_point
       assert trace_point.enabled?
     end
 
+    # Get the check_all_manager
+    manager = Ivar.instance_variable_get(:@check_all_manager)
+
     # Verify that check_all is disabled after the block
-    assert_nil Ivar.instance_variable_get(:@check_all_trace_point)
+    assert_nil manager.trace_point
+    refute manager.enabled?
   end
 
   def test_check_all_includes_checked_in_project_classes
