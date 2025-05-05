@@ -14,16 +14,22 @@ module Ivar
       defined_ivars = instance_variables.map(&:to_sym)
       declared_ivars = collect_declared_ivars
       allowed_ivars = defined_ivars + declared_ivars + add
+
+      # Add all internal variables to allowed list
+      # Note: Internal variables are already filtered out during analysis,
+      # but we add them here as a safety measure
+      allowed_ivars += Ivar.known_internal_ivars
+
+      # Get references from analysis (internal variables already filtered out)
       references = analysis.ivar_references
 
-      internal_ivars = [:@__ivar_check_policy, :@__ivar_declared_ivars, :@__ivar_initial_values]
-      allowed_ivars += internal_ivars
+      # Filter out class-level references
+      instance_refs = references.reject { |ref| ref[:context] == :class }
 
-      instance_refs = references.reject do |ref|
-        ref[:context] == :class || internal_ivars.include?(ref[:name])
-      end
-
+      # Find unknown references
       unknown_refs = instance_refs.reject { |ref| allowed_ivars.include?(ref[:name]) }
+
+      # Handle unknown references according to policy
       policy_instance = Ivar.get_policy(policy)
       policy_instance.handle_unknown_ivars(unknown_refs, self.class, allowed_ivars)
     end

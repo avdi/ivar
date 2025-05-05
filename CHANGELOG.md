@@ -10,6 +10,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Support for initializing instance variables from keyword arguments using `ivar :@foo, init: :kwarg` or `ivar :@foo, init: :keyword`
 
+### Changed
+- Centralized handling of internal variables (those starting with `@__ivar_`) to avoid explicit declarations
+- Improved filtering of internal variables during analysis phase rather than validation phase
+
 ## [0.3.2] - 2025-05-05
 
 ## [0.3.1] - 2025-05-05

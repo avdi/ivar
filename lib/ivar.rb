@@ -20,6 +20,27 @@ module Ivar
   PROJECT_ROOT_FINDER = ProjectRoot.new
   CHECK_ALL_MANAGER = CheckAllManager.new
 
+  # Pattern for internal instance variables
+  INTERNAL_IVAR_PREFIX = "@__ivar_"
+
+  # Checks if an instance variable name is an internal variable
+  # @param ivar_name [Symbol, String] The instance variable name to check
+  # @return [Boolean] Whether the variable is an internal variable
+  def self.internal_ivar?(ivar_name)
+    ivar_name.to_s.start_with?(INTERNAL_IVAR_PREFIX)
+  end
+
+  # Returns a list of known internal instance variables
+  # @return [Array<Symbol>] List of known internal instance variables
+  def self.known_internal_ivars
+    [
+      :@__ivar_check_policy,
+      :@__ivar_declared_ivars,
+      :@__ivar_initial_values,
+      :@__ivar_init_methods
+    ]
+  end
+
   # Returns a cached analysis for the given class or module
   # Creates a new analysis if one doesn't exist in the cache
   # Thread-safe: Multiple readers are allowed, but writers block all other access

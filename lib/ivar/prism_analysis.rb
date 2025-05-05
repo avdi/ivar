@@ -37,7 +37,10 @@ module Ivar
         result = Prism.parse(code)
         visitor = IvarReferenceVisitor.new(file_path, context)
         result.value.accept(visitor)
-        @references.concat(visitor.references)
+
+        # Filter out internal variables before adding to references
+        filtered_refs = visitor.references.reject { |ref| Ivar.internal_ivar?(ref[:name]) }
+        @references.concat(filtered_refs)
       end
     end
 

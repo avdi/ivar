@@ -11,10 +11,6 @@ module Ivar
       base.instance_variable_set(:@__ivar_declared_ivars, [])
       base.instance_variable_set(:@__ivar_initial_values, {})
       base.instance_variable_set(:@__ivar_init_methods, {})
-
-      if base.respond_to?(:ivar)
-        base.ivar :@__ivar_declared_ivars, :@__ivar_initial_values, :@__ivar_init_methods
-      end
     end
 
     # Declares instance variables that should be considered valid
@@ -94,10 +90,6 @@ module Ivar
 
       parent_init_methods = instance_variable_get(:@__ivar_init_methods) || {}
       subclass.instance_variable_set(:@__ivar_init_methods, parent_init_methods.dup)
-
-      if subclass.respond_to?(:ivar)
-        subclass.ivar :@__ivar_declared_ivars, :@__ivar_initial_values, :@__ivar_init_methods
-      end
     end
 
     # Get the declared instance variables for this class
