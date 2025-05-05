@@ -5,6 +5,7 @@ require_relative "ivar/prism_analysis"
 require_relative "ivar/policies"
 require_relative "ivar/validation"
 require_relative "ivar/macros"
+require_relative "ivar/project_root"
 require_relative "ivar/auto_check"
 require "prism"
 require "did_you_mean"
@@ -15,7 +16,7 @@ module Ivar
   @checked_classes = {}
   @default_check_policy = :warn_once
   @mutex = Mutex.new
-  @project_root_cache = {}
+  @project_root_finder = ProjectRoot.new
   @check_all_trace_point = nil
 
   # Returns a cached analysis for the given class or module
@@ -53,6 +54,7 @@ module Ivar
       @analysis_cache.clear
       @checked_classes.clear
     end
+    @project_root_finder.clear_cache
   end
 
   # Get the default check policy
@@ -71,52 +73,11 @@ module Ivar
   end
 
   # Determines the project root directory based on the caller's location
-  # Walks up the directory tree looking for tell-tale files like Gemfile
+  # Delegates to ProjectRoot class
   # @param caller_location [String, nil] Optional file path to start from (defaults to caller's location)
   # @return [String] The absolute path to the project root directory
   def self.project_root(caller_location = nil)
-    # Get the caller's file path if not provided
-    file_path = caller_location || caller_locations(1, 1).first&.path
-    return Dir.pwd unless file_path # Fallback to current directory if no path available
-
-    # Check if we've already determined the project root for this file
-    @mutex.synchronize do
-      return @project_root_cache[file_path] if @project_root_cache.key?(file_path)
-    end
-
-    # Convert to absolute path and get the directory
-    dir = File.dirname(File.expand_path(file_path))
-
-    # Walk up the directory tree looking for project root indicators
-    root = find_project_root(dir)
-
-    # Cache the result for future calls
-    @mutex.synchronize do
-      @project_root_cache[file_path] = root
-    end
-
-    root
-  end
-
-  # Project root indicator files, in order of precedence
-  PROJECT_ROOT_INDICATORS = %w[Gemfile .git .ruby-version Rakefile].freeze
-
-  # Find the project root by walking up the directory tree
-  # @param start_dir [String] Directory to start the search from
-  # @return [String] The project root directory
-  def self.find_project_root(start_dir)
-    path = Pathname.new(start_dir)
-
-    # Use Pathname#ascend to walk up the directory tree
-    path.ascend do |dir|
-      # Check for each indicator file
-      PROJECT_ROOT_INDICATORS.each do |indicator|
-        return dir.to_s if dir.join(indicator).exist?
-      end
-    end
-
-    # If no project root found, return the starting directory
-    start_dir
+    @project_root_finder.find(caller_location)
   end
 
   # Enables automatic inclusion of Ivar::Checked in all classes and modules
@@ -179,6 +140,4 @@ module Ivar
       @check_all_trace_point = nil
     end
   end
-
-  private_class_method :find_project_root
 end
