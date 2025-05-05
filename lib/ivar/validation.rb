@@ -33,8 +33,22 @@ module Ivar
       internal_ivars = [:@__ivar_check_policy, :@__ivar_declared_ivars, :@__ivar_initial_values]
       allowed_ivars += internal_ivars
 
+      # Note: We intentionally don't add class-level instance variables to allowed_ivars
+      # so that instance methods referencing them will trigger warnings
+
+      # Filter references to only include instance method references
+      # and exclude class method references
+      instance_refs = references.reject do |ref|
+        # Skip references in class methods
+        ref[:context] == :class ||
+          # Also skip references to internal instance variables
+          internal_ivars.include?(ref[:name])
+      end
+
       # Find references to unknown variables (those not in allowed_ivars)
-      unknown_refs = references.reject { |ref| allowed_ivars.include?(ref[:name]) }
+      # Note: We don't add class_level_ivars to allowed_ivars, so instance methods
+      # that reference class-level instance variables will still trigger warnings
+      unknown_refs = instance_refs.reject { |ref| allowed_ivars.include?(ref[:name]) }
 
       # Handle unknown variables according to the policy
       policy_instance = Ivar.get_policy(policy)
