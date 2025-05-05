@@ -3,8 +3,9 @@
 - avoid over-engineering. Prefer basic Ruby data types to building new abstractions. (But extract abstractions when I tell you to.)
 - avoid inline comments. Prefer "explaining variables", intention-revealing method names, and the "composed method" pattern where appropriate. Class, module, and method-documenting comments are fine.
 - De-lint (with standardrb) before committing. Use auto-fix and manually fix the rest.
-- Run all tests and fix failures before committing. 
+- Run all tests and fix failures before committing.
 - Never "cheat" by making implementation code test-aware. But it is fine to make interactions with the world dependency-injectable for testing purposes.
 - Include a quote of my instruction that led to the commit in the commit message
 - Sign your commit messages with "-- Auggie".
-- Commit and push after making successful changes. 
+- Update the CHANGELOG.md unreleased section as appropriate
+- Commit and push after making successful changes.
