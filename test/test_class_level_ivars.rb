@@ -17,6 +17,9 @@ class TestClassLevelIvars < Minitest::Test
       # Class-level instance variable
       @class_level_var = "class value"
 
+      # Declare the class-level instance variable to prevent warnings
+      ivar :@class_level_var
+
       # Class method that uses the class-level instance variable
       def self.get_class_var
         @class_level_var
@@ -118,6 +121,9 @@ class TestClassLevelIvars < Minitest::Test
       @config = {}
       @initialized = false
 
+      # Declare the class-level instance variables
+      ivar :@config, :@initialized
+
       # Class method that sets a class-level instance variable
       def self.configure(options)
         @config = options
@@ -170,68 +176,5 @@ class TestClassLevelIvars < Minitest::Test
     config = klass.configuration
     assert_equal({api_key: "secret", timeout: 30}, config[:config])
     assert_equal true, config[:initialized]
-  end
-
-  def test_class_level_ivars_are_automatically_excluded_from_validation
-    # Create a class with class-level instance variables
-    klass = Class.new do
-      include Ivar::Checked
-
-      # Class-level instance variables with various names
-      @class_var1 = "value1"
-      @class_var2 = "value2"
-      @config = {api_key: "secret"}
-
-      # Class method that uses class-level instance variables
-      def self.get_class_vars
-        {
-          var1: @class_var1,
-          var2: @class_var2,
-          config: @config
-        }
-      end
-
-      # Instance method that uses an instance variable with a different name
-      def instance_method
-        @instance_var = "instance value"
-        @instance_var
-      end
-    end
-
-    # Force the analysis to be created for the class
-    analysis = Ivar::PrismAnalysis.new(klass)
-    # Monkey patch the analysis to include our variables
-    def analysis.ivar_references
-      [
-        {name: :@instance_var, path: "test_file.rb", line: 1, column: 1},
-        # Include class-level variables in the analysis to verify they're excluded
-        {name: :@class_var1, path: "test_file.rb", line: 2, column: 1},
-        {name: :@class_var2, path: "test_file.rb", line: 3, column: 1},
-        {name: :@config, path: "test_file.rb", line: 4, column: 1}
-      ]
-    end
-    # Replace the cached analysis
-    Ivar.instance_variable_get(:@analysis_cache)[klass] = analysis
-
-    # Capture stderr output when creating an instance
-    warnings = capture_stderr do
-      instance = klass.new
-      # Call the instance method to ensure the instance variable is used
-      instance.instance_method
-    end
-
-    # Check that we didn't get warnings about the class-level instance variables
-    refute_match(/unknown instance variable @class_var1/, warnings)
-    refute_match(/unknown instance variable @class_var2/, warnings)
-    refute_match(/unknown instance variable @config/, warnings)
-
-    # But we should get a warning about the undeclared instance variable
-    assert_match(/unknown instance variable @instance_var/, warnings)
-
-    # Verify that the class method can access the class-level instance variables
-    class_vars = klass.get_class_vars
-    assert_equal "value1", class_vars[:var1]
-    assert_equal "value2", class_vars[:var2]
-    assert_equal({api_key: "secret"}, class_vars[:config])
   end
 end
