@@ -1,0 +1,2 @@
+#!/bin/sh
+STANDARDOPTS="--fix-unsafely $*" bundle exec rake standard
