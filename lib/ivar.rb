@@ -14,6 +14,7 @@ module Ivar
   @checked_classes = {}
   @default_check_policy = :warn_once
   @mutex = Mutex.new
+  @project_root_cache = {}
 
   # Returns a cached analysis for the given class or module
   # Creates a new analysis if one doesn't exist in the cache
@@ -66,4 +67,64 @@ module Ivar
   def self.check_policy=(policy)
     @mutex.synchronize { @default_check_policy = policy }
   end
+
+  # Determines the project root directory based on the caller's location
+  # Walks up the directory tree looking for tell-tale files like Gemfile
+  # @param caller_location [String, nil] Optional file path to start from (defaults to caller's location)
+  # @return [String] The absolute path to the project root directory
+  def self.project_root(caller_location = nil)
+    # Get the caller's file path if not provided
+    file_path = caller_location || caller_locations(1, 1).first&.path
+    return Dir.pwd unless file_path # Fallback to current directory if no path available
+
+    # Check if we've already determined the project root for this file
+    @mutex.synchronize do
+      return @project_root_cache[file_path] if @project_root_cache.key?(file_path)
+    end
+
+    # Convert to absolute path and get the directory
+    dir = File.dirname(File.expand_path(file_path))
+
+    # Walk up the directory tree looking for project root indicators
+    root = find_project_root(dir)
+
+    # Cache the result for future calls
+    @mutex.synchronize do
+      @project_root_cache[file_path] = root
+    end
+
+    root
+  end
+
+  # Project root indicator files, in order of precedence
+  PROJECT_ROOT_INDICATORS = %w[Gemfile .git .ruby-version Rakefile].freeze
+
+  # Find the project root by walking up the directory tree
+  # @param start_dir [String] Directory to start the search from
+  # @return [String] The project root directory
+  def self.find_project_root(start_dir)
+    current_dir = start_dir
+
+    # Walk up the directory tree until we find a project root indicator
+    loop do
+      # Check for each indicator file
+      PROJECT_ROOT_INDICATORS.each do |indicator|
+        indicator_path = File.join(current_dir, indicator)
+        return current_dir if File.exist?(indicator_path)
+      end
+
+      # Move up to the parent directory
+      parent_dir = File.dirname(current_dir)
+
+      # If we've reached the root directory, stop searching
+      break if parent_dir == current_dir
+
+      current_dir = parent_dir
+    end
+
+    # If no project root found, return the starting directory
+    start_dir
+  end
+
+  private_class_method :find_project_root
 end
