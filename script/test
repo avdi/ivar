@@ -1,0 +1,2 @@
+#!/bin/sh
+TESTOPTS="$*" bundle exec rake test
