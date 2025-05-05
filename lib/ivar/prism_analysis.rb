@@ -30,19 +30,17 @@ module Ivar
       @references = []
 
       # Process instance methods
-      instance_source_files.each do |file_path|
-        code = File.read(file_path)
-        result = Prism.parse(code)
-        visitor = IvarReferenceVisitor.new(file_path, :instance)
-        result.value.accept(visitor)
-        @references.concat(visitor.references)
-      end
+      process_source_files(instance_source_files, :instance)
 
       # Process class methods
-      class_source_files.each do |file_path|
+      process_source_files(class_source_files, :class)
+    end
+
+    def process_source_files(source_files, context)
+      source_files.each do |file_path|
         code = File.read(file_path)
         result = Prism.parse(code)
-        visitor = IvarReferenceVisitor.new(file_path, :class)
+        visitor = IvarReferenceVisitor.new(file_path, context)
         result.value.accept(visitor)
         @references.concat(visitor.references)
       end
@@ -56,29 +54,30 @@ module Ivar
       # Get all instance methods
       instance_methods = @klass.instance_methods(false) | @klass.private_instance_methods(false)
 
-      # Collect source files for all instance methods
-      source_files = Set.new
-      instance_methods.each do |method_name|
-        next unless @klass.instance_method(method_name).source_location
-
-        source_files << @klass.instance_method(method_name).source_location.first
+      # Collect source files for instance methods
+      collect_method_source_files(instance_methods) do |method_name|
+        @klass.instance_method(method_name)
       end
-
-      source_files
     end
 
     def collect_class_method_source_files
       # Get all class/singleton methods
       class_methods = @klass.singleton_methods(false)
 
-      # Collect source files for all class methods
-      source_files = Set.new
-      class_methods.each do |method_name|
-        next unless @klass.method(method_name).source_location
-
-        source_files << @klass.method(method_name).source_location.first
+      # Collect source files for class methods
+      collect_method_source_files(class_methods) do |method_name|
+        @klass.method(method_name)
       end
+    end
 
+    def collect_method_source_files(method_names)
+      source_files = Set.new
+      method_names.each do |method_name|
+        method_obj = yield(method_name)
+        next unless method_obj.source_location
+
+        source_files << method_obj.source_location.first
+      end
       source_files
     end
 
