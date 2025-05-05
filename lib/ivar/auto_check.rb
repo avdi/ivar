@@ -74,15 +74,10 @@ module Ivar
       # This applies defaults from the entire ancestor chain, with child defaults
       # taking precedence over parent defaults
       def initialize_declared_ivars
-        initialized_vars = instance_variable_defined?(:@__ivar_initialized_vars) ?
-                           @__ivar_initialized_vars : []
+        initialized_vars = instance_variable_defined?(:@__ivar_initialized_vars) ? @__ivar_initialized_vars : []
 
-        all_initial_values = ancestor_initial_values
-
-        all_initial_values.each do |ivar_name, value|
-          unless initialized_vars.include?(ivar_name)
-            instance_variable_set(ivar_name, value)
-          end
+        ancestor_initial_values.each do |ivar_name, value|
+          initialized_vars.include?(ivar_name) or instance_variable_set(ivar_name, value)
         end
       end
 
