@@ -39,5 +39,14 @@
       "except": []
     }
   },
-  "solargraph.bundlerPath": "/usr/local/bin/bundle"
+  "solargraph.bundlerPath": "/usr/local/bin/bundle",
+  "editor.detectIndentation": true,
+  "editor.insertFinalNewline": true,
+  "files.insertFinalNewline": true,
+  "files.trimTrailingWhitespace": true,
+  "editor.trimAutoWhitespace": true,
+  "files.eol": "\n",
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "explicit"
+  }
 }

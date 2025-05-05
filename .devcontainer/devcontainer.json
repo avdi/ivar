@@ -1,25 +1,26 @@
 // See https://containers.dev/implementors/json_reference/ for configuration reference
 {
-	"name": "ivar",
-	"build": {
-		"dockerfile": "Dockerfile"
-	},
-	"remoteUser": "devcontainer",
-	"features": {
-		"ghcr.io/devcontainers/features/github-cli:1": {},
-		"ghcr.io/jungaretti/features/ripgrep:1": {}
-	},
-	"customizations": {
-		"vscode": {
-			"extensions": [
-				"connorshea.vscode-ruby-test-adapter",
-				"stripe.endsmart",
-				"testdouble.vscode-standard-ruby",
-				"castwide.solargraph",
-				"github.vscode-github-actions",
-				"Shopify.ruby-lsp"
-			]
-		}
-	},
-	"postCreateCommand": "bash .devcontainer/post-create.sh"
+  "name": "ivar",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "remoteUser": "devcontainer",
+  "features": {
+    "ghcr.io/devcontainers/features/github-cli:1": {},
+    "ghcr.io/jungaretti/features/ripgrep:1": {}
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "connorshea.vscode-ruby-test-adapter",
+        "stripe.endsmart",
+        "testdouble.vscode-standard-ruby",
+        "castwide.solargraph",
+        "github.vscode-github-actions",
+        "Shopify.ruby-lsp",
+        "EditorConfig.EditorConfig"
+      ]
+    }
+  },
+  "postCreateCommand": "bash .devcontainer/post-create.sh"
 }
