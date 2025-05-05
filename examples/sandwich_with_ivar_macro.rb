@@ -13,13 +13,12 @@ class SandwichWithIvarMacro
     @bread = "wheat"
     @cheese = "muenster"
     @condiments = %w[mayo mustard]
-    # NOTE: @side is not set here and remains undefined
+    # @side is declared but intentionally not initialized here
   end
 
   def to_s
     result = "A #{@bread} sandwich with #{@cheese} and #{@condiments.join(", ")}"
-    # This won't trigger a warning because @side is declared
-    # We need to check if it's defined first
+    # Using defined? to safely check for optional @side
     result += " and a side of #{@side}" if defined?(@side) && @side
     result
   end

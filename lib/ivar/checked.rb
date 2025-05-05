@@ -19,7 +19,6 @@ module Ivar
       # Hook method called when the module is included
       def inherited(subclass)
         super
-        # Ensure subclasses also get the initialize wrapper
         subclass.prepend(InstanceMethods)
       end
     end
@@ -28,9 +27,7 @@ module Ivar
     module InstanceMethods
       # Wrap the initialize method to automatically call check_ivars
       def initialize(*args, **kwargs, &block)
-        # Call the original initialize method
         super
-        # Automatically check instance variables with warn_once policy
         check_ivars(policy: :warn_once)
       end
     end

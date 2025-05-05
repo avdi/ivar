@@ -24,7 +24,7 @@ class SpecialtySandwich < BaseSandwich
 
   def to_s
     result = "#{base_to_s} with #{@condiments.join(", ")}"
-    result += " and #{@special_sause}" # Typo here
+    result += " and #{@special_sause}"  # Intentional typo in @special_sauce
     result
   end
 end

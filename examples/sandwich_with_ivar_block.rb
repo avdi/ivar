@@ -15,7 +15,7 @@ class SandwichWithIvarBlock
     @condiments = []
     @condiments << "mayo" if !@pickles
     @condiments << "mustard"
-    # Note: @side is not set here and remains undefined
+    # @side is declared but intentionally not initialized here
   end
 
   def to_s

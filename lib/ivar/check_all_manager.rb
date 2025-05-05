@@ -18,49 +18,32 @@ module Ivar
     #   for the duration of the block. Otherwise, it remains active indefinitely.
     # @return [void]
     def enable(project_root, &block)
-      # If a trace point is already active, disable it first
       disable if @trace_point
-
-      # Convert project root to Pathname for easier path operations
       root_pathname = Pathname.new(project_root)
 
-      # Create a new trace point that triggers on class/module definition
       @mutex.synchronize do
         @trace_point = TracePoint.new(:class) do |tp|
-          # Skip if we can't determine the path (e.g., classes defined in eval)
           next unless tp.path
-
-          # Get the absolute path of the file where the class is defined
           file_path = Pathname.new(File.expand_path(tp.path))
 
-          # Only include Ivar::Checked if the class is defined within the project root
           if file_path.to_s.start_with?(root_pathname.to_s)
-            # Get the class or module being defined
             klass = tp.self
-
-            # Skip if the class already includes Ivar::Checked
             next if klass.included_modules.include?(Ivar::Checked)
-
-            # Include Ivar::Checked in the class
             klass.include(Ivar::Checked)
           end
         end
 
-        # Enable the trace point
         @trace_point.enable
       end
 
       if block
         begin
-          # Execute the block with auto-checking enabled
           yield
         ensure
-          # Disable auto-checking after the block completes
           disable
         end
       end
 
-      # Return nil to avoid returning the trace point
       nil
     end
 

@@ -14,8 +14,7 @@ class Sandwich
   end
 
   def to_s
-    # Intentional typo in @cheese
-    "A #{@bread} sandwich with #{@chese}"
+    "A #{@bread} sandwich with #{@chese}"  # Intentional typo in @cheese
   end
 end
 

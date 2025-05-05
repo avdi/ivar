@@ -8,8 +8,6 @@ module Ivar
   module CheckPolicy
     # When this module is extended, declare its internal instance variables
     def self.extended(base)
-      # Declare the internal instance variable used for check policy
-      # This prevents warnings about unknown instance variables
       if base.respond_to?(:ivar)
         base.ivar :@__ivar_check_policy
       end
@@ -20,10 +18,8 @@ module Ivar
     # @return [Symbol, Policy] The check policy
     def ivar_check_policy(policy = nil, **options)
       if policy.nil?
-        # Getter - return the current policy
         @__ivar_check_policy || Ivar.check_policy
       else
-        # Setter - set the policy
         @__ivar_check_policy = options.empty? ? policy : [policy, options]
       end
     end
@@ -31,7 +27,6 @@ module Ivar
     # Hook method called when the module is included
     def inherited(subclass)
       super
-      # Copy the check policy to the subclass
       subclass.instance_variable_set(:@__ivar_check_policy, @__ivar_check_policy)
     end
   end
@@ -57,11 +52,8 @@ module Ivar
       # Hook method called when the module is included
       def inherited(subclass)
         super
-        # Ensure subclasses also get the initialize wrapper
         subclass.prepend(Ivar::Checked::InstanceMethods)
 
-        # Declare internal instance variables in the subclass
-        # This prevents warnings about unknown instance variables
         if subclass.respond_to?(:ivar)
           subclass.ivar :@__ivar_check_policy
         end
@@ -72,13 +64,8 @@ module Ivar
     module InstanceMethods
       # Wrap the initialize method to automatically call check_ivars
       def initialize(*args, **kwargs, &block)
-        # Initialize declared instance variables with their initial values
         initialize_declared_ivars
-
-        # Call the original initialize method with all arguments
         super
-
-        # Automatically check instance variables
         check_ivars
       end
 

@@ -10,8 +10,7 @@ class BeforeClass
   end
 
   def to_s
-    # Typo in @name - this won't be checked
-    "Name: #{@naem}"
+    "Name: #{@naem}"  # Intentional typo to demonstrate lack of checking
   end
 end
 
@@ -22,8 +21,7 @@ class WithinBlockClass
   end
 
   def to_s
-    # Typo in @name - this won't be checked yet
-    "Name: #{@naem}"
+    "Name: #{@naem}"  # Intentional typo to demonstrate lack of checking yet
   end
 end
 
@@ -34,8 +32,7 @@ module WithinBlockModule
     end
 
     def to_s
-      # Typo in @name - this won't be checked yet
-      "Name: #{@naem}"
+      "Name: #{@naem}"  # Intentional typo to demonstrate lack of checking yet
     end
   end
 end
@@ -53,8 +50,7 @@ Ivar.check_all do
     end
 
     def to_s
-      # Typo in @name - this will be checked
-      "Name: #{@naem}"
+      "Name: #{@naem}"  # Intentional typo to demonstrate checking
     end
   end
 end
@@ -66,8 +62,7 @@ class AfterClass
   end
 
   def to_s
-    # Typo in @name - this won't be checked
-    "Name: #{@naem}"
+    "Name: #{@naem}"  # Intentional typo to demonstrate lack of checking
   end
 end
 

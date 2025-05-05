@@ -17,8 +17,7 @@ class Sandwich
   end
 
   def to_s
-    # Intentional typo in @cheese
-    "A #{@bread} sandwich with #{@chese} and #{@condiments.join(", ")}"
+    "A #{@bread} sandwich with #{@chese} and #{@condiments.join(", ")}"  # Intentional typo in @cheese
   end
 end
 
@@ -34,8 +33,7 @@ class Drink
   end
 
   def to_s
-    # Intentional typo in @size
-    "A #{@sise} #{@type}"
+    "A #{@sise} #{@type}"  # Intentional typo in @size
   end
 end
 

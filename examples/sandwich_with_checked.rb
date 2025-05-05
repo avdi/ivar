@@ -9,7 +9,6 @@ class SandwichWithChecked
     @bread = "wheat"
     @cheese = "muenster"
     @condiments = ["mayo", "mustard"]
-    # No need for explicit check_ivars call
   end
 
   def to_s

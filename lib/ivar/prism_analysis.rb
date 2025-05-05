@@ -23,16 +23,11 @@ module Ivar
     private
 
     def collect_references
-      # Collect source files for both instance methods and class methods
       instance_source_files = collect_instance_method_source_files
       class_source_files = collect_class_method_source_files
 
       @references = []
-
-      # Process instance methods
       process_source_files(instance_source_files, :instance)
-
-      # Process class methods
       process_source_files(class_source_files, :class)
     end
 
@@ -51,20 +46,14 @@ module Ivar
     end
 
     def collect_instance_method_source_files
-      # Get all instance methods
       instance_methods = @klass.instance_methods(false) | @klass.private_instance_methods(false)
-
-      # Collect source files for instance methods
       collect_method_source_files(instance_methods) do |method_name|
         @klass.instance_method(method_name)
       end
     end
 
     def collect_class_method_source_files
-      # Get all class/singleton methods
       class_methods = @klass.singleton_methods(false)
-
-      # Collect source files for class methods
       collect_method_source_files(class_methods) do |method_name|
         @klass.method(method_name)
       end

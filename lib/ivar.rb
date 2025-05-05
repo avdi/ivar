@@ -24,10 +24,8 @@ module Ivar
   # Creates a new analysis if one doesn't exist in the cache
   # Thread-safe: Multiple readers are allowed, but writers block all other access
   def self.get_analysis(klass)
-    # First try a fast read-only check without locking
     return @analysis_cache[klass] if @analysis_cache.key?(klass)
 
-    # If not found, acquire lock and check again (double-checked locking pattern)
     MUTEX.synchronize do
       @analysis_cache[klass] ||= PrismAnalysis.new(klass)
     end
@@ -61,9 +59,6 @@ module Ivar
   # Get the default check policy
   # @return [Symbol] The default check policy
   def self.check_policy
-    # No need for synchronization as this is a read-only operation
-    # on an immutable value that's only set during initialization or
-    # explicitly through check_policy=
     @default_check_policy
   end
 
@@ -88,10 +83,7 @@ module Ivar
   #   for the duration of the block. Otherwise, it remains active indefinitely.
   # @return [void]
   def self.check_all(&block)
-    # Get the project root to determine which files are in the project
     root = project_root
-
-    # Delegate to the CheckAllManager
     CHECK_ALL_MANAGER.enable(root, &block)
   end
 
