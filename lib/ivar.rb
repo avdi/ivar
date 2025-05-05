@@ -16,9 +16,9 @@ module Ivar
   @analysis_cache = {}
   @checked_classes = {}
   @default_check_policy = :warn_once
-  @mutex = Mutex.new
-  @project_root_finder = ProjectRoot.new
-  @check_all_manager = CheckAllManager.new
+  MUTEX = Mutex.new
+  PROJECT_ROOT_FINDER = ProjectRoot.new
+  CHECK_ALL_MANAGER = CheckAllManager.new
 
   # Returns a cached analysis for the given class or module
   # Creates a new analysis if one doesn't exist in the cache
@@ -28,7 +28,7 @@ module Ivar
     return @analysis_cache[klass] if @analysis_cache.key?(klass)
 
     # If not found, acquire lock and check again (double-checked locking pattern)
-    @mutex.synchronize do
+    MUTEX.synchronize do
       @analysis_cache[klass] ||= PrismAnalysis.new(klass)
     end
   end
@@ -38,24 +38,24 @@ module Ivar
   # @return [Boolean] Whether the class has been validated
   # Thread-safe: Read-only operation
   def self.class_checked?(klass)
-    @mutex.synchronize { @checked_classes.key?(klass) }
+    MUTEX.synchronize { @checked_classes.key?(klass) }
   end
 
   # Marks a class as having been checked
   # @param klass [Class] The class to mark as checked
   # Thread-safe: Write operation protected by mutex
   def self.mark_class_checked(klass)
-    @mutex.synchronize { @checked_classes[klass] = true }
+    MUTEX.synchronize { @checked_classes[klass] = true }
   end
 
   # For testing purposes - allows clearing the cache
   # Thread-safe: Write operation protected by mutex
   def self.clear_analysis_cache
-    @mutex.synchronize do
+    MUTEX.synchronize do
       @analysis_cache.clear
       @checked_classes.clear
     end
-    @project_root_finder.clear_cache
+    PROJECT_ROOT_FINDER.clear_cache
   end
 
   # Get the default check policy
@@ -70,7 +70,7 @@ module Ivar
   # Set the default check policy
   # @param policy [Symbol, Policy] The default check policy
   def self.check_policy=(policy)
-    @mutex.synchronize { @default_check_policy = policy }
+    MUTEX.synchronize { @default_check_policy = policy }
   end
 
   # Determines the project root directory based on the caller's location
@@ -78,7 +78,7 @@ module Ivar
   # @param caller_location [String, nil] Optional file path to start from (defaults to caller's location)
   # @return [String] The absolute path to the project root directory
   def self.project_root(caller_location = nil)
-    @project_root_finder.find(caller_location)
+    PROJECT_ROOT_FINDER.find(caller_location)
   end
 
   # Enables automatic inclusion of Ivar::Checked in all classes and modules
@@ -92,12 +92,12 @@ module Ivar
     root = project_root
 
     # Delegate to the CheckAllManager
-    @check_all_manager.enable(root, &block)
+    CHECK_ALL_MANAGER.enable(root, &block)
   end
 
   # Disables automatic inclusion of Ivar::Checked in classes and modules.
   # @return [void]
   def self.disable_check_all
-    @check_all_manager.disable
+    CHECK_ALL_MANAGER.disable
   end
 end

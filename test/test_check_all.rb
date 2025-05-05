@@ -24,7 +24,7 @@ class TestCheckAll < Minitest::Test
     Ivar.check_all
 
     # Get the check_all_manager
-    manager = Ivar.instance_variable_get(:@check_all_manager)
+    manager = Ivar::CHECK_ALL_MANAGER
 
     # Verify that a trace point is created and enabled
     trace_point = manager.trace_point
@@ -37,7 +37,7 @@ class TestCheckAll < Minitest::Test
     Ivar.check_all
 
     # Get the check_all_manager
-    manager = Ivar.instance_variable_get(:@check_all_manager)
+    manager = Ivar::CHECK_ALL_MANAGER
 
     # Verify that check_all is enabled
     refute_nil manager.trace_point
@@ -55,7 +55,7 @@ class TestCheckAll < Minitest::Test
     # Use check_all with a block
     Ivar.check_all do
       # Get the check_all_manager
-      manager = Ivar.instance_variable_get(:@check_all_manager)
+      manager = Ivar::CHECK_ALL_MANAGER
 
       # Verify that check_all is enabled within the block
       trace_point = manager.trace_point
@@ -64,7 +64,7 @@ class TestCheckAll < Minitest::Test
     end
 
     # Get the check_all_manager
-    manager = Ivar.instance_variable_get(:@check_all_manager)
+    manager = Ivar::CHECK_ALL_MANAGER
 
     # Verify that check_all is disabled after the block
     assert_nil manager.trace_point
