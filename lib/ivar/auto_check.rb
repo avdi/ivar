@@ -77,22 +77,13 @@ module Ivar
         initialized_vars = instance_variable_defined?(:@__ivar_initialized_vars) ?
                            @__ivar_initialized_vars : []
 
-        all_initial_values = collect_initial_values_from_ancestors
+        all_initial_values = ancestor_initial_values
 
         all_initial_values.each do |ivar_name, value|
           unless initialized_vars.include?(ivar_name)
             instance_variable_set(ivar_name, value)
           end
         end
-      end
-
-      # Collect initial values from the entire ancestor chain
-      # @return [Hash] A hash of instance variable names to their initial values
-      def collect_initial_values_from_ancestors
-        all_initial_values = {}
-        ancestors_with_initial_values = find_ancestors_with_initial_values
-        apply_ancestor_initial_values(ancestors_with_initial_values, all_initial_values)
-        all_initial_values
       end
 
       # Find all ancestors that have defined initial values for instance variables
@@ -106,9 +97,8 @@ module Ivar
 
       # Apply initial values from ancestors to the result hash
       # @param ancestors [Array<Class>] Ancestors with initial values
-      # @param result [Hash] Hash to store the merged initial values
-      def apply_ancestor_initial_values(ancestors, result)
-        ancestors.reverse_each do |ancestor|
+      def ancestor_initial_values(ancestors = find_ancestors_with_initial_values)
+        ancestors.reverse.reduce({}) do |result, ancestor|
           result.merge!(ancestor.ivar_initial_values)
         end
       end
