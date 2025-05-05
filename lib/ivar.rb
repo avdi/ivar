@@ -16,6 +16,7 @@ module Ivar
   @default_check_policy = :warn_once
   @mutex = Mutex.new
   @project_root_cache = {}
+  @check_all_trace_point = nil
 
   # Returns a cached analysis for the given class or module
   # Creates a new analysis if one doesn't exist in the cache
@@ -116,6 +117,67 @@ module Ivar
 
     # If no project root found, return the starting directory
     start_dir
+  end
+
+  # Enables automatic inclusion of Ivar::Checked in all classes and modules
+  # defined within the project root.
+  #
+  # @param block [Proc] Optional block. If provided, auto-checking is only active
+  #   for the duration of the block. Otherwise, it remains active indefinitely.
+  # @return [void]
+  def self.check_all(&block)
+    # If a trace point is already active, disable it first
+    disable_check_all if @check_all_trace_point
+
+    # Get the project root to determine which files are in the project
+    root = project_root
+    root_pathname = Pathname.new(root)
+
+    # Create a new trace point that triggers on class/module definition
+    @check_all_trace_point = TracePoint.new(:class) do |tp|
+      # Skip if we can't determine the path (e.g., classes defined in eval)
+      next unless tp.path
+
+      # Get the absolute path of the file where the class is defined
+      file_path = Pathname.new(File.expand_path(tp.path))
+
+      # Only include Ivar::Checked if the class is defined within the project root
+      if file_path.to_s.start_with?(root_pathname.to_s)
+        # Get the class or module being defined
+        klass = tp.self
+
+        # Skip if the class already includes Ivar::Checked
+        next if klass.included_modules.include?(Ivar::Checked)
+
+        # Include Ivar::Checked in the class
+        klass.include(Ivar::Checked)
+      end
+    end
+
+    # Enable the trace point
+    @check_all_trace_point.enable
+
+    if block
+      begin
+        # Execute the block with auto-checking enabled
+        yield
+      ensure
+        # Disable auto-checking after the block completes
+        disable_check_all
+      end
+    end
+
+    # Return nil to avoid returning the trace point
+    nil
+  end
+
+  # Disables automatic inclusion of Ivar::Checked in classes and modules.
+  # @return [void]
+  def self.disable_check_all
+    if @check_all_trace_point
+      @check_all_trace_point.disable
+      @check_all_trace_point = nil
+    end
   end
 
   private_class_method :find_project_root
