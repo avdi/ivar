@@ -2,6 +2,8 @@
   "rubyTestExplorer.testFramework": "minitest",
   "[ruby]": {
     "editor.formatOnType": true,
+    "editor.defaultFormatter": "Shopify.ruby-lsp",
+    "editor.formatOnSave": true
   },
   "editor.formatOnSave": true,
   "standardRuby.mode": "enableUnconditionally",
@@ -11,4 +13,28 @@
   "standardRuby.commandPath": "/usr/local/bundle/bin/standardrb",
   "rubyLsp.formatter": "standard",
   "standardRuby.autofix": true,
+  "rubyLsp.enabledFeatures": {
+    "diagnostics": true,
+    "documentHighlights": true,
+    "documentLink": true,
+    "documentSymbols": true,
+    "foldingRanges": true,
+    "formatting": true,
+    "hover": true,
+    "inlayHint": true,
+    "onTypeFormatting": true,
+    "selectionRanges": true,
+    "semanticHighlighting": true,
+    "completion": true,
+    "codeLens": true,
+    "definition": true,
+    "workspaceSymbol": true
+  },
+  "rubyLsp.rubyVersionManager": "auto",
+  "rubyLsp.addonSettings": {
+    "rubocop": {
+      "command": "standardrb",
+      "except": []
+    }
+  }
 }

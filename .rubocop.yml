@@ -1,0 +1,6 @@
+inherit_gem:
+  standard: config/base.yml
+
+AllCops:
+  NewCops: enable
+  SuggestExtensions: false
