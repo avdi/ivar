@@ -352,4 +352,43 @@ class TestPolicies < Minitest::Test
     # Check that the class has the warn_once policy
     assert_equal :warn_once, klass.ivar_check_policy
   end
+
+  def test_none_policy
+    # Create a class with a typo in an instance variable
+    klass = Class.new do
+      include Ivar::Validation
+
+      def initialize
+        @correct = "value"
+      end
+
+      def method_with_typo
+        @typo_veriable = "misspelled"
+      end
+    end
+
+    # Create an instance to define the class
+    instance = klass.new
+
+    # Force the analysis to be created and include our method
+    analysis = Ivar::PrismAnalysis.new(klass)
+    # Monkey patch the analysis to include our typo
+    def analysis.ivar_references
+      [
+        {name: :@correct, path: "test_file.rb", line: 1, column: 1},
+        {name: :@typo_veriable, path: "test_file.rb", line: 2, column: 1}
+      ]
+    end
+    # Replace the cached analysis
+    Ivar.instance_variable_get(:@analysis_cache)[klass] = analysis
+
+    # Capture stderr output
+    warnings = capture_stderr do
+      # Call check_ivars with none policy
+      instance.check_ivars(policy: :none)
+    end
+
+    # Check that we didn't get any warnings
+    assert_empty warnings
+  end
 end

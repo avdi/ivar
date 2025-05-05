@@ -115,12 +115,24 @@ module Ivar
     end
   end
 
+  # Policy that does nothing (no-op) for unknown instance variables
+  class NonePolicy < Policy
+    # Handle unknown instance variables by doing nothing
+    # @param unknown_refs [Array<Hash>] References to unknown instance variables
+    # @param klass [Class] The class being checked
+    # @param allowed_ivars [Array<Symbol>] List of allowed instance variables
+    def handle_unknown_ivars(_unknown_refs, _klass, _allowed_ivars)
+      # No-op - do nothing
+    end
+  end
+
   # Map of policy symbols to policy classes
   POLICY_CLASSES = {
     warn: WarnPolicy,
     warn_once: WarnOncePolicy,
     raise: RaisePolicy,
-    log: LogPolicy
+    log: LogPolicy,
+    none: NonePolicy
   }.freeze
 
   # Get a policy instance from a symbol or policy object

@@ -231,6 +231,7 @@ Ivar supports different policies for handling unknown instance variables. You ca
 - `:warn_once` - Emit warnings only once per class
 - `:raise` - Raise an exception for unknown instance variables
 - `:log` - Log unknown instance variables to a logger
+- `:none` - Do nothing (no-op) for unknown instance variables
 
 ### Setting a Global Policy
 
