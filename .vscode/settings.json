@@ -10,7 +10,6 @@
   "solargraph.diagnostics": true,
   "solargraph.formatting": true,
   "solargraph.useBundler": true,
-  "standardRuby.commandPath": "/usr/local/bundle/bin/standardrb",
   "rubyLsp.formatter": "standard",
   "standardRuby.autofix": true,
   "rubyLsp.enabledFeatures": {
@@ -39,7 +38,6 @@
       "except": []
     }
   },
-  "solargraph.bundlerPath": "/usr/local/bin/bundle",
   "editor.detectIndentation": true,
   "editor.insertFinalNewline": true,
   "files.insertFinalNewline": true,

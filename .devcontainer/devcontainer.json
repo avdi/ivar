@@ -19,7 +19,11 @@
         "github.vscode-github-actions",
         "Shopify.ruby-lsp",
         "EditorConfig.EditorConfig"
-      ]
+      ],
+      "settings": {
+        "standardRuby.commandPath": "/usr/local/bundle/bin/standardrb",
+        "solargraph.bundlerPath": "/usr/local/bin/bundle"
+      }
     }
   },
   "postCreateCommand": "bash .devcontainer/post-create.sh"
