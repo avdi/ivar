@@ -81,20 +81,20 @@ module Ivar
         end
       end
 
+      # Apply initial values from ancestors to the result hash
+      # @param ancestors [Array<Class>] Ancestors with initial values
+      def ancestor_initial_values(ancestors = find_ancestors_with_initial_values)
+        ancestors.reverse.reduce({}) do |result, ancestor|
+          result.merge!(ancestor.ivar_initial_values)
+        end
+      end
+
       # Find all ancestors that have defined initial values for instance variables
       # @return [Array<Class>] Array of ancestor classes with initial values
       def find_ancestors_with_initial_values
         self.class.ancestors.select do |ancestor|
           ancestor.respond_to?(:ivar_initial_values) &&
             ancestor.instance_variable_defined?(:@__ivar_initial_values)
-        end
-      end
-
-      # Apply initial values from ancestors to the result hash
-      # @param ancestors [Array<Class>] Ancestors with initial values
-      def ancestor_initial_values(ancestors = find_ancestors_with_initial_values)
-        ancestors.reverse.reduce({}) do |result, ancestor|
-          result.merge!(ancestor.ivar_initial_values)
         end
       end
 
