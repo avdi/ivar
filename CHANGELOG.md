@@ -9,6 +9,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.3.0] - 2025-05-05
 
+### Added
+- Support for initializing multiple instance variables to the same value using `ivar :@foo, :@bar, value: 123`
+- Support for ivar declarations with a block that generates default values based on the variable name
+- Support for reader, writer, and accessor keyword arguments to automatically generate attr methods
+
+### Changed
+- Extracted check_all functionality to its own class (CheckAllManager) for better organization
+- Converted module instance variables to constants where appropriate
+- Moved scripts from bin/ to script/ directory for better organization
+- Improved development environment with consistent line endings and editor configuration
+
+### Fixed
+- Fixed missing trailing newlines in files
+- Fixed Gemfile.lock version synchronization
+- Fixed release script to use $stdin.gets instead of gets
+
 ## [0.2.1] - 2025-05-05
 
 ### Added
