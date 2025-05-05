@@ -1,2 +1,2 @@
 #!/bin/sh
-bundle exec rake standard
+STANDARDOPTS="$*" bundle exec rake standard
