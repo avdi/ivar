@@ -149,14 +149,11 @@ class TestMacros < Minitest::Test
     # Replace the cached analysis
     Ivar.instance_variable_get(:@analysis_cache)[klass] = analysis
 
-    # Clear any previous warnings
-    $stderr.string = ""
-
-    # Create an instance - this should automatically call check_ivars
-    klass.new
-
-    # Get the captured warnings
-    warnings = $stderr.string
+    # Capture stderr output when creating an instance
+    warnings = capture_stderr do
+      # Create an instance - this should automatically call check_ivars
+      klass.new
+    end
 
     # Check that we didn't get warnings about the declared variable
     refute_match(/unknown instance variable @declared_var/, warnings)
