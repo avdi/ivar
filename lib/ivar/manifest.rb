@@ -31,30 +31,6 @@ module Ivar
       declaration
     end
 
-    # Add implicit declarations for instance variables that aren't explicitly declared
-    # This method is called after object initialization to register any instance variables
-    # that were created during initialization but weren't explicitly declared with the ivar macro.
-    #
-    # @param ivars [Array<Symbol>] List of instance variable names (typically from instance_variables)
-    # @return [Array<ImplicitDeclaration>] The added implicit declarations
-    def add_implicits(ivars)
-      added_declarations = []
-      # Filter out variables that are already explicitly declared
-      (ivars - explicitly_declared_ivars).each do |ivar|
-        declaration = ImplicitDeclaration.new(ivar, self)
-        added_declarations << add_implicit_declaration(declaration)
-      end
-      added_declarations
-    end
-
-    # Add an implicit declaration to the manifest
-    # @param declaration [ImplicitDeclaration] The declaration to add
-    # @return [Declaration] The existing or added declaration
-    def add_implicit_declaration(declaration)
-      name = declaration.name
-      @declarations_by_name[name] ||= declaration
-    end
-
     # Get all ancestor manifests in reverse order (from highest to lowest in the hierarchy)
     # Only includes ancestors that have existing manifests
     # @return [Array<Manifest>] Array of ancestor manifests
@@ -121,12 +97,6 @@ module Ivar
     # @return [Array<ExplicitDeclaration>] All explicit declarations
     def explicit_declarations
       declarations.select { |decl| decl.is_a?(ExplicitDeclaration) }
-    end
-
-    # Get all implicit declarations
-    # @return [Array<ImplicitDeclaration>] All implicit declarations
-    def implicit_declarations
-      declarations.select { |decl| decl.is_a?(ImplicitDeclaration) }
     end
 
     # Process before_init callbacks for all declarations
@@ -244,9 +214,5 @@ module Ivar
         instance.instance_variable_set(@name, args.shift)
       end
     end
-  end
-
-  # Represents an implicit declaration from instance variable detection
-  class ImplicitDeclaration < Declaration
   end
 end

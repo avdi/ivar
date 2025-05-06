@@ -71,7 +71,6 @@ module Ivar
       # Wrap the initialize method to automatically call check_ivars
       # This method handles the initialization process, including:
       # 1. Processing manifest declarations before calling super
-      # 2. Adding implicit declarations after super
       # 3. Checking instance variables for validity
       def initialize(*args, **kwargs, &block)
         if @__ivar_skip_init
@@ -81,7 +80,6 @@ module Ivar
           manifest = Ivar.get_manifest(self.class)
           manifest.process_before_init(self, args, kwargs)
           super
-          manifest.add_implicits(instance_variables)
           check_ivars
         end
       end
