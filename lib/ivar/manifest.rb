@@ -53,7 +53,7 @@ module Ivar
 
       # Filter and map ancestors to manifests, only including those that already have manifests
       # This avoids creating unnecessary manifests for classes/modules that don't declare anything
-      ancestors.filter_map { |ancestor| Ivar.get_manifest(ancestor, false) }
+      ancestors.filter_map { |ancestor| Ivar.get_manifest(ancestor, create: false) }
     end
 
     # Get all declarations, including those from ancestor manifests

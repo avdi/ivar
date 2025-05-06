@@ -80,11 +80,11 @@ module Ivar
 
   # Get or create a manifest for a class or module
   # @param klass [Class, Module] The class or module to get a manifest for
-  # @param create_if_missing [Boolean] Whether to create a new manifest if one doesn't exist
+  # @param create [Boolean] Whether to create a new manifest if one doesn't exist
   # @return [Manifest, nil] The manifest for the class or module, or nil if not found and create_if_missing is false
-  def self.get_manifest(klass, create_if_missing = true)
+  def self.get_manifest(klass, create: true)
     return @manifest_registry[klass] if @manifest_registry.key?(klass)
-    return nil unless create_if_missing
+    return nil unless create
 
     MUTEX.synchronize do
       @manifest_registry[klass] ||= Manifest.new(klass)
