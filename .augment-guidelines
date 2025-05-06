@@ -2,10 +2,11 @@
 - use modern Ruby 3.4 style and features, including pattern-matching, endless methods, etc., where appropriate.
 - avoid over-engineering. Prefer basic Ruby data types to building new abstractions. (But extract abstractions when I tell you to.)
 - avoid inline comments. Prefer "explaining variables", intention-revealing method names, and the "composed method" pattern where appropriate. Class, module, and method-documenting comments are fine.
-- De-lint (with standardrb) before committing. Use auto-fix and manually fix the rest.
+- Code style is managed with standardrb. Run it (with script/de-lint) before committing. Manually fix the rest. script/lint can be used to check for issues without updating the code.
 - Run all tests and fix failures before committing.
 - Never "cheat" by making implementation code test-aware. But it is fine to make interactions with the world dependency-injectable for testing purposes.
 - Include a quote of my instruction that led to the commit in the commit message
 - Sign your commit messages with "-- Auggie".
 - Update the CHANGELOG.md unreleased section as appropriate
 - Commit and push after making successful changes.
+- In methods that get information and where mutation is not the goal, prefer a concise, functional-transformation style leveraging Enumerable methods over imperative approaches.
