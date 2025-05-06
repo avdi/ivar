@@ -31,37 +31,20 @@ module Ivar
     # @yield [varname] Block to generate initial values based on variable name
     #   Example: ivar(:@foo, :@bar) { |varname| "#{varname} default" }
     def ivar(*ivars, value: UNSET, init: nil, reader: false, writer: false, accessor: false, **ivar_values, &block)
-      # Get the manifest for this class
       manifest = Ivar.get_manifest(self)
 
-      # Process the ivars
-      new_ivars = ivars.map do |ivar|
+      ivar_hash = ivars.each_with_object({}) do |ivar, hash|
         ivar_sym = ivar.to_sym
-        ivar_sym.to_s.start_with?("@") ? ivar_sym : :"@#{ivar_sym}"
+        ivar_name = ivar_sym.to_s.start_with?("@") ? ivar_sym : :"@#{ivar_sym}"
+        hash[ivar_name] = value
       end
 
-      # Create explicit declarations for each ivar
-      new_ivars.each do |ivar_name|
+      ivar_hash.merge!(ivar_values)
+
+      ivar_hash.each do |ivar_name, ivar_value|
         options = {
           init: init,
-          value: value,
-          reader: reader,
-          writer: writer,
-          accessor: accessor,
-          block: block
-        }
-
-        # Create and add the declaration to the manifest
-        declaration = ExplicitDeclaration.new(ivar_name, manifest, options)
-        manifest.add_explicit_declaration(declaration)
-      end
-
-      # TODO: This is kind of a mess
-      # Process individual ivar values
-      ivar_values.each do |ivar_name, val|
-        # Create and add the declaration to the manifest
-        options = {
-          value: val,
+          value: ivar_value,
           reader: reader,
           writer: writer,
           accessor: accessor,
