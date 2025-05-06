@@ -33,9 +33,7 @@ module Ivar
     def ivar(*ivars, value: UNSET, init: nil, reader: false, writer: false, accessor: false, **ivar_values, &block)
       manifest = Ivar.get_manifest(self)
 
-      ivar_hash = ivars.map { |ivar| [ivar, value] }.to_h
-
-      ivar_hash.merge!(ivar_values)
+      ivar_hash = ivars.map { |ivar| [ivar, value] }.to_h.merge(ivar_values)
 
       ivar_hash.each do |ivar_name, ivar_value|
         raise ArgumentError, "ivars must be symbols (#{ivar_name.inspect})" unless ivar_name.is_a?(Symbol)
