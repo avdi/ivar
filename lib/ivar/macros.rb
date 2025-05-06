@@ -26,27 +26,20 @@ module Ivar
     #   Example: ivar :@foo, :@bar, writer: true
     # @param accessor [Boolean] If true, creates attr_accessor for all declared variables
     #   Example: ivar :@foo, :@bar, accessor: true
-    # @param ivar_values [Hash] Individual initial values for instance variables
+    # @param ivars_with_values [Hash] Individual initial values for instance variables
     #   Example: ivar "@foo": 123, "@bar": 456
     # @yield [varname] Block to generate initial values based on variable name
     #   Example: ivar(:@foo, :@bar) { |varname| "#{varname} default" }
-    def ivar(*ivars, value: UNSET, init: nil, reader: false, writer: false, accessor: false, **ivar_values, &block)
+    def ivar(*ivars, value: UNSET, init: nil, reader: false, writer: false, accessor: false, **ivars_with_values, &block)
       manifest = Ivar.get_manifest(self)
 
-      ivar_hash = ivars.map { |ivar| [ivar, value] }.to_h.merge(ivar_values)
+      ivar_hash = ivars.map { |ivar| [ivar, value] }.to_h.merge(ivars_with_values)
 
       ivar_hash.each do |ivar_name, ivar_value|
         raise ArgumentError, "ivars must be symbols (#{ivar_name.inspect})" unless ivar_name.is_a?(Symbol)
         raise ArgumentError, "ivar names must start with @ (#{ivar_name.inspect})" unless /\A@/.match?(ivar_name)
 
-        options = {
-          init: init,
-          value: ivar_value,
-          reader: reader,
-          writer: writer,
-          accessor: accessor,
-          block: block
-        }
+        options = {init:, value: ivar_value, reader:, writer:, accessor:, block:}
 
         declaration = ExplicitDeclaration.new(ivar_name, manifest, options)
         manifest.add_explicit_declaration(declaration)
