@@ -194,7 +194,7 @@ module Ivar
     # @param klass [Class, Module] The class or module the declaration is added to
     def on_declare(klass)
       # Add accessor methods if requested
-      add_accessor_methods(klass) if @reader || @writer || @accessor
+      add_accessor_methods(klass)
     end
 
     # Check if this declaration uses keyword argument initialization
@@ -231,23 +231,8 @@ module Ivar
     def add_accessor_methods(klass)
       var_name = @name.to_s.delete_prefix("@")
 
-      # Add reader method
-      if @reader || @accessor
-        klass.class_eval <<-RUBY, __FILE__, __LINE__ + 1
-          def #{var_name}
-            #{@name}
-          end
-        RUBY
-      end
-
-      # Add writer method
-      if @writer || @accessor
-        klass.class_eval <<-RUBY, __FILE__, __LINE__ + 1
-          def #{var_name}=(value)
-            #{@name} = value
-          end
-        RUBY
-      end
+      klass.__send__(:attr_reader, var_name) if @reader || @accessor
+      klass.__send__(:attr_writer, var_name) if @writer || @accessor
     end
   end
 
