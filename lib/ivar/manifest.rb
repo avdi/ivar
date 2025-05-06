@@ -59,29 +59,11 @@ module Ivar
     # Get all declarations, including those from ancestor manifests
     # @return [Array<Declaration>] All declarations
     def all_declarations
-      # Start with an empty result
-      result = []
-
-      # Get declarations from ancestors, starting from the highest in the hierarchy
-      # This ensures that declarations from lower in the hierarchy will override those from higher up
-      ancestor_manifests.each do |ancestor_manifest|
-        ancestor_manifest.declarations.each do |decl|
-          # Only add if no declaration with the same name exists yet
-          unless result.any? { |existing_decl| existing_decl.name == decl.name }
-            result << decl
-          end
-        end
-      end
-
-      # Add declarations from this manifest, replacing any with the same name from ancestors
-      @declarations.each do |decl|
-        # Remove any ancestor declaration with the same name
-        result.reject! { |ancestor_decl| ancestor_decl.name == decl.name }
-        # Add this declaration
-        result << decl
-      end
-
-      result
+      ancestor_manifests
+        .flat_map(&:declarations)
+        .+(@declarations)
+        .reduce({}) { |acc, decl| acc.merge(decl.name => decl) }
+        .values
     end
 
     # Check if a variable is declared in this manifest or ancestor manifests
