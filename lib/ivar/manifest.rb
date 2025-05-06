@@ -197,8 +197,16 @@ module Ivar
     def initialize_from_kwarg(instance, kwargs)
       kwarg_name = @name.to_s.delete_prefix("@").to_sym
       if kwargs.key?(kwarg_name)
+        # Initialize from keyword argument
         instance.instance_variable_set(@name, kwargs[kwarg_name])
         kwargs.delete(kwarg_name)
+      elsif @initial_value != Ivar::Macros::UNSET
+        # Fall back to initial value if keyword not provided
+        instance.instance_variable_set(@name, @initial_value)
+      elsif @init_block
+        # Fall back to block if keyword not provided and initial value not set
+        value = @init_block.call(@name)
+        instance.instance_variable_set(@name, value)
       end
     end
 
@@ -209,19 +217,9 @@ module Ivar
     def before_init(instance, args, kwargs)
       # Initialize from keyword argument if requested
       if kwarg_init?
-        # Check if the keyword argument is present
-        kwarg_name = @name.to_s.delete_prefix("@").to_sym
-        if kwargs.key?(kwarg_name)
-          # Initialize from keyword argument
-          initialize_from_kwarg(instance, kwargs)
-        elsif @initial_value != Ivar::Macros::UNSET
-          # Fall back to initial value if keyword not provided
-          instance.instance_variable_set(@name, @initial_value)
-        elsif @init_block
-          # Fall back to block if keyword not provided and initial value not set
-          value = @init_block.call(@name)
-          instance.instance_variable_set(@name, value)
-        end
+        # Keyword initialization is handled in initialize_from_kwarg
+        # which is called separately by the manifest
+        nil
       # Initialize from initial value if provided
       elsif @initial_value != Ivar::Macros::UNSET
         instance.instance_variable_set(@name, @initial_value)

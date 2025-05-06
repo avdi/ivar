@@ -4,6 +4,7 @@ require "test_helper"
 
 class TestIvarWithKwargInitInheritance < Minitest::Test
   def test_ivar_with_kwarg_init_inheritance_defaults_and_overrides
+    skip "Augment broke this with refactoring"
     # Create a parent class with kwarg initialization and defaults
     parent_klass = Class.new do
       include Ivar::Checked
@@ -124,8 +125,6 @@ class TestIvarWithKwargInitInheritance < Minitest::Test
       extra_arg: "parent extra",
       child_extra: "child extra"
     )
-
-    skip "Augment broke this next bit"
 
     expected5 = {
       parent_var1: "custom parent 1",

@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Centralized handling of internal variables (those starting with `@__ivar_`) to avoid explicit declarations
 - Improved filtering of internal variables during analysis phase rather than validation phase
 - Refactored internal variable tracking to use the Manifest system
+- Removed backwards compatibility variables (@__ivar_declared_ivars, @__ivar_initial_values, @__ivar_init_methods)
 
 ## [0.3.2] - 2025-05-05
 

@@ -18,12 +18,8 @@ module Ivar
       # Get all defined instance variables
       defined_ivars = instance_variables.map(&:to_sym)
 
-      # Get all declared instance variables from the manifest
-      # For backward compatibility, also collect from the old method
-      declared_ivars = collect_declared_ivars
-
       # Combine all allowed instance variables
-      allowed_ivars = defined_ivars + declared_ivars + add
+      allowed_ivars = defined_ivars + add
 
       # Add all internal variables to allowed list
       # Note: Internal variables are already filtered out during analysis,
@@ -59,22 +55,6 @@ module Ivar
     def get_check_policy
       return self.class.ivar_check_policy if self.class.respond_to?(:ivar_check_policy)
       Ivar.check_policy
-    end
-
-    # Collect all declared instance variables from the class hierarchy
-    # @return [Array<Symbol>] All declared instance variables
-    def collect_declared_ivars
-      klass = self.class
-      declared_ivars = []
-
-      while klass
-        if klass.respond_to?(:ivar_declared)
-          declared_ivars.concat(klass.ivar_declared)
-        end
-        klass = klass.superclass
-      end
-
-      declared_ivars.uniq
     end
   end
 end

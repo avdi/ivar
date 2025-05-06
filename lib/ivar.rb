@@ -37,9 +37,6 @@ module Ivar
   def self.known_internal_ivars
     [
       :@__ivar_check_policy,
-      :@__ivar_declared_ivars,
-      :@__ivar_initial_values,
-      :@__ivar_init_methods,
       :@__ivar_initialized_vars
     ]
   end
