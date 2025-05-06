@@ -27,7 +27,7 @@
     "completion": true,
     "codeLens": true,
     "definition": true,
-    "workspaceSymbol": true
+    "workspaceSymbol": true,
   },
   "rubyLsp.rubyVersionManager": {
     "identifier": "auto"
