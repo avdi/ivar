@@ -108,10 +108,6 @@ module Ivar
     # @param kwargs [Hash] Keyword arguments
     # @return [Array, Hash] The modified args and kwargs
     def process_before_init(instance, args, kwargs)
-      # Store the current object being initialized in thread-local storage
-      # This allows declarations to access the object during initialization
-      Thread.current[:ivar_current_object] = instance
-
       # Get all declarations from parent to child, with child declarations taking precedence
       declarations_to_process = all_declarations
 
@@ -129,9 +125,6 @@ module Ivar
         next if declaration.is_a?(ExplicitDeclaration) && declaration.kwarg_init?
         declaration.before_init(instance, args, kwargs)
       end
-
-      # Clear the thread-local storage
-      Thread.current[:ivar_current_object] = nil
 
       [args, kwargs]
     end
