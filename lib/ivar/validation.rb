@@ -11,39 +11,11 @@ module Ivar
     def check_ivars(add: [], policy: nil)
       policy ||= get_check_policy
       analysis = Ivar.get_analysis(self.class)
-
-      # Get the manifest for this class
       manifest = Ivar.get_manifest(self.class)
-
-      # Get all defined instance variables
-      defined_ivars = instance_variables.map(&:to_sym)
-
-      # Combine all allowed instance variables
-      allowed_ivars = defined_ivars + add
-
-      # Add all internal variables to allowed list
-      # Note: Internal variables are already filtered out during analysis,
-      # but we add them here as a safety measure
-      allowed_ivars += Ivar.known_internal_ivars
-
-      # Add all variables from the manifest
-      manifest.all_declarations.each do |declaration|
-        allowed_ivars << declaration.name
-      end
-
-      # Make the list unique
-      allowed_ivars.uniq!
-
-      # Get references from analysis (internal variables already filtered out)
-      references = analysis.ivar_references
-
-      # Filter out class-level references
-      instance_refs = references.reject { |ref| ref[:context] == :class }
-
-      # Find unknown references
+      declared_ivars = manifest.all_declarations.map(&:name)
+      allowed_ivars = (declared_ivars | add | Ivar.known_internal_ivars).uniq
+      instance_refs = analysis.instance_level_references
       unknown_refs = instance_refs.reject { |ref| allowed_ivars.include?(ref[:name]) }
-
-      # Handle unknown references according to policy
       policy_instance = Ivar.get_policy(policy)
       policy_instance.handle_unknown_ivars(unknown_refs, self.class, allowed_ivars)
     end

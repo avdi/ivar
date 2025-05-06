@@ -14,6 +14,10 @@ module Ivar
       @ivars = unique_ivar_names
     end
 
+    def instance_level_references
+      @references.select { |ref| ref[:context] == :instance }
+    end
+
     # Returns a list of hashes each representing a code reference to an ivar
     # Each hash includes var name, path, line number, and column number
     def ivar_references
