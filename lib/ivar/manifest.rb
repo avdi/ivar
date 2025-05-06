@@ -6,16 +6,14 @@ module Ivar
     # @return [Class, Module] The class or module this manifest is associated with
     attr_reader :owner
 
-    # @return [Array<Declaration>] The declarations in this manifest
+    # @return [Hash<Symbol, Declaration>] The declarations hash keyed by variable name
     attr_reader :declarations
 
     # Initialize a new manifest
     # @param owner [Class, Module] The class or module this manifest is associated with
     def initialize(owner)
       @owner = owner
-      @declarations = []
-      @explicit_declarations = {}
-      @implicit_declarations = {}
+      @declarations = {}
     end
 
     # Add an explicit declaration to the manifest
@@ -23,22 +21,19 @@ module Ivar
     # @return [ExplicitDeclaration] The added declaration
     def add_explicit_declaration(declaration)
       name = declaration.name
-      @explicit_declarations[name] = declaration
-      @declarations << declaration
+      @declarations[name] = declaration
       declaration.on_declare(@owner)
       declaration
     end
 
     # Add an implicit declaration to the manifest
     # @param declaration [ImplicitDeclaration] The declaration to add
-    # @return [ImplicitDeclaration] The added declaration
+    # @return [Declaration] The existing or added declaration
     def add_implicit_declaration(declaration)
       name = declaration.name
-      return @explicit_declarations[name] if @explicit_declarations.key?(name)
-      return @implicit_declarations[name] if @implicit_declarations.key?(name)
+      return @declarations[name] if @declarations.key?(name)
 
-      @implicit_declarations[name] = declaration
-      @declarations << declaration
+      @declarations[name] = declaration
       declaration
     end
 
@@ -60,8 +55,8 @@ module Ivar
     # @return [Array<Declaration>] All declarations
     def all_declarations
       ancestor_manifests
-        .flat_map(&:declarations)
-        .+(@declarations)
+        .flat_map { |manifest| manifest.declarations.values }
+        .+(@declarations.values)
         .reduce({}) { |acc, decl| acc.merge(decl.name => decl) }
         .values
     end
@@ -73,12 +68,11 @@ module Ivar
       name = name.to_sym
 
       # Check in this manifest first
-      return true if @explicit_declarations.key?(name) || @implicit_declarations.key?(name)
+      return true if @declarations.key?(name)
 
       # Then check in ancestor manifests
       ancestor_manifests.any? do |ancestor_manifest|
-        ancestor_manifest.explicit_declarations.key?(name) ||
-          ancestor_manifest.implicit_declarations.key?(name)
+        ancestor_manifest.declarations.key?(name)
       end
     end
 
@@ -89,15 +83,12 @@ module Ivar
       name = name.to_sym
 
       # Check in this manifest first
-      return @explicit_declarations[name] if @explicit_declarations.key?(name)
-      return @implicit_declarations[name] if @implicit_declarations.key?(name)
+      return @declarations[name] if @declarations.key?(name)
 
       # Then check in ancestor manifests, starting from the closest ancestor
       ancestor_manifests.each do |ancestor_manifest|
-        if ancestor_manifest.explicit_declarations.key?(name)
-          return ancestor_manifest.explicit_declarations[name]
-        elsif ancestor_manifest.implicit_declarations.key?(name)
-          return ancestor_manifest.implicit_declarations[name]
+        if ancestor_manifest.declarations.key?(name)
+          return ancestor_manifest.declarations[name]
         end
       end
 
@@ -107,13 +98,13 @@ module Ivar
     # Get all explicit declarations
     # @return [Array<ExplicitDeclaration>] All explicit declarations
     def explicit_declarations
-      @explicit_declarations.values
+      @declarations.values.select { |decl| decl.is_a?(ExplicitDeclaration) }
     end
 
     # Get all implicit declarations
     # @return [Array<ImplicitDeclaration>] All implicit declarations
     def implicit_declarations
-      @implicit_declarations.values
+      @declarations.values.select { |decl| decl.is_a?(ImplicitDeclaration) }
     end
 
     # Process before_init callbacks for all declarations

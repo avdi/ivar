@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improved manifest ancestry handling to walk the entire ancestor chain instead of just the direct parent
 - Enhanced declaration inheritance to properly handle overrides from modules and included mixins
 - Optimized manifest ancestry to avoid creating unnecessary manifests for classes/modules that don't declare anything
+- Simplified Manifest class to use a single declarations hash instead of separate explicit and implicit declarations
 
 ## [0.3.2] - 2025-05-05
 
