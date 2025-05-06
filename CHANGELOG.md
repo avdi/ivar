@@ -19,6 +19,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improved filtering of internal variables during analysis phase rather than validation phase
 - Refactored internal variable tracking to use the Manifest system
 - Removed backwards compatibility variables (@__ivar_declared_ivars, @__ivar_initial_values, @__ivar_init_methods)
+- Improved manifest ancestry handling to walk the entire ancestor chain instead of just the direct parent
+- Enhanced declaration inheritance to properly handle overrides from modules and included mixins
 
 ## [0.3.2] - 2025-05-05
 

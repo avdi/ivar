@@ -42,27 +42,39 @@ module Ivar
       declaration
     end
 
-    # Get the parent manifest (from the superclass or included module)
-    # @return [Manifest, nil] The parent manifest, or nil if none exists
-    def parent
-      return nil unless @owner.is_a?(Class) && @owner.superclass
+    # Get all ancestor manifests in reverse order (from highest to lowest in the hierarchy)
+    # @return [Array<Manifest>] Array of ancestor manifests
+    def ancestor_manifests
+      return [] unless @owner.respond_to?(:ancestors)
 
-      Ivar.get_manifest(@owner.superclass)
+      # Get all ancestors except the owner itself
+      ancestors = @owner.ancestors.reject { |ancestor| ancestor == @owner }
+
+      # Convert ancestors to manifests
+      ancestors.map { |ancestor| Ivar.get_manifest(ancestor) }
     end
 
-    # Get all declarations, including those from parent manifests
+    # Get all declarations, including those from ancestor manifests
     # @return [Array<Declaration>] All declarations
     def all_declarations
-      parent_declarations = parent&.all_declarations || []
+      # Start with an empty result
+      result = []
 
-      # Combine parent and child declarations, with child declarations taking precedence
-      # for the same variable name
-      result = parent_declarations.dup
+      # Get declarations from ancestors, starting from the highest in the hierarchy
+      # This ensures that declarations from lower in the hierarchy will override those from higher up
+      ancestor_manifests.each do |ancestor_manifest|
+        ancestor_manifest.declarations.each do |decl|
+          # Only add if no declaration with the same name exists yet
+          unless result.any? { |existing_decl| existing_decl.name == decl.name }
+            result << decl
+          end
+        end
+      end
 
-      # Add declarations from this manifest, replacing any with the same name from parent
+      # Add declarations from this manifest, replacing any with the same name from ancestors
       @declarations.each do |decl|
-        # Remove any parent declaration with the same name
-        result.reject! { |parent_decl| parent_decl.name == decl.name }
+        # Remove any ancestor declaration with the same name
+        result.reject! { |ancestor_decl| ancestor_decl.name == decl.name }
         # Add this declaration
         result << decl
       end
@@ -70,14 +82,20 @@ module Ivar
       result
     end
 
-    # Check if a variable is declared in this manifest or parent manifests
+    # Check if a variable is declared in this manifest or ancestor manifests
     # @param name [Symbol, String] The variable name
     # @return [Boolean] Whether the variable is declared
     def declared?(name)
       name = name.to_sym
-      @explicit_declarations.key?(name) ||
-        @implicit_declarations.key?(name) ||
-        parent&.declared?(name)
+
+      # Check in this manifest first
+      return true if @explicit_declarations.key?(name) || @implicit_declarations.key?(name)
+
+      # Then check in ancestor manifests
+      ancestor_manifests.any? do |ancestor_manifest|
+        ancestor_manifest.explicit_declarations.key?(name) ||
+          ancestor_manifest.implicit_declarations.key?(name)
+      end
     end
 
     # Get a declaration by name
@@ -85,9 +103,21 @@ module Ivar
     # @return [Declaration, nil] The declaration, or nil if not found
     def get_declaration(name)
       name = name.to_sym
-      @explicit_declarations[name] ||
-        @implicit_declarations[name] ||
-        parent&.get_declaration(name)
+
+      # Check in this manifest first
+      return @explicit_declarations[name] if @explicit_declarations.key?(name)
+      return @implicit_declarations[name] if @implicit_declarations.key?(name)
+
+      # Then check in ancestor manifests, starting from the closest ancestor
+      ancestor_manifests.each do |ancestor_manifest|
+        if ancestor_manifest.explicit_declarations.key?(name)
+          return ancestor_manifest.explicit_declarations[name]
+        elsif ancestor_manifest.implicit_declarations.key?(name)
+          return ancestor_manifest.implicit_declarations[name]
+        end
+      end
+
+      nil
     end
 
     # Get all explicit declarations
