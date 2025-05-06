@@ -74,15 +74,15 @@ module Ivar
       # 2. Adding implicit declarations after super
       # 3. Checking instance variables for validity
       def initialize(*args, **kwargs, &block)
-        if @__ivar_init_done
+        if @__ivar_skip_init
           super
         else
+          @__ivar_skip_init = true
           manifest = Ivar.get_manifest(self.class)
           manifest.process_before_init(self, args, kwargs)
           super
           manifest.add_implicits(instance_variables)
           check_ivars
-          @__ivar_init_done = true
         end
       end
 

@@ -193,7 +193,6 @@ module Ivar
     # Called when the declaration is added to a class
     # @param klass [Class, Module] The class or module the declaration is added to
     def on_declare(klass)
-      # Add accessor methods if requested
       add_accessor_methods(klass)
     end
 
@@ -208,19 +207,15 @@ module Ivar
     # @param args [Array] Positional arguments
     # @param kwargs [Hash] Keyword arguments
     def before_init(instance, args, kwargs)
+      if @init_block
+        instance.instance_variable_set(@name, @init_block.call(@name))
+      end
+      if @initial_value != Ivar::Macros::UNSET
+        instance.instance_variable_set(@name, @initial_value)
+      end
       kwarg_name = @name.to_s.delete_prefix("@").to_sym
-      # TODO: the issue here is that parent classes are pulling off kwarg values and setting the ivar,
-      # then child classes are coming along and seeing no kwarg and using the default instead.
-      # We need to have kwarg override and for that to stay set once it is set.
-      # Also investigate whether we are processing parent declarations when they should have been discarded
-      # as overridden (by name)
       if kwarg_init? && kwargs.key?(kwarg_name)
         instance.instance_variable_set(@name, kwargs.delete(kwarg_name))
-      elsif @initial_value != Ivar::Macros::UNSET
-        instance.instance_variable_set(@name, @initial_value)
-      elsif @init_block
-        value = @init_block.call(@name)
-        instance.instance_variable_set(@name, value)
       end
     end
 

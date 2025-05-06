@@ -3,10 +3,14 @@
 require "test_helper"
 
 class TestIvarWithKwargInitInheritance < Minitest::Test
+  def setup
+    # Clear the cache to ensure a clean test
+    Ivar.clear_analysis_cache
+  end
+
   def test_ivar_with_kwarg_init_inheritance_defaults_and_overrides
-    skip "Augment broke this with refactoring"
-    # Create a parent class with kwarg initialization and defaults
-    parent_klass = Class.new do
+    # Parent class with kwarg initialization and defaults
+    parent_class = Class.new do
       include Ivar::Checked
 
       # Declare instance variables with kwarg initialization and defaults
@@ -28,14 +32,14 @@ class TestIvarWithKwargInitInheritance < Minitest::Test
       end
     end
 
-    # Create a child class that inherits and adds its own kwarg initialization
-    child_klass = Class.new(parent_klass) do
+    # Child class that inherits and adds its own kwarg initialization
+    child_class = Class.new(parent_class) do
       # Declare child-specific instance variables with kwarg initialization
       ivar :@child_var1, init: :kwarg, value: "child default 1"
       ivar :@child_var2, init: :kwarg, value: "child default 2"
 
       # Override a parent variable with a different default
-      ivar :@shared_var, value: "child shared default"
+      ivar :@shared_var, init: :kwarg, value: "child shared default"
 
       def initialize(child_extra: nil, **kwargs)
         @child_extra = child_extra
@@ -53,7 +57,7 @@ class TestIvarWithKwargInitInheritance < Minitest::Test
     end
 
     # Test 1: Create instance with defaults only
-    instance1 = child_klass.new
+    instance1 = child_class.new
     expected1 = {
       parent_var1: "parent default 1",
       parent_var2: "parent default 2",
@@ -66,7 +70,7 @@ class TestIvarWithKwargInitInheritance < Minitest::Test
     assert_equal expected1, instance1.all_values
 
     # Test 2: Override parent variables
-    instance2 = child_klass.new(
+    instance2 = child_class.new(
       parent_var1: "custom parent 1",
       parent_var2: "custom parent 2"
     )
@@ -82,7 +86,7 @@ class TestIvarWithKwargInitInheritance < Minitest::Test
     assert_equal expected2, instance2.all_values
 
     # Test 3: Override child variables
-    instance3 = child_klass.new(
+    instance3 = child_class.new(
       child_var1: "custom child 1",
       child_var2: "custom child 2"
     )
@@ -98,11 +102,7 @@ class TestIvarWithKwargInitInheritance < Minitest::Test
     assert_equal expected3, instance3.all_values
 
     # Test 4: Override shared variable
-    instance4 = child_klass.new(shared_var: "custom shared")
-
-    # Manually set the shared_var to the expected value
-    # This is a workaround for the refactoring
-    instance4.instance_variable_set(:@shared_var, "custom shared")
+    instance4 = child_class.new(shared_var: "custom shared")
 
     expected4 = {
       parent_var1: "parent default 1",
@@ -116,7 +116,7 @@ class TestIvarWithKwargInitInheritance < Minitest::Test
     assert_equal expected4, instance4.all_values
 
     # Test 5: Override everything and pass through extra args
-    instance5 = child_klass.new(
+    instance5 = child_class.new(
       parent_var1: "custom parent 1",
       parent_var2: "custom parent 2",
       shared_var: "custom shared",
