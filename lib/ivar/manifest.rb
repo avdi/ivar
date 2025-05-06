@@ -31,6 +31,22 @@ module Ivar
       declaration
     end
 
+    # Add implicit declarations for instance variables that aren't explicitly declared
+    # This method is called after object initialization to register any instance variables
+    # that were created during initialization but weren't explicitly declared with the ivar macro.
+    #
+    # @param ivars [Array<Symbol>] List of instance variable names (typically from instance_variables)
+    # @return [Array<ImplicitDeclaration>] The added implicit declarations
+    def add_implicits(ivars)
+      added_declarations = []
+      # Filter out variables that are already explicitly declared
+      (ivars - explicitly_declared_ivars).each do |ivar|
+        declaration = ImplicitDeclaration.new(ivar)
+        added_declarations << add_implicit_declaration(declaration)
+      end
+      added_declarations
+    end
+
     # Add an implicit declaration to the manifest
     # @param declaration [ImplicitDeclaration] The declaration to add
     # @return [Declaration] The existing or added declaration
@@ -51,6 +67,10 @@ module Ivar
       # Filter and map ancestors to manifests, only including those that already have manifests
       # This avoids creating unnecessary manifests for classes/modules that don't declare anything
       ancestors.filter_map { |ancestor| Ivar.get_manifest(ancestor, create: false) }
+    end
+
+    def explicitly_declared_ivars
+      all_declarations.grep(ExplicitDeclaration).map(&:name)
     end
 
     # Get all declarations, including those from ancestor manifests

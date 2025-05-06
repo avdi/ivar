@@ -4,7 +4,10 @@ require_relative "validation"
 require_relative "macros"
 
 module Ivar
-  # Module for adding instance variable check policy configuration to classes
+  # Module for adding instance variable check policy configuration to classes.
+  # This module provides a way to set and inherit check policies for instance variables.
+  # When extended in a class, it allows setting a class-specific policy that overrides
+  # the global Ivar policy.
   module CheckPolicy
     # Set or get the check policy for this class
     # @param policy [Symbol, Policy] The check policy to set
@@ -19,17 +22,25 @@ module Ivar
     end
 
     # Ensure subclasses inherit the check policy from their parent
+    # This method is called automatically when a class is inherited
+    # @param subclass [Class] The subclass that is inheriting from this class
     def inherited(subclass)
       super
       subclass.instance_variable_set(:@__ivar_check_policy, @__ivar_check_policy)
     end
   end
 
-  # Provides automatic validation for instance variables
-  # When included, automatically calls check_ivars after initialization
+  # Provides automatic validation for instance variables.
+  # When included in a class, this module:
+  # 1. Automatically calls check_ivars after initialization
+  # 2. Extends the class with CheckPolicy for policy configuration
+  # 3. Extends the class with Macros for ivar declarations
+  # 4. Sets a default check policy of :warn
+  # 5. Handles proper inheritance of these behaviors in subclasses
   module Checked
     # When this module is included in a class, it extends the class
     # with ClassMethods and includes the Validation module
+    # @param base [Class] The class that is including this module
     def self.included(base)
       base.include(Validation)
       base.extend(ClassMethods)
@@ -38,69 +49,48 @@ module Ivar
       base.prepend(InstanceMethods)
 
       # Set default policy for Checked to :warn
+      # This can be overridden by calling ivar_check_policy in the class
       base.ivar_check_policy(:warn)
     end
 
-    # Class methods added to the including class
+    # Class methods added to the including class.
+    # These methods ensure proper inheritance of Checked functionality.
     module ClassMethods
       # Ensure subclasses inherit the Checked functionality
+      # This method is called automatically when a class is inherited
+      # @param subclass [Class] The subclass that is inheriting from this class
       def inherited(subclass)
         super
         subclass.prepend(Ivar::Checked::InstanceMethods)
       end
     end
 
-    # Instance methods that will be prepended to the including class
+    # Instance methods that will be prepended to the including class.
+    # These methods provide the core functionality for automatic instance variable validation.
     module InstanceMethods
       # Wrap the initialize method to automatically call check_ivars
+      # This method handles the initialization process, including:
+      # 1. Processing manifest declarations before calling super
+      # 2. Adding implicit declarations after super
+      # 3. Checking instance variables for validity
       def initialize(*args, **kwargs, &block)
-        # Get the manifest for this class
-        manifest = Ivar.get_manifest(self.class)
-
-        # We'll pass kwargs directly to process_before_init
-        # which will modify it by removing used kwargs
-
-        # Process before_init callbacks
-        # This will handle initialization from kwargs and initial values
-        # and remove used kwargs from the hash
-        manifest.process_before_init(self, args, kwargs)
-
-        # Track initialized variables before calling super
-        track_initialized_instance_variables
-
-        # Track the instance variables before initialization
-        pre_init_ivars = instance_variables.dup
-
-        # Call the original initialize method
-        super
-
-        # Track the instance variables after initialization
-        post_init_ivars = instance_variables
-
-        # Find new instance variables that were set during initialization
-        new_ivars = post_init_ivars - pre_init_ivars
-
-        # Create implicit declarations for new instance variables
-        new_ivars.each do |ivar_name|
-          next if Ivar.internal_ivar?(ivar_name)
-          declaration = ImplicitDeclaration.new(ivar_name)
-          manifest.add_implicit_declaration(declaration)
+        if @__ivar_init_done
+          super
+        else
+          manifest = Ivar.get_manifest(self.class)
+          manifest.process_before_init(self, args, kwargs)
+          super
+          manifest.add_implicits(instance_variables)
+          check_ivars
+          @__ivar_init_done = true
         end
-
-        # Check for unknown instance variables
-        check_ivars
       end
 
       private
 
-      # Track which instance variables have been set so far
-      # This prevents parent initialize methods from overwriting values
-      # that were set from keyword arguments
-      def track_initialized_instance_variables
-        @__ivar_initialized_vars = instance_variables.dup
-      end
-
       # Valid initialization methods for keyword arguments
+      # These are the allowed values for the :init option in ivar declarations
+      # Used to identify instance variables that should be initialized from keyword arguments
       KWARG_INIT_METHODS = [:kwarg, :keyword].freeze
     end
   end

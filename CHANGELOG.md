@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added Ivar::Manifest class to formalize tracking of instance variables
 - Added ExplicitDeclaration and ImplicitDeclaration classes to represent different types of variable declarations
 - Added callbacks for declarations: on_declare and before_init
+- Added CheckPolicy module to handle class-level check policy configuration
+- Added support for policy inheritance in subclasses
 
 ### Changed
 - Centralized handling of internal variables (those starting with `@__ivar_`) to avoid explicit declarations
@@ -25,6 +27,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Simplified Manifest class to use a single declarations hash instead of separate explicit and implicit declarations
 - Improved Manifest API with clearer separation between declarations (array of values) and declarations_by_name (hash)
 - Simplified initialization process by combining keyword argument handling into the before_init callback
+- Refactored Checked module to use the CheckPolicy module for policy configuration
+- Changed default policy for Checked module from :warn_once to :warn
+- Enhanced initialization process in Checked module to properly handle manifest processing
+
+### Documentation
+- Improved documentation for the CheckPolicy module explaining its purpose and inheritance behavior
+- Enhanced documentation for the Checked module detailing its functionality and initialization process
+- Added comprehensive documentation for the Manifest#add_implicits method explaining its role in tracking instance variables
 
 ## [0.3.2] - 2025-05-05
 
