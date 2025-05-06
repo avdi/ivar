@@ -218,11 +218,8 @@ class TestIvarWithPositionalInit < Minitest::Test
       end
     end
 
-    # Create an instance and use the misspelled variable
-    instance = klass.new("value")
-
-    # Capture stderr output when using misspelled variable
     stderr_output = capture_stderr do
+      instance = klass.new("value")
       instance.use_misspelled_variable
     end
 
@@ -257,12 +254,8 @@ class TestIvarWithPositionalInit < Minitest::Test
       end
     end
 
-    # Create an instance and access the variables
-    instance = klass.new("foo", "bar", "baz")
-
-    # Capture stderr output when accessing variables
     stderr_output = capture_stderr do
-      # Access the values to ensure the variables are used
+      instance = klass.new("foo", "bar", "baz")
       instance.values
     end
 

@@ -198,9 +198,7 @@ module Ivar
 
     # Check if this declaration uses keyword argument initialization
     # @return [Boolean] Whether this declaration uses keyword argument initialization
-    def kwarg_init?
-      @init_method && [:kwarg, :keyword].include?(@init_method)
-    end
+    def kwarg_init? = false
 
     # Called before object initialization
     # @param instance [Object] The object being initialized
@@ -213,10 +211,6 @@ module Ivar
       if @initial_value != Ivar::Macros::UNSET
         instance.instance_variable_set(@name, @initial_value)
       end
-      kwarg_name = @name.to_s.delete_prefix("@").to_sym
-      if kwarg_init? && kwargs.key?(kwarg_name)
-        instance.instance_variable_set(@name, kwargs.delete(kwarg_name))
-      end
     end
 
     private
@@ -228,6 +222,27 @@ module Ivar
 
       klass.__send__(:attr_reader, var_name) if @reader || @accessor
       klass.__send__(:attr_writer, var_name) if @writer || @accessor
+    end
+  end
+
+  class ExplicitKeywordDeclaration < ExplicitDeclaration
+    def kwarg_init? = true
+
+    def before_init(instance, args, kwargs)
+      super
+      kwarg_name = @name.to_s.delete_prefix("@").to_sym
+      if kwargs.key?(kwarg_name)
+        instance.instance_variable_set(@name, kwargs.delete(kwarg_name))
+      end
+    end
+  end
+
+  class ExplicitPositionalDeclaration < ExplicitDeclaration
+    def before_init(instance, args, kwargs)
+      super
+      if args.length > 0
+        instance.instance_variable_set(@name, args.shift)
+      end
     end
   end
 

@@ -41,7 +41,16 @@ module Ivar
 
         options = {init:, value: ivar_value, reader:, writer:, accessor:, block:}
 
-        declaration = ExplicitDeclaration.new(ivar_name, manifest, options)
+        declaration = case init
+        when :kwarg, :keyword
+          Ivar::ExplicitKeywordDeclaration.new(ivar_name, manifest, options)
+        when :arg, :positional
+          Ivar::ExplicitPositionalDeclaration.new(ivar_name, manifest, options)
+        when nil
+          Ivar::ExplicitDeclaration.new(ivar_name, manifest, options)
+        else
+          raise ArgumentError, "Invalid init method: #{init.inspect}"
+        end
         manifest.add_explicit_declaration(declaration)
       end
     end
