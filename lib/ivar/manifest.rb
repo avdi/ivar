@@ -6,14 +6,19 @@ module Ivar
     # @return [Class, Module] The class or module this manifest is associated with
     attr_reader :owner
 
-    # @return [Hash<Symbol, Declaration>] The declarations hash keyed by variable name
-    attr_reader :declarations
-
     # Initialize a new manifest
     # @param owner [Class, Module] The class or module this manifest is associated with
     def initialize(owner)
       @owner = owner
-      @declarations = {}
+      @declarations_by_name = {}
+    end
+
+    # @return [Hash<Symbol, Declaration>] The declarations hash keyed by variable name
+    attr_reader :declarations_by_name
+
+    # @return [Array<Declaration>] The declarations in this manifest
+    def declarations
+      @declarations_by_name.values
     end
 
     # Add an explicit declaration to the manifest
@@ -21,7 +26,7 @@ module Ivar
     # @return [ExplicitDeclaration] The added declaration
     def add_explicit_declaration(declaration)
       name = declaration.name
-      @declarations[name] = declaration
+      @declarations_by_name[name] = declaration
       declaration.on_declare(@owner)
       declaration
     end
@@ -31,9 +36,9 @@ module Ivar
     # @return [Declaration] The existing or added declaration
     def add_implicit_declaration(declaration)
       name = declaration.name
-      return @declarations[name] if @declarations.key?(name)
+      return @declarations_by_name[name] if @declarations_by_name.key?(name)
 
-      @declarations[name] = declaration
+      @declarations_by_name[name] = declaration
       declaration
     end
 
@@ -55,8 +60,8 @@ module Ivar
     # @return [Array<Declaration>] All declarations
     def all_declarations
       ancestor_manifests
-        .flat_map { |manifest| manifest.declarations.values }
-        .+(@declarations.values)
+        .flat_map(&:declarations)
+        .+(declarations)
         .reduce({}) { |acc, decl| acc.merge(decl.name => decl) }
         .values
     end
@@ -68,11 +73,11 @@ module Ivar
       name = name.to_sym
 
       # Check in this manifest first
-      return true if @declarations.key?(name)
+      return true if @declarations_by_name.key?(name)
 
       # Then check in ancestor manifests
       ancestor_manifests.any? do |ancestor_manifest|
-        ancestor_manifest.declarations.key?(name)
+        ancestor_manifest.declarations_by_name.key?(name)
       end
     end
 
@@ -83,12 +88,12 @@ module Ivar
       name = name.to_sym
 
       # Check in this manifest first
-      return @declarations[name] if @declarations.key?(name)
+      return @declarations_by_name[name] if @declarations_by_name.key?(name)
 
       # Then check in ancestor manifests, starting from the closest ancestor
       ancestor_manifests.each do |ancestor_manifest|
-        if ancestor_manifest.declarations.key?(name)
-          return ancestor_manifest.declarations[name]
+        if ancestor_manifest.declarations_by_name.key?(name)
+          return ancestor_manifest.declarations_by_name[name]
         end
       end
 
@@ -98,13 +103,13 @@ module Ivar
     # Get all explicit declarations
     # @return [Array<ExplicitDeclaration>] All explicit declarations
     def explicit_declarations
-      @declarations.values.select { |decl| decl.is_a?(ExplicitDeclaration) }
+      declarations.select { |decl| decl.is_a?(ExplicitDeclaration) }
     end
 
     # Get all implicit declarations
     # @return [Array<ImplicitDeclaration>] All implicit declarations
     def implicit_declarations
-      @declarations.values.select { |decl| decl.is_a?(ImplicitDeclaration) }
+      declarations.select { |decl| decl.is_a?(ImplicitDeclaration) }
     end
 
     # Process before_init callbacks for all declarations
