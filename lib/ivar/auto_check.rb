@@ -54,10 +54,46 @@ module Ivar
     module InstanceMethods
       # Wrap the initialize method to automatically call check_ivars
       def initialize(*args, **kwargs, &block)
+        # Get the manifest for this class
+        manifest = Ivar.get_manifest(self.class)
+
+        # For backward compatibility
         initialize_declared_ivars
+
+        # Make a copy of the kwargs for the manifest system
+        manifest_kwargs = kwargs.dup
+
+        # For backward compatibility, also use the old system
+        # This ensures that tests that rely on the old behavior still pass
         remaining_kwargs = initialize_from_kwargs(kwargs)
+
+        # Process before_init callbacks
+        # This will handle initialization from kwargs and initial values
+        manifest.process_before_init(self, args, manifest_kwargs)
+
+        # Track initialized variables before calling super
         track_initialized_instance_variables
+
+        # Track the instance variables before initialization
+        pre_init_ivars = instance_variables.dup
+
+        # Call the original initialize method
         super(*args, **remaining_kwargs, &block)
+
+        # Track the instance variables after initialization
+        post_init_ivars = instance_variables
+
+        # Find new instance variables that were set during initialization
+        new_ivars = post_init_ivars - pre_init_ivars
+
+        # Create implicit declarations for new instance variables
+        new_ivars.each do |ivar_name|
+          next if Ivar.internal_ivar?(ivar_name)
+          declaration = ImplicitDeclaration.new(ivar_name)
+          manifest.add_implicit_declaration(declaration)
+        end
+
+        # Check for unknown instance variables
         check_ivars
       end
 

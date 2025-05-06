@@ -8,9 +8,13 @@ module Ivar
 
     # When this module is extended, it adds class methods to the extending class
     def self.extended(base)
+      # For backward compatibility, maintain the old instance variables
       base.instance_variable_set(:@__ivar_declared_ivars, [])
       base.instance_variable_set(:@__ivar_initial_values, {})
       base.instance_variable_set(:@__ivar_init_methods, {})
+
+      # Get or create a manifest for this class
+      Ivar.get_manifest(base)
     end
 
     # Declares instance variables that should be considered valid
@@ -32,51 +36,72 @@ module Ivar
     # @yield [varname] Block to generate initial values based on variable name
     #   Example: ivar(:@foo, :@bar) { |varname| "#{varname} default" }
     def ivar(*ivars, value: UNSET, init: nil, reader: false, writer: false, accessor: false, **ivar_values, &block)
+      # For backward compatibility, maintain the old instance variables
       declared = instance_variable_get(:@__ivar_declared_ivars) || []
       initial_values = instance_variable_get(:@__ivar_initial_values) || {}
       init_methods = instance_variable_get(:@__ivar_init_methods) || {}
 
+      # Get the manifest for this class
+      manifest = Ivar.get_manifest(self)
+
+      # Process the ivars
       new_ivars = ivars.map do |ivar|
         ivar_sym = ivar.to_sym
         ivar_sym.to_s.start_with?("@") ? ivar_sym : :"@#{ivar_sym}"
       end
+
+      # Add to the old-style instance variables for backward compatibility
       instance_variable_set(:@__ivar_declared_ivars, declared + new_ivars)
 
-      # Handle init method settings
-      if init
-        new_ivars.each do |ivar_name|
-          init_methods[ivar_name] = init
-        end
-      end
+      # Create explicit declarations for each ivar
+      new_ivars.each do |ivar_name|
+        options = {
+          init: init,
+          value: value,
+          reader: reader,
+          writer: writer,
+          accessor: accessor,
+          block: block
+        }
 
-      if block
-        new_ivars.each do |ivar_name|
+        # Create and add the declaration to the manifest
+        declaration = ExplicitDeclaration.new(ivar_name, options)
+        manifest.add_explicit_declaration(declaration)
+
+        # For backward compatibility, maintain the old instance variables
+        init_methods[ivar_name] = init if init
+
+        if block
           initial_values[ivar_name] = yield(ivar_name.to_s)
-        end
-      elsif value != UNSET
-        new_ivars.each do |ivar_name|
+        elsif value != UNSET
           initial_values[ivar_name] = value
         end
       end
 
+      # Process individual ivar values
       ivar_values.each do |ivar_name, val|
+        # Create and add the declaration to the manifest
+        options = {
+          value: val,
+          reader: reader,
+          writer: writer,
+          accessor: accessor
+        }
+
+        declaration = ExplicitDeclaration.new(ivar_name, options)
+        manifest.add_explicit_declaration(declaration)
+
+        # For backward compatibility, maintain the old instance variables
         initial_values[ivar_name] = val
         unless declared.include?(ivar_name) || new_ivars.include?(ivar_name)
           new_ivars << ivar_name
         end
       end
 
+      # Update the old-style instance variables for backward compatibility
       instance_variable_set(:@__ivar_declared_ivars, declared + new_ivars)
       instance_variable_set(:@__ivar_initial_values, initial_values)
       instance_variable_set(:@__ivar_init_methods, init_methods)
-
-      if reader || writer || accessor
-        all_ivars = new_ivars
-        attr_names = all_ivars.map { |ivar_name| ivar_name.to_s.delete_prefix("@") }
-
-        attr_reader(*attr_names) if reader || accessor
-        attr_writer(*attr_names) if writer || accessor
-      end
     end
 
     # Hook method called when the module is included

@@ -8,6 +8,7 @@ require_relative "ivar/macros"
 require_relative "ivar/project_root"
 require_relative "ivar/check_all_manager"
 require_relative "ivar/auto_check"
+require_relative "ivar/manifest"
 require "prism"
 require "did_you_mean"
 require "pathname"
@@ -16,6 +17,7 @@ module Ivar
   @analysis_cache = {}
   @checked_classes = {}
   @default_check_policy = :warn_once
+  @manifest_registry = {}
   MUTEX = Mutex.new
   PROJECT_ROOT_FINDER = ProjectRoot.new
   CHECK_ALL_MANAGER = CheckAllManager.new
@@ -37,7 +39,8 @@ module Ivar
       :@__ivar_check_policy,
       :@__ivar_declared_ivars,
       :@__ivar_initial_values,
-      :@__ivar_init_methods
+      :@__ivar_init_methods,
+      :@__ivar_initialized_vars
     ]
   end
 
@@ -73,8 +76,20 @@ module Ivar
     MUTEX.synchronize do
       @analysis_cache.clear
       @checked_classes.clear
+      @manifest_registry.clear
     end
     PROJECT_ROOT_FINDER.clear_cache
+  end
+
+  # Get or create a manifest for a class or module
+  # @param klass [Class, Module] The class or module to get a manifest for
+  # @return [Manifest] The manifest for the class or module
+  def self.get_manifest(klass)
+    return @manifest_registry[klass] if @manifest_registry.key?(klass)
+
+    MUTEX.synchronize do
+      @manifest_registry[klass] ||= Manifest.new(klass)
+    end
   end
 
   # Get the default check policy

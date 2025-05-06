@@ -10,10 +10,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Support for initializing instance variables from keyword arguments using `ivar :@foo, init: :kwarg` or `ivar :@foo, init: :keyword`
 - Proper inheritance handling for keyword argument initialization, with child class declarations taking precedence over parent class declarations
+- Added Ivar::Manifest class to formalize tracking of instance variables
+- Added ExplicitDeclaration and ImplicitDeclaration classes to represent different types of variable declarations
+- Added callbacks for declarations: on_declare and before_init
 
 ### Changed
 - Centralized handling of internal variables (those starting with `@__ivar_`) to avoid explicit declarations
 - Improved filtering of internal variables during analysis phase rather than validation phase
+- Refactored internal variable tracking to use the Manifest system
 
 ## [0.3.2] - 2025-05-05
 
