@@ -43,6 +43,7 @@ module Ivar
     end
 
     # Get all ancestor manifests in reverse order (from highest to lowest in the hierarchy)
+    # Only includes ancestors that have existing manifests
     # @return [Array<Manifest>] Array of ancestor manifests
     def ancestor_manifests
       return [] unless @owner.respond_to?(:ancestors)
@@ -50,8 +51,9 @@ module Ivar
       # Get all ancestors except the owner itself
       ancestors = @owner.ancestors.reject { |ancestor| ancestor == @owner }
 
-      # Convert ancestors to manifests
-      ancestors.map { |ancestor| Ivar.get_manifest(ancestor) }
+      # Filter and map ancestors to manifests, only including those that already have manifests
+      # This avoids creating unnecessary manifests for classes/modules that don't declare anything
+      ancestors.filter_map { |ancestor| Ivar.get_manifest(ancestor, false) }
     end
 
     # Get all declarations, including those from ancestor manifests
