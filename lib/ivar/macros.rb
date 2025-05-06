@@ -33,15 +33,14 @@ module Ivar
     def ivar(*ivars, value: UNSET, init: nil, reader: false, writer: false, accessor: false, **ivar_values, &block)
       manifest = Ivar.get_manifest(self)
 
-      ivar_hash = ivars.each_with_object({}) do |ivar, hash|
-        ivar_sym = ivar.to_sym
-        ivar_name = ivar_sym.to_s.start_with?("@") ? ivar_sym : :"@#{ivar_sym}"
-        hash[ivar_name] = value
-      end
+      ivar_hash = ivars.map { |ivar| [ivar, value] }.to_h
 
       ivar_hash.merge!(ivar_values)
 
       ivar_hash.each do |ivar_name, ivar_value|
+        raise ArgumentError, "ivars must be symbols (#{ivar_name.inspect})" unless ivar_name.is_a?(Symbol)
+        raise ArgumentError, "ivar names must start with @ (#{ivar_name.inspect})" unless /\A@/.match?(ivar_name)
+
         options = {
           init: init,
           value: ivar_value,
