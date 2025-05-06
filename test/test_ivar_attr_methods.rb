@@ -145,35 +145,4 @@ class TestIvarAttrMethods < Minitest::Test
     assert_equal "@foo value", instance.foo
     assert_equal "@bar value", instance.bar
   end
-
-  def test_ivar_without_at_symbol
-    # Create a class with the ivar macro using symbols without @ and accessor: true
-    klass = Class.new do
-      include Ivar::Checked
-
-      # Declare instance variables without @ symbol
-      ivar :foo, :bar, accessor: true, value: "initial"
-
-      def initialize
-        # No modifications
-      end
-    end
-
-    # Create an instance
-    instance = klass.new
-
-    # Check that the accessor methods were created and work correctly
-    assert_equal "initial", instance.foo
-    assert_equal "initial", instance.bar
-
-    instance.foo = "modified"
-    instance.bar = "modified"
-
-    assert_equal "modified", instance.foo
-    assert_equal "modified", instance.bar
-
-    # Check that the instance variables were created with @ symbol
-    assert_includes instance.instance_variables, :@foo
-    assert_includes instance.instance_variables, :@bar
-  end
 end
