@@ -36,10 +36,7 @@ module Ivar
     # @return [Declaration] The existing or added declaration
     def add_implicit_declaration(declaration)
       name = declaration.name
-      return @declarations_by_name[name] if @declarations_by_name.key?(name)
-
-      @declarations_by_name[name] = declaration
-      declaration
+      @declarations_by_name[name] ||= declaration
     end
 
     # Get all ancestor manifests in reverse order (from highest to lowest in the hierarchy)
