@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Optimized manifest ancestry to avoid creating unnecessary manifests for classes/modules that don't declare anything
 - Simplified Manifest class to use a single declarations hash instead of separate explicit and implicit declarations
 - Improved Manifest API with clearer separation between declarations (array of values) and declarations_by_name (hash)
+- Simplified initialization process by combining keyword argument handling into the before_init callback
 
 ## [0.3.2] - 2025-05-05
 

@@ -118,18 +118,9 @@ module Ivar
       # Get all declarations from parent to child, with child declarations taking precedence
       declarations_to_process = all_declarations
 
-      # First, process keyword argument initializations
-      # This ensures that keyword arguments take precedence over initial values
+      # Process all initializations in a single pass
+      # The before_init method will handle keyword arguments with proper precedence
       declarations_to_process.each do |declaration|
-        if declaration.is_a?(ExplicitDeclaration) && declaration.kwarg_init?
-          declaration.initialize_from_kwarg(instance, kwargs)
-        end
-      end
-
-      # Then, process all other initializations
-      declarations_to_process.each do |declaration|
-        # Skip keyword initializations that were already processed
-        next if declaration.is_a?(ExplicitDeclaration) && declaration.kwarg_init?
         declaration.before_init(instance, args, kwargs)
       end
 
@@ -191,37 +182,25 @@ module Ivar
       @init_method && [:kwarg, :keyword].include?(@init_method)
     end
 
-    # Initialize from keyword argument
-    # @param instance [Object] The object being initialized
-    # @param kwargs [Hash] Keyword arguments
-    def initialize_from_kwarg(instance, kwargs)
-      kwarg_name = @name.to_s.delete_prefix("@").to_sym
-      if kwargs.key?(kwarg_name)
-        # Initialize from keyword argument
-        instance.instance_variable_set(@name, kwargs[kwarg_name])
-        kwargs.delete(kwarg_name)
-      elsif @initial_value != Ivar::Macros::UNSET
-        # Fall back to initial value if keyword not provided
-        instance.instance_variable_set(@name, @initial_value)
-      elsif @init_block
-        # Fall back to block if keyword not provided and initial value not set
-        value = @init_block.call(@name)
-        instance.instance_variable_set(@name, value)
-      end
-    end
-
     # Called before object initialization
     # @param instance [Object] The object being initialized
     # @param args [Array] Positional arguments
     # @param kwargs [Hash] Keyword arguments
     def before_init(instance, args, kwargs)
-      # Initialize from keyword argument if requested
+      # Handle keyword argument initialization if requested
       if kwarg_init?
-        # Keyword initialization is handled in initialize_from_kwarg
-        # which is called separately by the manifest
-        nil
-      # Initialize from initial value if provided
-      elsif @initial_value != Ivar::Macros::UNSET
+        kwarg_name = @name.to_s.delete_prefix("@").to_sym
+        if kwargs.key?(kwarg_name)
+          # Initialize from keyword argument
+          instance.instance_variable_set(@name, kwargs[kwarg_name])
+          kwargs.delete(kwarg_name)
+          return
+        end
+      end
+
+      # If not initialized from keyword or keyword not provided,
+      # initialize from initial value if provided
+      if @initial_value != Ivar::Macros::UNSET
         instance.instance_variable_set(@name, @initial_value)
       # Initialize from block if provided
       elsif @init_block

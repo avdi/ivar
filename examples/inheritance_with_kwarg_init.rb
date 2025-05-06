@@ -15,9 +15,9 @@ class Food
   # Declare extra_info
   ivar :@extra_info
 
-  def initialize(extra_info: nil)
+  def initialize(**kwargs)
     # The declared variables are already initialized from keyword arguments or defaults
-    @extra_info = extra_info
+    @extra_info = kwargs.delete(:extra_info)
   end
 
   def to_s
