@@ -41,7 +41,7 @@ module Ivar
       added_declarations = []
       # Filter out variables that are already explicitly declared
       (ivars - explicitly_declared_ivars).each do |ivar|
-        declaration = ImplicitDeclaration.new(ivar)
+        declaration = ImplicitDeclaration.new(ivar, self)
         added_declarations << add_implicit_declaration(declaration)
       end
       added_declarations
@@ -151,12 +151,13 @@ module Ivar
   # Base class for all declarations
   class Declaration
     # @return [Symbol] The name of the instance variable
-    attr_reader :name
+    attr_reader :name, :manifest
 
     # Initialize a new declaration
     # @param name [Symbol, String] The name of the instance variable
-    def initialize(name)
+    def initialize(name, manifest)
       @name = name.to_sym
+      @manifest = manifest
     end
 
     # Called when the declaration is added to a class
@@ -179,8 +180,8 @@ module Ivar
     # Initialize a new explicit declaration
     # @param name [Symbol, String] The name of the instance variable
     # @param options [Hash] Options for the declaration
-    def initialize(name, options = {})
-      super(name)
+    def initialize(name, manifest, options = {})
+      super(name, manifest)
       @init_method = options[:init]
       @initial_value = options[:value]
       @reader = options[:reader] || false
@@ -207,22 +208,16 @@ module Ivar
     # @param args [Array] Positional arguments
     # @param kwargs [Hash] Keyword arguments
     def before_init(instance, args, kwargs)
-      # Handle keyword argument initialization if requested
-      if kwarg_init?
-        kwarg_name = @name.to_s.delete_prefix("@").to_sym
-        if kwargs.key?(kwarg_name)
-          # Initialize from keyword argument
-          instance.instance_variable_set(@name, kwargs[kwarg_name])
-          kwargs.delete(kwarg_name)
-          return
-        end
-      end
-
-      # If not initialized from keyword or keyword not provided,
-      # initialize from initial value if provided
-      if @initial_value != Ivar::Macros::UNSET
+      kwarg_name = @name.to_s.delete_prefix("@").to_sym
+      # TODO: the issue here is that parent classes are pulling off kwarg values and setting the ivar,
+      # then child classes are coming along and seeing no kwarg and using the default instead.
+      # We need to have kwarg override and for that to stay set once it is set.
+      # Also investigate whether we are processing parent declarations when they should have been discarded
+      # as overridden (by name)
+      if kwarg_init? && kwargs.key?(kwarg_name)
+        instance.instance_variable_set(@name, kwargs.delete(kwarg_name))
+      elsif @initial_value != Ivar::Macros::UNSET
         instance.instance_variable_set(@name, @initial_value)
-      # Initialize from block if provided
       elsif @init_block
         value = @init_block.call(@name)
         instance.instance_variable_set(@name, value)
@@ -258,10 +253,5 @@ module Ivar
 
   # Represents an implicit declaration from instance variable detection
   class ImplicitDeclaration < Declaration
-    # Initialize a new implicit declaration
-    # @param name [Symbol, String] The name of the instance variable
-    def initialize(name)
-      super
-    end
   end
 end

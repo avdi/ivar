@@ -52,10 +52,11 @@ module Ivar
         }
 
         # Create and add the declaration to the manifest
-        declaration = ExplicitDeclaration.new(ivar_name, options)
+        declaration = ExplicitDeclaration.new(ivar_name, manifest, options)
         manifest.add_explicit_declaration(declaration)
       end
 
+      # TODO: This is kind of a mess
       # Process individual ivar values
       ivar_values.each do |ivar_name, val|
         # Create and add the declaration to the manifest
@@ -63,10 +64,11 @@ module Ivar
           value: val,
           reader: reader,
           writer: writer,
-          accessor: accessor
+          accessor: accessor,
+          block: block
         }
 
-        declaration = ExplicitDeclaration.new(ivar_name, options)
+        declaration = ExplicitDeclaration.new(ivar_name, manifest, options)
         manifest.add_explicit_declaration(declaration)
       end
     end
