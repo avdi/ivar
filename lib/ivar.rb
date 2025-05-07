@@ -18,6 +18,7 @@ module Ivar
   @checked_classes = {}
   @default_check_policy = :warn_once
   @manifest_registry = {}
+  @project_root = nil
   MUTEX = Mutex.new
   PROJECT_ROOT_FINDER = ProjectRoot.new
   CHECK_ALL_MANAGER = CheckAllManager.new
@@ -110,12 +111,16 @@ module Ivar
     MUTEX.synchronize { @default_check_policy = policy }
   end
 
+  def self.project_root=(explicit_root)
+    @project_root = explicit_root
+  end
+
   # Determines the project root directory based on the caller's location
   # Delegates to ProjectRoot class
   # @param caller_location [String, nil] Optional file path to start from (defaults to caller's location)
   # @return [String] The absolute path to the project root directory
   def self.project_root(caller_location = nil)
-    PROJECT_ROOT_FINDER.find(caller_location)
+    @project_root ||= PROJECT_ROOT_FINDER.find(caller_location)
   end
 
   # Enables automatic inclusion of Ivar::Checked in all classes and modules

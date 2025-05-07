@@ -25,7 +25,6 @@ module Ivar
         @trace_point = TracePoint.new(:end) do |tp|
           next unless tp.path
           file_path = Pathname.new(File.expand_path(tp.path))
-
           if file_path.to_s.start_with?(root_pathname.to_s)
             klass = tp.self
             next if klass.included_modules.include?(Ivar::Checked)

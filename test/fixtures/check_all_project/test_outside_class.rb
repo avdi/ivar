@@ -5,15 +5,7 @@
 
 require_relative "../../../lib/ivar"
 
-# Set up the project root
-PROJECT_ROOT = File.expand_path("..", __FILE__)
-
-# Override project_root to use our fixtures directory
-Ivar.define_singleton_method(:project_root) do |*args|
-  PROJECT_ROOT
-end
-
-# Enable check_all
+Ivar.project_root = __dir__
 Ivar.check_all
 
 # Define a class outside the project (simulated by loading from a different path)
