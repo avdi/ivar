@@ -203,7 +203,6 @@ class TestIvarWithPositionalInitOrdering < Minitest::Test
   end
 
   def test_warnings_with_incorrect_positional_args_count
-    skip "skip positional tests for now"
     # Create a class with positional initialization
     klass = Class.new do
       include Ivar::Checked
@@ -213,7 +212,7 @@ class TestIvarWithPositionalInitOrdering < Minitest::Test
       ivar :@var2, init: :positional
       ivar :@var3, init: :positional
 
-      def initialize
+      def initialize(*)
         # Values should be set from positional arguments
       end
 
