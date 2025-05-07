@@ -72,11 +72,9 @@ module Ivar
       # (like, say, initialize), we have to stash the original method implementation if we ever want to find out its
       # file and line number.
       def self.prepend_features(othermod)
-        (instance_methods(false) | private_instance_methods(false)).each do |method_name|
-          stash = othermod.instance_variable_get(:@__ivar_method_impl_stash) ||
-            othermod.instance_variable_set(:@__ivar_method_impl_stash, {})
-          stash[method_name] = othermod.instance_method(method_name)
-        end
+        # Store all instance methods in the method stash before they get overridden by prepend
+        method_names = instance_methods(false) | private_instance_methods(false)
+        Ivar.store_methods(othermod, method_names)
         super
       end
 

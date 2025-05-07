@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added callbacks for declarations: on_declare and before_init
 - Added CheckPolicy module to handle class-level check policy configuration
 - Added support for policy inheritance in subclasses
+- Added MethodStash module to provide a clean interface for storing and retrieving original method implementations
+- Added convenience methods on the Ivar module for accessing method stash functionality
 
 ### Changed
 - Centralized handling of internal variables (those starting with `@__ivar_`) to avoid explicit declarations
@@ -31,11 +33,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Changed default policy for Checked module from :warn_once to :warn
 - Enhanced initialization process in Checked module to properly handle manifest processing
 - Simplified external-process tests to directly check for warnings in stderr instead of using custom capture logic
+- Refactored method implementation stash mechanism to use the new MethodStash module
+- Updated TargetedPrismAnalysis to use the new method stash abstraction
 
 ### Documentation
 - Improved documentation for the CheckPolicy module explaining its purpose and inheritance behavior
 - Enhanced documentation for the Checked module detailing its functionality and initialization process
 - Added comprehensive documentation for the Manifest#add_implicits method explaining its role in tracking instance variables
+- Added detailed documentation for the MethodStash module and its methods
+- Added documentation for the new Ivar module method stash convenience methods
 
 ## [0.3.2] - 2025-05-05
 
