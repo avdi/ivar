@@ -1,13 +1,13 @@
 # Ivar
 
+Ivar is a Ruby gem that automatically checks for typos in instance variables.
+
 ## Synopsis
 
 ```ruby
-require "ivar"
+require "ivar/check_all" if $VERBOSE
 
 class Pizza
-  include Ivar::Checked
-
   def initialize(toppings)
     @toppings = toppings
   end
@@ -21,430 +21,382 @@ Pizza.new(["pepperoni", "mushrooms"])
 ```
 
 ```shell
-$ ruby pizza.rb
+$ ruby -w pizza.rb
 pizza.rb:10: warning: unknown instance variable @topings. Did you mean: @toppings?
 ```
 
 ## Introduction
 
-Ruby instance variables are so convenient - you don't even need to declare them! But... they are also dangerous, because a mispelled variable name results in `nil` instead of an error.
+> OK I read the synopsis but I don't get it.
 
-For this reason it's often recommended to wrap every instance variable in getter and setter methods with `attr_accessor`. But this added ceremony is exactly what self-declaring instance variables are there to avoid.
+That's because what Ivar does seems so basic that it's almost a surprise it isn't part of the language. Do you see that warning about an unkown instance variable? That's Ivar, helping you avoid a bug.
 
-Why not have the best of both worlds? Ivar lets you use plain-old instance variables, and automatically checks for typos.
+> Oh! Because in Ruby, any unset instance variable ("ivar") you reference just returns `nil`, with no error or warning.
 
-Ivar waits until an instance is created to do the checking, then uses Prism to look for variables that don't match what was set in initialization. So it's a little bit dynamic, a little bit static. It doesn't encumber your instance variable reads and writes with any extra checking. And with the `:warn_once` policy, it won't overwhelm you with output.
+Exactly.
 
+> Yeah what's up with that anyway.
 
-## Usage
-
-### Explicit Validation
+It's actually one of the conveniences of the language: when you realize you need to store a field you just do it, without having to go back and declare it somewhere else in the class:
 
 ```ruby
-# sandwich.rb
+class MyClass
+  # ...
+  def increment_usage_count!
+    (@usage_count ||= 0) += 1
+  end
+  # ...
+end
+```
+
+> Right but there is no protection against typos.
+
+Also true. If we later do this:
+
+```ruby
+class MyClass
+  # ...
+  def usage_count
+    @usag_count
+  end
+  # ...
+end
+```
+
+...there's nothing to tell us we got the variable wrong.
+
+> I thought that's why we're supposed to use attr_reader and friends.
+
+Yes, this is why a lot of people recommend using `attr_reader`/`_writer`/`attr_accessor` to declare pervasively, and only ever reading or writing ivars through accessors. But this gives up the convenience, informality, and conciseness of Ruby's instance variables. And it also puts you at risk of Ruby's all-time favorite gotcha: forgetting to put `self.` in front a setter call.
+
+```ruby
+class MyClass
+  attr_accessor :usage_count
+
+  def increment_usage_count!
+    usage_count += 1  # oops, incremented a local, not the ivar
+  end
+end
+```
+
+> Ouch, bad memories.
+
+Yeah. Personally I've gone through phases with this. For many years I followed and advocated the advice to use accessors everywhere. But lately I've kind of gone back to my roots on using unadorned ivars directly when I'm not setting up a public interface.
+
+Then I ran into Joel Drapper's [`strict_ivars`](https://github.com/joeldrapper/strict_ivars) gem and it got my wheels turning. I preferred a warning to a hard error, and I didn't necessarily want to have to change methods that intentionally referenced unset ivars. It got me wondering, though: what would it look like to have Ruby warn about possible typos in ivar names, the same way it warns about other potential oopsies? What even would the heuristic be to determine if an ivar reference might be a typo?
+
+> Well obviously you found a way to do it. What heuristics does Ivar use?
+
+At the moment there are two ways to give an ivar the stamp of approval. The first is the most un-intrusive: set it in the initializer.
+
+> Oh, like in that first example, you set `@toppings` in the initializer.
+
+```ruby
+require "ivar/check_all" if $VERBOSE
+
+class Pizza
+  def initialize(toppings)
+    @toppings = toppings
+  end
+  # ...
+end
+
+```
+
+Exactly.
+
+> And then what... spooky magic happens?
+
+Well, let's use a slightly more explicit version.
+
+```ruby
 require "ivar"
 
-class Sandwich
+class Pizza
+  include Ivar::Checked
+
+  def initialize(toppings)
+    @toppings = toppings
+  end
+  # ...
+end
+```
+
+That's what `ivar/check_all` implicitly does under the hood: adds `Ivar::Checked` to classes.
+
+> Which does what, exactly?
+
+Let's use an even more explicit version to demonstrate:
+
+```ruby
+require "ivar"
+
+class Pizza
   include Ivar::Validation
 
-  def initialize
-    @bread = "wheat"
-    @cheese = "muenster"
-    @condiments = ["mayo", "mustard"]
-    check_ivars(add: [:@side])
-  end
-
-  def to_s
-    "A #{@bread} sandwich with #{@chese} and #{@condiments.join(", ")}" \
-    (@side ? "and a side of #{@side}" : "")
-  end
-end
-
-Sandwich.new
-```
-
-```shell
-$ ruby sandwich.rb -w
-sandwich.rb:22: warning: unknown instance variable @chese. Did you mean: @cheese?
-```
-
-### Automatic Validation
-
-```ruby
-require "ivar"
-
-class Sandwich
-  include Ivar::Checked
-
-  def initialize
-    @bread = "white"
-    @cheese = "havarti"
-    @condiments = ["mayo", "mustard"]
-    # no need for explicit check_ivars call
-  end
-  # ...
-end
-```
-
-The `Checked` module automatically calls `check_ivars` after initialization.
-
-Note that the `:warn_once` policy is the default, meaning that this will emit a warning the first time an instance is created, but not for later instances.
-
-### Declare Instance Variables
-
-With Ivar we "declare" variables implicitly by setting them in `initialize`. But if you don't have any reason to set them in the initializer, you can explicitly declare them so they won't be flagged.
-
-#### Basic Declaration
-
-```ruby
-require "ivar"
-
-class SandwichWithIvarMacro
-  include Ivar::Checked
-
-  ivar :@side
-
-  def initialize
-    @bread = "wheat"
-    @cheese = "muenster"
-    @condiments = ["mayo", "mustard"]
-  end
-
-  def add_side(side)
-    @side = side
-  end
-
-  def to_s
-    result = "A #{@bread} sandwich with #{@cheese} and #{@condiments.join(", ")}"
-    result += " and a side of #{@side}" if defined?(@side) && @side
-    result
-  end
-end
-```
-
-#### Declaration with Initial Values
-
-As a convenience, ivars can be declared with initial values:
-
-```ruby
-class SandwichWithInitialValues
-  include Ivar::Checked
-
-  # Declare instance variables with initial values
-  ivar "@bread":  "wheat",
-       "@cheese": "muenster",
-       "@pickles": true
-
-  # ...
-end
-```
-
-Note that this if you have an `initialize` method already, there is no great benefit to initializing your ivars in this way.
-
-#### Declaration default `:value`
-
-Alternately, you can use the `:value` keyword:
-
-```ruby
-class SandwichWithSharedValues
-  include Ivar::Checked
-
-  # Declare multiple condiments with the same initial value (true)
-  ivar :@cheese, "pepper jack"
-
-    # ...
-end
-```
-
-You can also initialize multiple variables to the same default:
-
-```ruby
-class Sandwich
-  include Ivar::Checked
-
-  # Declare multiple condiments with the same initial value (true)
-  ivar :@mayo, :@mustard, :@ketchup, value: true
-
-  # ...
-end
-```
-
-#### Declaration with dynamic values
-
-For dynamic initialization, a block can be passed:
-
-```ruby
-class Sandwich
-  include Ivar::Checked
-
-  ivar(:@side) {  Time.now.hour < 12 ? "hash browns" : "chips" }
-
-  # ...
-end
-```
-
-The name of the variable being initialized is passed to the block.
-
-```ruby
-class Sandwich
-  include Ivar::Checked
-
-  ivar(:@mayo, :@mustard, :@ketchup) { |varname| !varname.include?("mayo") }
-
-  # ...
-end
-```
-
-#### Adding Accessor Methods
-
-As another convenience, we can generate `attr_reader`/`attr_writer`/`attr_accessor` methods at the same time as declaring a variable:
-
-```ruby
-class Sandwich
-  include Ivar::Checked
-
-  # Declare instance variables with accessors
-  ivar :@bread, :@cheese, accessor: true, value: "default"
-
-  # Declare condiments with a reader
-  ivar :@condiments, reader: true, value: ["mayo", "mustard"]
-
-  # Declare pickles with a writer
-  ivar :@pickles, writer: true, value: true
-
-  # ...
-end
-
-sandwich = SandwichWithAccessors.new
-puts "Bread: #{sandwich.bread}"  # Reader method
-sandwich.bread = "rye"           # Writer method
-puts "Updated bread: #{sandwich.bread}"
-```
-
-#### Keyword Argument Initialization
-
-You can initialize instance variables directly from keyword arguments using the `init: :kwarg` option:
-
-```ruby
-class SandwichWithKwargInit
-  include Ivar::Checked
-
-  # Declare instance variables with keyword argument initialization
-  ivar :@bread, :@cheese, init: :kwarg
-
-  # Declare pickles with both a default value and kwarg initialization
-  ivar :@pickles, value: false, init: :kwarg
-
-  # Note: Don't define parameters for the peeled-off keywords
-  def initialize(extra_condiments: [])
-    # The declared variables are already initialized with their values
-    # from keyword arguments or defaults
-    # ...
-  end
-end
-
-# Create a sandwich with custom bread and cheese
-custom_sandwich = SandwichWithKwargInit.new(bread: "rye", cheese: "swiss")
-```
-
-You can also use `init: :keyword` as an alias for `init: :kwarg`.
-
-The keyword argument name is derived from the instance variable name by removing the `@` prefix. For example, `@bread` will look for a keyword argument named `bread:`.
-
-If the keyword argument is not provided, the instance variable will be initialized with the default value from the `:value` option (if provided).
-
-**Important**: Keyword arguments used for `init: :kwarg` are "peeled off" and not passed to the `initialize` method. This means you should not define parameters for these keywords in your `initialize` method. Only define parameters for keyword arguments that are not used for ivar initialization.
-
-## Check Policies
-
-Ivar supports different policies for handling unknown instance variables. You can specify a policy at the global level, class level, or per-check level.
-
-### Available Policies
-
-- `:warn` - Emit warnings for all unknown instance variables (default)
-- `:warn_once` - Emit warnings only once per class
-- `:raise` - Raise an exception for unknown instance variables
-- `:log` - Log unknown instance variables to a logger
-- `:none` - Do nothing (no-op) for unknown instance variables
-
-### Setting a Global Policy
-
-```ruby
-# Set the global policy to raise exceptions
-Ivar.check_policy = :raise
-
-class Sandwich
-  include Ivar::Validation
-
-  def initialize
-    @bread = "wheat"
+  def initialize(toppings)
+    @toppings = toppings
     check_ivars
   end
+  # ...
+end
+```
+
+> So `check_ivars` is the magic method that does the checking?
+
+Exactly. `Ivar::Checked` just arranges to automatically call it after your `initialize` methods finish.
+
+> And what, precisely, does `check_ivars` do?
+
+Well, it first notes all currently set ivars, and stamps them as "known". Then it kicks off a just-in-time static analysis of the class using [Prism](https://github.com/ruby/prism), to find all ivar references. And then it compares the two lists and generates warnings for any references that don't match a known ivar.
+
+> And it does this when an instance is created?
+
+Yep!
+
+> OK I have some concerns about that but I'll save them for later. My next question is: what if I want to use an ivar without first initializing it in the `initialize` method?
+
+Well, if you're using the explicit `check_ivers` version you can stamp some additional ivars as "known" by passing them in as an argument:
+
+```ruby
+require "ivar"
+
+class Pizza
+  include Ivar::Validation
+
+  def initialize(toppings)
+    @toppings = toppings
+    check_ivars(add: [:@extra_cheese])
+  end
+  # ...
+end
+```
+
+But the canonical way to do it is with the `ivar` macro:
+
+```ruby
+require "ivar"
+
+class Pizza
+  include Ivar::Checked
+
+  ivar :@minutes_waiting
+
+  def increment_wait_time
+    (@minutes_waiting ||= 0) += 1
+  end
+  # ...
+end
+```
+
+This is a pure declaration: the variable will not be set. But as a convenience, you can also initialize it with a value:
+
+```ruby
+require "ivar"
+
+class Pizza
+  include Ivar::Checked
+
+  ivar :@minutes_waiting, value: 0
+
+  def increment_wait_time
+    @minutes_waiting += 1
+  end
+  # ...
+end
+```
+
+> Can I initialize it with a different value for each instance?
+
+Yes, you can pass a block that generates the value:
+
+```ruby
+require "ivar"
+
+class Pizza
+  include Ivar::Checked
+
+  ivar(:@order_time) { Time.now }
+  # ...
+end
+```
+
+This block will be passed the ivar name as an argument, if you want to do something fancy like share one dynamic initialization block between multiple ivars:
+
+```ruby
+require "ivar"
+
+class Pizza
+  include Ivar::Checked
+
+  ivar :@order_time, :@delivery_time do |ivar_name|
+   Time.now + (ivar_name == :@order_time ? 0 : 30)
+  end
+  # ...
+end
+```
+
+Which, yes, you can declare multiple ivars in one `ivar` call, if you want. You can also split them between individual `ivar` declarations.
+
+> But what if I want to initialize an ivar from a constructor argument? Do I need to go back to the `initialize` method for that?
+
+No you don't! One of the coolest conveniences that `ivar` adds is the ability to mark an ivar as initializable from a constructor argument:
+
+```ruby
+require "ivar"
+
+class Sandwich
+  include Ivar::Checked
+
+  ivar :@bread, init: :kwarg
+  ivar :@cheese, init: :kwarg
+  ivar :@condiments, init: :kwarg
 
   def to_s
-    "A #{@bread} sandwich with #{@chese}"  # This will raise an exception
+    "A #{@bread} sandwich with #{@cheese} and #{@condiments.join(", ")}"
   end
 end
 
-Sandwich.new  # Raises: NameError: test_file.rb:2: unknown instance variable @chese. Did you mean: @cheese?
+s = Sandwich.new(bread: "wheat", cheese: "muenster", condiments: ["mayo"])
+s.to_s  # => "A wheat sandwich with muenster and mayo"
 ```
 
-### Setting a Class-Level Policy
+Notice the lack of an initialize method, and the lack of the usual Ruby repetition of `@ivar_name = ivar_name`.
+
+> Whoah.
+
+Right??? Oh yeah we've got positional arguments too if you like those better.
 
 ```ruby
+require "ivar"
+
 class Sandwich
-  include Ivar::Validation
-  extend Ivar::CheckPolicy
+  include Ivar::Checked
 
-  # Set the class-level policy to log
-  ivar_check_policy :log, logger: Logger.new($stderr)
-
-  def initialize
-    @bread = "wheat"
-    check_ivars
-  end
+  ivar :@bread, init: :arg
+  ivar :@cheese, init: :arg
+  ivar :@condiments, init: :arg
 
   def to_s
-    "A #{@bread} sandwich with #{@chese}"  # This will log a warning
+    "A #{@bread} sandwich with #{@cheese} and #{@condiments.join(", ")}"
   end
 end
 
-Sandwich.new  # Logs: W, [2023-06-01T12:34:56.789123 #12345] WARN -- : test_file.rb:2: unknown instance variable @chese. Did you mean: @cheese?
+s = Sandwich.new("wheat", "muenster", ["mayo"])
+s.to_s  # => "A wheat sandwich with muenster and mayo"
 ```
 
-### Setting a Per-Check Policy
+> What if I also want external accessor methods?
+
+Gotcha covered.
 
 ```ruby
+require "ivar"
+
 class Sandwich
+  include Ivar::Checked
+
+  ivar :@bread, init: :kwarg, reader: true
+  ivar :@cheese, init: :kwarg, reader: true
+  ivar :@condiments, init: :kwarg, accessor: true
+end
+
+s = Sandwich.new(bread: "wheat", cheese: "muenster", condiments: ["mayo"])
+s.bread  # => "wheat"
+s.cheese  # => "muenster"
+s.condiments = ["mustard"]
+s.condiments  # => ["mustard"]
+```
+
+> This seems like it's more than just about detecting ivar typos at this point.
+
+Yeah, well, I knew that in order to determine typos I'd have to have some kind of declaration mechanism. And once I have that, I might as well make it useful. And use it to gain back some of the convenience lost to having to write the declaration in the first place.
+
+> Fair enough.
+
+Any other questions?
+
+> Well, earlier you said that checking happens at object-instantiation time. Does this mean I'm going to be flooded with warnings if my code creates a lot of instances?
+
+Excellent question! No, not out of the boxt. The default policy (`:warn_once`) is to warn only once per class, not per instance.
+
+> Are there other policies?
+
+Yeah, there's `:warn` for warning every time; `:log` for logging warnings, `:raise` for raising an exception, and `:none` for no checking at all.
+
+Policies can be set program-wide:
+
+```ruby
+require "ivar"
+Ivar.check_policy = :log
+```
+
+...or on a per-class basis:
+
+```ruby
+require "ivar"
+
+class Pizza
+  include Ivar::Checked
+  ivar_check_policy :none
+  # ...
+end
+```
+
+...or when invoking `check_ivars`:
+
+```ruby
+require "ivar"
+
+class Pizza
   include Ivar::Validation
 
-  def initialize
-    @bread = "wheat"
-    # Use the raise policy for this check
+  def initialize(toppings)
+    @toppings = toppings
     check_ivars(policy: :raise)
   end
-
-  def to_s
-    "A #{@bread} sandwich with #{@chese}"
-  end
-end
-
-Sandwich.new  # Raises: NameError: test_file.rb:2: unknown instance variable @chese. Did you mean: @cheese?
-```
-
-### Using the Checked Module with Policies
-
-The `Checked` module sets a default policy: of `:warn_once`.
-
-You can override the default policy:
-
-```ruby
-class Sandwich
-  include Ivar::Checked
-
-  # Override the default policy
-  ivar_check_policy :raise
-
-  def initialize
-    @bread = "wheat"
-  end
-
-  def to_s
-    "A #{@bread} sandwich with #{@chese}"  # This will raise an exception
-  end
-end
-
-Sandwich.new  # Raises: NameError: test_file.rb:2: unknown instance variable @chese. Did you mean: @cheese?
-```
-
-## Project-Wide Checking
-
-If you want to enable checking for all classes and modules in your project without having to include `Ivar::Checked` in each one, you can use the `Ivar.check_all` method:
-
-```ruby
-# Enable checking for all classes and modules defined in the project
-require "ivar"
-Ivar.check_all
-
-# Now any class or module defined in the project will have Ivar::Checked included
-class Sandwich
-  # No need to include Ivar::Checked manually
-
-  def initialize
-    @bread = "wheat"
-    @cheese = "muenster"
-  end
-
-  def to_s
-    "A #{@bread} sandwich with #{@chese}"  # This will trigger a warning
-  end
-end
-
-Sandwich.new  # Warning: unknown instance variable @chese. Did you mean: @cheese?
-```
-
-You can also use `Ivar.check_all` with a block to limit its scope:
-
-```ruby
-require "ivar"
-
-# Only classes defined within this block will have Ivar::Checked included
-Ivar.check_all do
-  class Sandwich
-    # ...
-  end
-
-  module Toppings
-    # ...
-  end
-end
-
-# Classes defined outside the block won't have Ivar::Checked included
-class Drink
   # ...
 end
 ```
 
-For convenience, you can also simply require `ivar/check_all` to enable project-wide checking:
+You can check out the source code for more details about check policies.
+
+> I still have some questions. Specifically... what exactly is going on behind the scenes with `ivar/check_all`? That seems... spooky.
+
+Yeah. So when you require `ivar/check_all`, what you're doing is invoking `Ivar.check_all`.
+
+This sets up a TracePoint that watches for class and module definitions. When it detects one, it includes `Ivar::Checked` into that the class or module.
+
+> Wait so it infects every single class I load?
+
+Not quite. It tries pretty hard to only do it for code from your project; not for stuff from gems or the standard library.
+
+> Doesn't a TracePoint have a performance impact?
+
+Yeah probably. That's why I don't necessarily recommend `ivar/check_all` for production use. But there are a couple of alternatives. For one, you can do it like we had in the opening example: only load it when `$VERBOSE` is true.
 
 ```ruby
-# This automatically enables Ivar.check_all
-require "ivar/check_all"
-
-# Now all classes and modules defined in the project will have Ivar::Checked included
+require "ivar/check_all" if $VERBOSE
 ```
 
-Note that only classes and modules defined in files within the project root (as determined by `Ivar.project_root`) will have `Ivar::Checked` included. This prevents the feature from affecting code in gems or the standard library.
+Or, you can use the block form of `Ivar.check_all`, which will only enable checking for classes defined within the block.
 
-# Acknowledgements
+```ruby
+require "ivar"
 
-Thank you to Joel Drapper, for inspiring me with [the strict_ivars gem](https://github.com/joeldrapper/strict_ivars).
+Ivar.check_all do
+  # load your code here
+end
+```
 
+With this version the tracepoint will only be active for the duration of the `check_all` block.
 
-And thanks to [Augment Code](https://www.augmentcode.com/), without which this gem wouldn't exist because I don't actually have time for pleasure projects anymore.
+## Acknowledgements
 
-## Contributing
+Thanks first to [Joel Draper](https://github.com/joeldrapper) for creating [strict_ivars](https://github.com/joeldrapper/strict_ivars), which inspired this gem. If `ivar` isn't quite what you're looking for, check out `strict_ivars` instead!
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/avdi/ivar.
+Thanks also to [Augment Code](https://www.augmentcode.com/), which served as my "hands" for building this. I'm not at a point in my life where I can actually afford the time to build random passion projects, so this project wouldn't exist without help from the robot.
 
-Fair warning: If you contribute a lot I might nominate you to be a maintainer. I know my limitations; I'm good at launching libraries, but not so good at maintaining them.
+## Contribution
 
-## Development
-
-After checking out the repo, run `script/setup` to install dependencies. Then, run `rake test` to run the tests. You can also run `script/console` for an interactive prompt that will allow you to experiment.
-
-## Releasing
-
-This project uses a standardized release process:
-
-1. Update the version number in `version.rb` according to [Semantic Versioning](https://semver.org/)
-2. Update the CHANGELOG.md with your changes under the "Unreleased" section
-3. Run the release script: `script/release [major|minor|patch]`
-4. Push the changes and tag: `git push origin main && git push origin v{version}`
-
-For more details, see [VERSION.md](VERSION.md).
-
-# TODO
-
-- Add a module for dynamic checking of instance_variable_get/set
-- Audit and improve code the robot wrote
+Contributions are welcome! Fair warning, if I accept a bunch of your PRs I may nominate you as a maintainer. I know my limits: I'm better at kicking off projects than at maintaining them.
