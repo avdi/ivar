@@ -40,6 +40,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Simplified external-process tests to directly check for warnings in stderr instead of using custom capture logic
 - Updated TargetedPrismAnalysis and Checked::InstanceMethods to use the new method stash abstraction
 - Extracted modules from auto_check.rb into their own files and removed auto_check.rb
+- Removed PrismAnalysis class as it has been superseded by TargetedPrismAnalysis
 
 ### Documentation
 - Improved documentation for the CheckPolicy module explaining its purpose and inheritance behavior

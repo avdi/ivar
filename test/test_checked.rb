@@ -23,12 +23,12 @@ class TestChecked < Minitest::Test
     end
 
     # Force the analysis to be created and include our method
-    analysis = Ivar::PrismAnalysis.new(klass)
+    analysis = Ivar::TargetedPrismAnalysis.new(klass)
     # Monkey patch the analysis to include our typo
     def analysis.references
       [
-        {name: :@correct, path: "test_file.rb", line: 1, column: 1},
-        {name: :@typo_veriable, path: "test_file.rb", line: 2, column: 1}
+        {name: :@correct, path: "test_file.rb", line: 1, column: 1, method: :initialize},
+        {name: :@typo_veriable, path: "test_file.rb", line: 2, column: 1, method: :method_with_typo}
       ]
     end
     # Replace the cached analysis
@@ -71,23 +71,23 @@ class TestChecked < Minitest::Test
     end
 
     # Force the analysis to be created for parent class
-    parent_analysis = Ivar::PrismAnalysis.new(parent_klass)
+    parent_analysis = Ivar::TargetedPrismAnalysis.new(parent_klass)
     def parent_analysis.references
       [
-        {name: :@parent_var, path: "test_file.rb", line: 1, column: 1},
-        {name: :@parent_typo, path: "test_file.rb", line: 2, column: 1}
+        {name: :@parent_var, path: "test_file.rb", line: 1, column: 1, method: :initialize},
+        {name: :@parent_typo, path: "test_file.rb", line: 2, column: 1, method: :parent_method}
       ]
     end
     Ivar.instance_variable_get(:@analysis_cache)[parent_klass] = parent_analysis
 
     # Force the analysis to be created for child class
-    child_analysis = Ivar::PrismAnalysis.new(child_klass)
+    child_analysis = Ivar::TargetedPrismAnalysis.new(child_klass)
     def child_analysis.references
       [
-        {name: :@parent_var, path: "test_file.rb", line: 1, column: 1},
-        {name: :@child_var, path: "test_file.rb", line: 2, column: 1},
-        {name: :@parent_typo, path: "test_file.rb", line: 3, column: 1},
-        {name: :@child_typo, path: "test_file.rb", line: 4, column: 1}
+        {name: :@parent_var, path: "test_file.rb", line: 1, column: 1, method: :initialize},
+        {name: :@child_var, path: "test_file.rb", line: 2, column: 1, method: :initialize},
+        {name: :@parent_typo, path: "test_file.rb", line: 3, column: 1, method: :parent_method},
+        {name: :@child_typo, path: "test_file.rb", line: 4, column: 1, method: :child_method}
       ]
     end
     Ivar.instance_variable_get(:@analysis_cache)[child_klass] = child_analysis
@@ -119,12 +119,12 @@ class TestChecked < Minitest::Test
     end
 
     # Force the analysis to be created and include our method
-    analysis = Ivar::PrismAnalysis.new(klass)
+    analysis = Ivar::TargetedPrismAnalysis.new(klass)
     # Monkey patch the analysis to include our typo
     def analysis.references
       [
-        {name: :@correct, path: "test_file.rb", line: 1, column: 1},
-        {name: :@typo_veriable, path: "test_file.rb", line: 2, column: 1}
+        {name: :@correct, path: "test_file.rb", line: 1, column: 1, method: :initialize},
+        {name: :@typo_veriable, path: "test_file.rb", line: 2, column: 1, method: :method_with_typo}
       ]
     end
     # Replace the cached analysis
@@ -163,12 +163,12 @@ class TestChecked < Minitest::Test
     end
 
     # Force the analysis to be created and include our method
-    analysis = Ivar::PrismAnalysis.new(klass)
+    analysis = Ivar::TargetedPrismAnalysis.new(klass)
     # Monkey patch the analysis to include our typo
     def analysis.references
       [
-        {name: :@correct, path: "test_file.rb", line: 1, column: 1},
-        {name: :@typo_veriable, path: "test_file.rb", line: 2, column: 1}
+        {name: :@correct, path: "test_file.rb", line: 1, column: 1, method: :initialize},
+        {name: :@typo_veriable, path: "test_file.rb", line: 2, column: 1, method: :method_with_typo}
       ]
     end
     # Replace the cached analysis

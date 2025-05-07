@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require_relative "test_helper"
-require "ivar/prism_analysis"
 
 class TestClassLevelIvars < Minitest::Test
   def setup
