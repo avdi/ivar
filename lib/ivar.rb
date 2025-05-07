@@ -154,20 +154,12 @@ module Ivar
     CHECK_ALL_MANAGER.disable
   end
 
-  # Gets the method implementation stash for a class
-  # @param klass [Class] The class to get the stash for
-  # @return [Hash] The method stash (empty hash if none exists)
-  def self.get_method_stash(klass)
-    klass.instance_variable_get(:@__ivar_method_impl_stash) || {}
-  end
-
   # Gets a method from the stash or returns nil if not found
   # @param klass [Class] The class that owns the method
   # @param method_name [Symbol] The name of the method to retrieve
   # @return [UnboundMethod, nil] The stashed method or nil if not found
   def self.get_stashed_method(klass, method_name)
-    stash = get_method_stash(klass)
-    stash[method_name]
+    (klass.instance_variable_get(:@__ivar_method_impl_stash) || {})[method_name]
   end
 
   # Stashes a method implementation for a class
