@@ -57,7 +57,7 @@ class TestCheckAll < Minitest::Test
 
     assert_equal 0, status.exitstatus, "Script failed with: #{stderr}"
     assert_includes stdout, "SUCCESS: InsideClass includes Ivar::Checked"
-    assert_includes stdout, "SUCCESS: Warning emitted for unknown instance variable @naem"
+    assert_match(/warning.*unknown instance variable @naem/, stderr)
   end
 
   def test_check_all_excludes_outside_classes
@@ -66,7 +66,7 @@ class TestCheckAll < Minitest::Test
 
     assert_equal 0, status.exitstatus, "Script failed with: #{stderr}"
     assert_includes stdout, "SUCCESS: OutsideClass does not include Ivar::Checked"
-    assert_includes stdout, "SUCCESS: No warnings emitted for OutsideClass"
+    refute_match(/warning.*unknown instance variable @naem/, stderr)
   end
 
   def test_check_all_with_block_scope_in_subprocess

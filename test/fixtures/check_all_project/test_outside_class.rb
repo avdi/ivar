@@ -4,7 +4,6 @@
 # It will be run as a subprocess
 
 require_relative "../../../lib/ivar"
-require "stringio"
 
 # Set up the project root
 PROJECT_ROOT = File.expand_path("..", __FILE__)
@@ -29,32 +28,7 @@ else
   puts "SUCCESS: OutsideClass does not include Ivar::Checked"
 end
 
-# Create an instance to test for warnings
-begin
-  # Redirect stderr to capture warnings
-  original_stderr = $stderr
-  $stderr = StringIO.new
+# Create an instance and call to_s to trigger the potential typo warning
+OutsideClass.new.to_s
 
-  # Create an instance and call to_s to trigger the typo
-  OutsideClass.new.to_s
-
-  # Get the captured warnings
-  warnings = $stderr.string
-
-  # Restore stderr
-  $stderr = original_stderr
-
-  # Verify that no warnings were emitted
-  if warnings.empty?
-    puts "SUCCESS: No warnings emitted for OutsideClass"
-  else
-    puts "FAILURE: Warnings emitted for OutsideClass: #{warnings}"
-    exit 1
-  end
-rescue => e
-  puts "ERROR: #{e.message}"
-  exit 1
-end
-
-# Exit with success
 exit 0

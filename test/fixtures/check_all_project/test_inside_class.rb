@@ -4,7 +4,6 @@
 # It will be run as a subprocess
 
 require_relative "../../../lib/ivar"
-require "stringio"
 
 # Set up the project root
 PROJECT_ROOT = File.expand_path("..", __FILE__)
@@ -37,32 +36,7 @@ else
   exit 1
 end
 
-# Create an instance to test for warnings
-begin
-  # Redirect stderr to capture warnings
-  original_stderr = $stderr
-  $stderr = StringIO.new
+# Create an instance to trigger the warning
+InsideClass.new.to_s
 
-  # Create an instance
-  InsideClass.new
-
-  # Get the captured warnings
-  warnings = $stderr.string
-
-  # Restore stderr
-  $stderr = original_stderr
-
-  # Verify that warnings were emitted
-  if warnings.include?("unknown instance variable @naem")
-    puts "SUCCESS: Warning emitted for unknown instance variable @naem"
-  else
-    puts "FAILURE: No warning emitted for unknown instance variable @naem"
-    exit 1
-  end
-rescue => e
-  puts "ERROR: #{e.message}"
-  exit 1
-end
-
-# Exit with success
 exit 0
