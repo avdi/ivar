@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    ivar (0.4.5)
+    ivar (0.4.6)
       prism (~> 1.2)
 
 GEM
