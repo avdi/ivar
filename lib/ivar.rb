@@ -42,6 +42,18 @@ module Ivar
     ]
   end
 
+  def self.get_ancestral_analyses(klass)
+    klass
+      .ancestors.filter_map { |ancestor| maybe_get_analysis(ancestor) }
+      .reverse
+  end
+
+  def self.maybe_get_analysis(klass)
+    if klass.include?(Validation)
+      get_analysis(klass)
+    end
+  end
+
   # Returns a cached analysis for the given class or module
   # Creates a new analysis if one doesn't exist in the cache
   # Thread-safe: Multiple readers are allowed, but writers block all other access

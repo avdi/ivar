@@ -50,7 +50,6 @@ class TestIvarWithPositionalInitInheritance < Minitest::Test
   end
 
   def test_ivar_with_positional_init_inheritance_defaults_and_overrides
-    skip "skip positional tests for now"
     # Create a parent class with positional initialization and defaults
     parent_klass = Class.new do
       include Ivar::Checked
@@ -58,7 +57,6 @@ class TestIvarWithPositionalInitInheritance < Minitest::Test
       # Declare instance variables with positional initialization and defaults
       ivar :@parent_var1, init: :positional, value: "parent default 1"
       ivar :@parent_var2, init: :positional, value: "parent default 2"
-      ivar :@shared_var, init: :positional, value: "parent shared default"
 
       def initialize(extra_arg = nil)
         @extra_parent = extra_arg
@@ -68,7 +66,6 @@ class TestIvarWithPositionalInitInheritance < Minitest::Test
         {
           parent_var1: @parent_var1,
           parent_var2: @parent_var2,
-          shared_var: @shared_var,
           extra_parent: @extra_parent
         }
       end
@@ -80,12 +77,9 @@ class TestIvarWithPositionalInitInheritance < Minitest::Test
       ivar :@child_var1, init: :positional, value: "child default 1"
       ivar :@child_var2, init: :positional, value: "child default 2"
 
-      # Override a parent variable with a different default
-      ivar :@shared_var, value: "child shared default"
-
-      def initialize(child_extra = nil, *args)
+      def initialize(parent_extra = nil, child_extra = nil)
+        super(parent_extra)
         @child_extra = child_extra
-        super(*args)
       end
 
       def all_values
@@ -103,7 +97,6 @@ class TestIvarWithPositionalInitInheritance < Minitest::Test
     expected1 = {
       parent_var1: "parent default 1",
       parent_var2: "parent default 2",
-      shared_var: "child shared default", # Should use child's default
       extra_parent: nil,
       child_var1: "child default 1",
       child_var2: "child default 2",
@@ -113,15 +106,12 @@ class TestIvarWithPositionalInitInheritance < Minitest::Test
 
     # Test 2: Override parent variables
     instance2 = child_klass.new(
-      nil, # child_extra
       "custom parent 1",
-      "custom parent 2",
-      "custom shared"
+      "custom parent 2"
     )
     expected2 = {
       parent_var1: "custom parent 1",
       parent_var2: "custom parent 2",
-      shared_var: "custom shared",
       extra_parent: nil,
       child_var1: "child default 1",
       child_var2: "child default 2",
@@ -131,17 +121,14 @@ class TestIvarWithPositionalInitInheritance < Minitest::Test
 
     # Test 3: Override child variables
     instance3 = child_klass.new(
-      nil, # child_extra
       "parent default 1", # Use default for parent_var1
       "parent default 2", # Use default for parent_var2
-      "parent shared default", # Use default for shared_var
       "custom child 1",
       "custom child 2"
     )
     expected3 = {
       parent_var1: "parent default 1",
       parent_var2: "parent default 2",
-      shared_var: "parent shared default",
       extra_parent: nil,
       child_var1: "custom child 1",
       child_var2: "custom child 2",
@@ -151,28 +138,25 @@ class TestIvarWithPositionalInitInheritance < Minitest::Test
 
     # Test 4: Override everything and pass through extra args
     instance5 = child_klass.new(
-      "child extra", # child_extra
       "custom parent 1",
       "custom parent 2",
-      "custom shared",
       "custom child 1",
       "custom child 2",
-      "parent extra" # extra_arg
+      "parent extra", # extra_arg
+      "child extra" # child_extra
     )
     expected5 = {
       parent_var1: "custom parent 1",
       parent_var2: "custom parent 2",
-      shared_var: "custom shared",
-      extra_parent: "parent extra",
       child_var1: "custom child 1",
       child_var2: "custom child 2",
+      extra_parent: "parent extra",
       child_extra: "child extra"
     }
     assert_equal expected5, instance5.all_values
   end
 
   def test_deep_inheritance_chain_with_positional_init
-    skip "skip positional tests for now"
     # Create a base class with positional initialization
     base_klass = Class.new do
       include Ivar::Checked
@@ -314,7 +298,6 @@ class TestIvarWithPositionalInitInheritance < Minitest::Test
   end
 
   def test_warnings_for_undeclared_variables_in_inheritance
-    skip "skip positional tests for now"
     # Create a parent class with positional initialization
     parent_klass = Class.new do
       include Ivar::Checked
@@ -365,11 +348,10 @@ class TestIvarWithPositionalInitInheritance < Minitest::Test
       end
     end
 
-    # Create an instance and use the variables
-    instance = child_klass.new("parent value", "child value")
-
     # Capture stderr output when using variables
     stderr_output = capture_stderr do
+      # Create an instance and use the variables
+      instance = child_klass.new("parent value", "child value")
       instance.use_undeclared_parent_var
       instance.use_undeclared_child_var
       instance.use_misspelled_parent_var
@@ -399,7 +381,6 @@ class TestIvarWithPositionalInitInheritance < Minitest::Test
   end
 
   def test_no_warnings_for_inherited_variables
-    skip "skip positional tests for now"
     # Create a parent class with positional initialization
     parent_klass = Class.new do
       include Ivar::Checked

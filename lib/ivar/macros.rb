@@ -45,6 +45,8 @@ module Ivar
         when :kwarg, :keyword
           Ivar::ExplicitKeywordDeclaration.new(ivar_name, manifest, options)
         when :arg, :positional
+          # TODO: probably fail if a duplicate positional comes in
+          #   There aren't any obvious semantics for it.
           Ivar::ExplicitPositionalDeclaration.new(ivar_name, manifest, options)
         when nil
           Ivar::ExplicitDeclaration.new(ivar_name, manifest, options)
