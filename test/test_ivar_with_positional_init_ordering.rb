@@ -260,7 +260,6 @@ class TestIvarWithPositionalInitOrdering < Minitest::Test
   end
 
   def test_warnings_for_undeclared_variables_in_ordering_context
-    skip "skip positional tests for now"
     # Create a class with positional initialization in a specific order
     klass = Class.new do
       include Ivar::Checked
@@ -275,7 +274,9 @@ class TestIvarWithPositionalInitOrdering < Minitest::Test
         @first = @first.to_s.upcase
         @second = @second.to_s.upcase
         @third = @third.to_s.upcase
+      end
 
+      def undeclared_variable
         # Use an undeclared variable (should trigger a warning)
         @undeclared = "this should trigger a warning"
       end
@@ -290,11 +291,9 @@ class TestIvarWithPositionalInitOrdering < Minitest::Test
       end
     end
 
-    # Create an instance and use the misspelled variable
-    instance = klass.new("value 1", "value 2", "value 3")
-
-    # Capture stderr output when using misspelled variable
     stderr_output = capture_stderr do
+      # Create an instance and use the misspelled variable
+      instance = klass.new("value 1", "value 2", "value 3")
       instance.use_misspelled_variable
     end
 
