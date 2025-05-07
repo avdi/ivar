@@ -34,7 +34,7 @@ Ivar.check_all do
 
     def to_s
       # Intentional typo in @name
-      "Name: \#{@withinclass_naem}"
+      "Name: #{@withinclass_naem}"
     end
   end
 

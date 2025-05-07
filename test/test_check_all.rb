@@ -71,9 +71,7 @@ class TestCheckAll < Minitest::Test
 
   def test_check_all_with_block_scope_in_subprocess
     script_path = File.join(FIXTURES_PATH, "test_block_scope.rb")
-    stdout, stderr, status = Open3.capture3("ruby", script_path, chdir: FIXTURES_PATH)
-
-    pp(status:, stdout:, stderr:)
+    _stdout, stderr, status = Open3.capture3("ruby", script_path, chdir: FIXTURES_PATH)
 
     assert_equal 0, status.exitstatus, "Script failed with: #{stderr}"
     assert_match(/warning.*unknown instance variable @withinclass_naem/, stderr)
