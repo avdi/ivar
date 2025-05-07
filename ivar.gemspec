@@ -8,20 +8,9 @@ Gem::Specification.new do |spec|
   spec.authors = ["Avdi Grimm"]
   spec.email = ["avdi@avdi.codes"]
 
-  spec.summary = "Automatically check instance variables for typos."
+  spec.summary = "A Ruby gem that automatically checks for typos in instance variables."
   spec.description = <<~DESCRIPTION
-    Ruby instance variables are so convenient - you don't even need to declare them!
-    But... they are also dangerous, because a mispelled variable name results in `nil`
-    instead of an error.
-
-    Why not have the best of both worlds? Ivar lets you use plain-old instance variables,
-    and automatically checks for typos.
-
-    Ivar waits until an instance is created to do the checking, then uses Prism to look
-    for variables that don't match what was set in initialization. So it's a little bit
-    dynamic, a little bit static. It doesn't encumber your instance variable reads and
-    writes with any extra checking. And with the `:warn_once` policy, it won't overwhelm
-    you with output.
+    Ivar is a Ruby gem that automatically checks for typos in instance variables.
   DESCRIPTION
 
   spec.homepage = "https://github.com/avdi/ivar"
