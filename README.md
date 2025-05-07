@@ -397,6 +397,10 @@ end
 
 With this version the tracepoint will only be active for the duration of the `check_all` block.
 
+## Status
+
+Ivar is not yet stable but is very much ready for people to kick the tires and [report](https://github.com/avdi/ivar/issues) what works and what could be better!
+
 ## Acknowledgements
 
 Thanks first to [Joel Draper](https://github.com/joeldrapper) for creating [strict_ivars](https://github.com/joeldrapper/strict_ivars), which inspired this gem. If `ivar` isn't quite what you're looking for, check out `strict_ivars` instead!
