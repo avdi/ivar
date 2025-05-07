@@ -6,7 +6,6 @@ require_relative "ivar/validation"
 require_relative "ivar/macros"
 require_relative "ivar/project_root"
 require_relative "ivar/check_all_manager"
-require_relative "ivar/method_stash"
 require_relative "ivar/auto_check"
 require_relative "ivar/manifest"
 require_relative "ivar/targeted_prism_analysis"
@@ -39,9 +38,7 @@ module Ivar
   def self.known_internal_ivars
     [
       :@__ivar_check_policy,
-      :@__ivar_initialized_vars,
-      :@__ivar_method_impl_stash,
-      :@__ivar_skip_init
+      :@__ivar_initialized_vars
     ]
   end
 
@@ -153,46 +150,5 @@ module Ivar
   # @return [void]
   def self.disable_check_all
     CHECK_ALL_MANAGER.disable
-  end
-
-  # Convenience methods for accessing the method stash functionality
-
-  # Stores the original implementation of a method in a class's method stash
-  # @param klass [Class] The class that owns the method
-  # @param method_name [Symbol] The name of the method to stash
-  # @return [UnboundMethod, nil] The stashed method or nil if the method doesn't exist
-  def self.store_method(klass, method_name)
-    MethodStash.store_method(klass, method_name)
-  end
-
-  # Stores multiple method implementations in a class's method stash
-  # @param klass [Class] The class that owns the methods
-  # @param method_names [Array<Symbol>] The names of the methods to stash
-  # @return [Hash] A hash mapping method names to their stashed implementations
-  def self.store_methods(klass, method_names)
-    MethodStash.store_methods(klass, method_names)
-  end
-
-  # Retrieves a stashed method implementation
-  # @param klass [Class] The class that owns the method
-  # @param method_name [Symbol] The name of the method to retrieve
-  # @return [UnboundMethod, nil] The stashed method or nil if not found
-  def self.retrieve_method(klass, method_name)
-    MethodStash.retrieve_method(klass, method_name)
-  end
-
-  # Checks if a method is stashed for a class
-  # @param klass [Class] The class to check
-  # @param method_name [Symbol] The name of the method to check
-  # @return [Boolean] Whether the method is stashed
-  def self.method_stashed?(klass, method_name)
-    MethodStash.method_stashed?(klass, method_name)
-  end
-
-  # Returns all stashed methods for a class
-  # @param klass [Class] The class to get stashed methods for
-  # @return [Hash] A hash mapping method names to their stashed implementations
-  def self.all_stashed_methods(klass)
-    MethodStash.all_stashed_methods(klass)
   end
 end
