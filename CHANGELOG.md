@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Enhanced release script to detect and handle uncommitted changes after the release process
+
 ## [0.4.2] - 2025-05-07
 
 ### Added

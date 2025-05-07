@@ -85,7 +85,36 @@ def clean_build_artifacts
   end
 end
 
+def check_for_uncommitted_changes
+  info "Checking for uncommitted changes..."
+  uncommitted_changes = `git status --porcelain`.strip
+
+  if uncommitted_changes.empty?
+    info "No uncommitted changes detected."
+    false
+  else
+    info "Uncommitted changes detected:"
+    puts uncommitted_changes
+    true
+  end
+end
+
+def commit_remaining_changes(new_version)
+  info "Committing remaining changes after release process..."
+  system("git add --all")
+  system("git commit -m \"Post-release cleanup for v#{new_version}\"")
+  info "Remaining changes committed."
+end
+
 def push_changes_and_tag(new_version)
+  # Check for any uncommitted changes before pushing
+  has_uncommitted_changes = check_for_uncommitted_changes
+
+  # If there are uncommitted changes, commit them
+  if has_uncommitted_changes
+    commit_remaining_changes(new_version)
+  end
+
   info "Pushing changes to remote repository..."
   system("git push origin main") || error("Failed to push changes to remote repository.")
 
@@ -95,9 +124,34 @@ def push_changes_and_tag(new_version)
   success "Changes and tag pushed successfully!"
 end
 
+def check_gemfile_lock_changes
+  info "Checking for Gemfile.lock changes..."
+  # Check if Gemfile.lock has changes
+  gemfile_lock_status = `git status --porcelain Gemfile.lock`.strip
+  if gemfile_lock_status.empty?
+    info "No changes to Gemfile.lock detected."
+    false
+  else
+    info "Changes to Gemfile.lock detected, will include in commit."
+    true
+  end
+end
+
 def commit_and_tag(new_version, skip_push = false)
   info "Committing version bump..."
-  system("git add lib/ivar/version.rb CHANGELOG.md")
+
+  # Always add version file and changelog
+  files_to_commit = ["lib/ivar/version.rb", "CHANGELOG.md"]
+
+  # Check if Gemfile.lock has changes and add it if needed
+  if check_gemfile_lock_changes
+    files_to_commit << "Gemfile.lock"
+  end
+
+  # Add all files to staging
+  system("git add #{files_to_commit.join(" ")}")
+
+  # Commit the changes
   system("git commit -m \"Bump version to #{new_version}\"")
 
   info "Creating tag v#{new_version}..."
@@ -150,6 +204,23 @@ if confirmation == "y"
     success "Remember to push changes manually to trigger the release workflow."
   else
     success "Release workflow triggered!"
+
+    # Final check for any remaining uncommitted changes
+    if check_for_uncommitted_changes
+      info "There are still uncommitted changes after the release process."
+      puts "Would you like to commit and push these changes? (y/n)"
+      cleanup_confirmation = $stdin.gets.chomp.downcase
+
+      if cleanup_confirmation == "y"
+        commit_remaining_changes(new_version)
+        system("git push origin main") || error("Failed to push cleanup changes.")
+        success "Post-release cleanup completed and pushed successfully!"
+      else
+        info "Uncommitted changes left in working directory."
+      end
+    else
+      success "Working directory is clean. Release completed successfully!"
+    end
   end
 else
   info "Release cancelled."
