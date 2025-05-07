@@ -11,7 +11,6 @@ class TestClassMethodIvars < Minitest::Test
   def test_class_method_ivars_do_not_trigger_warnings
     # Create a class with class methods that reference class-level instance variables
     klass = Class.new do
-      extend Ivar::Macros
       include Ivar::Checked
 
       # Class-level instance variables
@@ -40,21 +39,6 @@ class TestClassMethodIvars < Minitest::Test
 
     # Configure the class
     klass.configure(api_key: "secret", timeout: 30)
-
-    # Force the analysis to be created for the class with our custom references
-    analysis = Ivar::PrismAnalysis.new(klass)
-    # Monkey patch the analysis to include our variables with context
-    def analysis.references
-      [
-        # Class method references (should be ignored)
-        {name: :@config, path: "test_file.rb", line: 1, column: 1, context: :class},
-        {name: :@initialized, path: "test_file.rb", line: 2, column: 1, context: :class},
-        # Instance method reference (should be checked)
-        {name: :@instance_var, path: "test_file.rb", line: 3, column: 1, context: :instance}
-      ]
-    end
-    # Replace the cached analysis
-    Ivar.instance_variable_get(:@analysis_cache)[klass] = analysis
 
     # Capture stderr output when creating an instance
     warnings = capture_stderr do
@@ -98,7 +82,7 @@ class TestClassMethodIvars < Minitest::Test
     end
 
     # Force the analysis to be created for the class with our custom references
-    analysis = Ivar::PrismAnalysis.new(klass)
+    analysis = Ivar::TargetedPrismAnalysis.new(klass)
     # Monkey patch the analysis to include our variables with context
     def analysis.references
       [

@@ -6,6 +6,7 @@ require "tmpdir"
 
 class TestProjectRoot < Minitest::Test
   def setup
+    Ivar.project_root = nil
     # Create a temporary directory structure for testing
     @temp_dir = Dir.mktmpdir("ivar_test")
 

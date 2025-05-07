@@ -87,11 +87,12 @@ module Ivar
         collector = IvarCollector.new(@file_path, @target_method_name)
         node.body&.accept(collector)
         @references = collector.references
-        return false
+        false
+      else
+        # Sometimes methods are found inside other methods...
+        node.body&.accept(self)
+        true
       end
-
-      # Not our target method, skip it
-      false
     end
   end
 
