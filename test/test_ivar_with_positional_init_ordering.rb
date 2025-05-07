@@ -114,7 +114,6 @@ class TestIvarWithPositionalInitOrdering < Minitest::Test
   end
 
   def test_positional_args_ordering_with_inheritance_and_overrides
-    skip "skip positional tests for now"
     # Create a parent class with positional initialization
     parent_klass = Class.new do
       include Ivar::Checked
@@ -132,7 +131,7 @@ class TestIvarWithPositionalInitOrdering < Minitest::Test
     # Create a child class that overrides some parent variables
     child_klass = Class.new(parent_klass) do
       # Override var2 with a different default
-      ivar :@var2, value: "child default for var2"
+      ivar :@var2, init: :positional, value: "child default for var2"
 
       # Add a new positional var
       ivar :@var4, init: :positional
