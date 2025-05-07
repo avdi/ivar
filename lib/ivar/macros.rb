@@ -56,10 +56,5 @@ module Ivar
         manifest.add_explicit_declaration(declaration)
       end
     end
-
-    # Hook method called when the module is included
-    def inherited(subclass)
-      super
-    end
   end
 end
