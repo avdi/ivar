@@ -15,7 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added callbacks for declarations: on_declare and before_init
 - Added CheckPolicy module to handle class-level check policy configuration
 - Added support for policy inheritance in subclasses
-- Added method stash abstraction with `get_method_stash` and `get_stashed_method` on the Ivar module
+- Added method stash abstraction with `stash_method`, `get_method_stash`, and `get_stashed_method` on the Ivar module
 
 ### Changed
 - Centralized handling of internal variables (those starting with `@__ivar_`) to avoid explicit declarations
@@ -32,7 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Changed default policy for Checked module from :warn_once to :warn
 - Enhanced initialization process in Checked module to properly handle manifest processing
 - Simplified external-process tests to directly check for warnings in stderr instead of using custom capture logic
-- Updated TargetedPrismAnalysis to use the new method stash abstraction
+- Updated TargetedPrismAnalysis and Checked::InstanceMethods to use the new method stash abstraction
 
 ### Documentation
 - Improved documentation for the CheckPolicy module explaining its purpose and inheritance behavior

@@ -73,9 +73,7 @@ module Ivar
       # file and line number.
       def self.prepend_features(othermod)
         (instance_methods(false) | private_instance_methods(false)).each do |method_name|
-          stash = othermod.instance_variable_get(:@__ivar_method_impl_stash) ||
-            othermod.instance_variable_set(:@__ivar_method_impl_stash, {})
-          stash[method_name] = othermod.instance_method(method_name)
+          Ivar.stash_method(othermod, method_name)
         end
         super
       end

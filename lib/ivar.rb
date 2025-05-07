@@ -169,4 +169,17 @@ module Ivar
     stash = get_method_stash(klass)
     stash[method_name]
   end
+
+  # Stashes a method implementation for a class
+  # @param klass [Class] The class that owns the method
+  # @param method_name [Symbol] The name of the method to stash
+  # @return [UnboundMethod, nil] The stashed method or nil if the method doesn't exist
+  def self.stash_method(klass, method_name)
+    return nil unless klass.method_defined?(method_name) || klass.private_method_defined?(method_name)
+
+    method_impl = klass.instance_method(method_name)
+    stash = klass.instance_variable_get(:@__ivar_method_impl_stash) ||
+      klass.instance_variable_set(:@__ivar_method_impl_stash, {})
+    stash[method_name] = method_impl
+  end
 end
