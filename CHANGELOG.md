@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Enhanced release script to automatically push changes and tags to the remote repository
+
 ### Fixed
 - Fixed GitHub Actions workflow to prevent "frozen Gemfile.lock" errors during gem publishing
 

@@ -17,19 +17,21 @@ To release a new version:
 1. Make sure all changes are documented in the `CHANGELOG.md` file under the "Unreleased" section
 2. Run the release script with the appropriate version bump type:
    ```
-   script/release [major|minor|patch]
+   script/release [major|minor|patch] [options]
    ```
+
+   Available options:
+   - `--yes` or `-y`: Skip confirmation prompt
+   - `--no-push`: Skip pushing changes to remote repository
+
 3. The script will:
    - Run tests and linter to ensure everything is working
    - Update the version number in `lib/ivar/version.rb`
    - Update the `CHANGELOG.md` file with the new version and date
    - Commit these changes
    - Create a git tag for the new version
-4. Push the changes and tag to GitHub:
-   ```
-   git push origin main && git push origin v{version}
-   ```
-5. The GitHub Actions workflow will automatically:
+   - Push the changes and tag to GitHub (unless `--no-push` is specified)
+4. The GitHub Actions workflow will automatically:
    - Build the gem
    - Run tests
    - Publish the gem to RubyGems.org

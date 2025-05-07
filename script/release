@@ -5,7 +5,8 @@
 # Usage: script/release [major|minor|patch] [options]
 #
 # Options:
-#   --yes, -y    Skip confirmation prompt
+#   --yes, -y     Skip confirmation prompt
+#   --no-push     Skip pushing changes to remote repository
 
 require "bundler/gem_tasks"
 require_relative "../lib/ivar/version"
@@ -84,7 +85,17 @@ def clean_build_artifacts
   end
 end
 
-def commit_and_tag(new_version)
+def push_changes_and_tag(new_version)
+  info "Pushing changes to remote repository..."
+  system("git push origin main") || error("Failed to push changes to remote repository.")
+
+  info "Pushing tag v#{new_version} to remote repository..."
+  system("git push origin v#{new_version}") || error("Failed to push tag to remote repository.")
+
+  success "Changes and tag pushed successfully!"
+end
+
+def commit_and_tag(new_version, skip_push = false)
   info "Committing version bump..."
   system("git add lib/ivar/version.rb CHANGELOG.md")
   system("git commit -m \"Bump version to #{new_version}\"")
@@ -92,8 +103,13 @@ def commit_and_tag(new_version)
   info "Creating tag v#{new_version}..."
   system("git tag -a v#{new_version} -m \"Version #{new_version}\"")
 
-  info "To push the new version, run:"
-  puts "  git push origin main && git push origin v#{new_version}"
+  if skip_push
+    info "Skipping push to remote repository."
+    info "To push the new version manually, run:"
+    puts "  git push origin main && git push origin v#{new_version}"
+  else
+    push_changes_and_tag(new_version)
+  end
 end
 
 # Main script
@@ -102,6 +118,7 @@ error "Please specify a version bump type: major, minor, or patch" if ARGV.empty
 # Parse arguments
 args = ARGV.dup
 skip_confirmation = args.delete("--yes") || args.delete("-y")
+skip_push = args.delete("--no-push")
 bump_type = args[0].downcase if args[0]
 
 error "Please specify a version bump type: major, minor, or patch" unless bump_type
@@ -126,9 +143,14 @@ if confirmation == "y"
   run_linter
   update_version_file(new_version)
   update_changelog(new_version)
-  commit_and_tag(new_version)
+  commit_and_tag(new_version, skip_push)
   success "Version bumped to #{new_version}!"
-  success "Run 'git push origin main && git push origin v#{new_version}' to trigger the release workflow."
+
+  if skip_push
+    success "Remember to push changes manually to trigger the release workflow."
+  else
+    success "Release workflow triggered!"
+  end
 else
   info "Release cancelled."
 end
