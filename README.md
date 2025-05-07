@@ -316,7 +316,7 @@ Yeah, well, I knew that in order to determine typos I'd have to have some kind o
 
 Any other questions?
 
-> What about inheritance? Can I use these tools both parent and child clases?
+> What about inheritance? Can I use these tools in both parent and child clases?
 
 Yes, `ivar` goes to a fair amount of trouble to "just work" in ways you'll (hopefully) expect when it comes to inheritance.
 
@@ -324,7 +324,7 @@ More questions?
 
 > Well, earlier you said that checking happens at object-instantiation time. Does this mean I'm going to be flooded with warnings if my code creates a lot of instances?
 
-Excellent question! No, not out of the boxt. The default policy (`:warn_once`) is to warn only once per class, not per instance.
+Excellent question! No, not out of the box. The default policy (`:warn_once`) is to warn only once per class, not per instance.
 
 > Are there other policies?
 
