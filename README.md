@@ -67,7 +67,7 @@ end
 
 > I thought that's why we're supposed to use attr_reader and friends.
 
-Yes, this is why a lot of people recommend using `attr_reader`/`_writer`/`attr_accessor` to declare pervasively, and only ever reading or writing ivars through accessors. But this gives up the convenience, informality, and conciseness of Ruby's instance variables. And it also puts you at risk of Ruby's all-time favorite gotcha: forgetting to put `self.` in front a setter call.
+Yes, this is why a lot of people recommend using `attr_reader`/`_writer`/`attr_accessor` pervasively. Only ever reading or writing ivars through accessors. But this gives up the convenience, informality, and conciseness of Ruby's instance variables. And it also puts you at risk of Ruby's all-time favorite gotcha: forgetting to put `self.` in front a setter call.
 
 ```ruby
 class MyClass
@@ -156,7 +156,7 @@ Yep!
 
 > OK I have some concerns about that but I'll save them for later. My next question is: what if I want to use an ivar without first initializing it in the `initialize` method?
 
-Well, if you're using the explicit `check_ivers` version you can stamp some additional ivars as "known" by passing them in as an argument:
+Well, if you're using the explicit `check_ivars` version you can stamp some additional ivars as "known" by passing them in as an argument:
 
 ```ruby
 require "ivar"
@@ -189,7 +189,7 @@ class Pizza
 end
 ```
 
-This is a pure declaration: the variable will not be set. But as a convenience, you can also initialize it with a value:
+This is purely a declaration: the variable will not be set. But as a convenience, you *can* also initialize it with a value:
 
 ```ruby
 require "ivar"
@@ -315,6 +315,12 @@ Yeah, well, I knew that in order to determine typos I'd have to have some kind o
 > Fair enough.
 
 Any other questions?
+
+> What about inheritance? Can I use these tools both parent and child clases?
+
+Yes, `ivar` goes to a fair amount of trouble to "just work" in ways you'll (hopefully) expect when it comes to inheritance.
+
+More questions?
 
 > Well, earlier you said that checking happens at object-instantiation time. Does this mean I'm going to be flooded with warnings if my code creates a lot of instances?
 
