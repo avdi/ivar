@@ -37,12 +37,10 @@ module Ivar
     def ancestor_manifests
       return [] unless @owner.respond_to?(:ancestors)
 
-      # Get all ancestors except the owner itself
-      ancestors = @owner.ancestors.reject { |ancestor| ancestor == @owner }
-
-      # Filter and map ancestors to manifests, only including those that already have manifests
-      # This avoids creating unnecessary manifests for classes/modules that don't declare anything
-      ancestors.filter_map { |ancestor| Ivar.get_manifest(ancestor, create: false) }
+      @owner
+        .ancestors.reject { |ancestor| ancestor == @owner }
+        .filter_map { |ancestor| Ivar.get_manifest(ancestor, create: false) }
+        .reverse
     end
 
     def explicitly_declared_ivars
@@ -55,6 +53,7 @@ module Ivar
       ancestor_manifests
         .flat_map(&:declarations)
         .+(declarations)
+        # use hash stores to preserve order and deduplicate by name
         .each_with_object({}) { |decl, acc| acc[decl.name] = decl }
         .values
     end
