@@ -30,7 +30,18 @@ module Ivar
     def format_warning(ref, suggestion)
       ivar = ref[:name]
       suggestion_text = suggestion ? "Did you mean: #{suggestion}?" : ""
-      "#{ref[:path]}:#{ref[:line]}: warning: unknown instance variable #{ivar}. #{suggestion_text}\n"
+      "#{ref[:path]}:#{ref[:line]}: warning: unknown instance variable #{ivar}. #{suggestion_text}"
+    end
+
+    # Emit warnings for each unknown reference
+    # @param unknown_refs [Array<Hash>] References to unknown instance variables
+    # @param allowed_ivars [Array<Symbol>] List of allowed instance variables
+    protected def emit_warnings_for_refs(unknown_refs, allowed_ivars)
+      unknown_refs.each do |ref|
+        ivar = ref[:name]
+        suggestion = find_closest_match(ivar, allowed_ivars)
+        warn(format_warning(ref, suggestion))
+      end
     end
   end
 
@@ -41,11 +52,7 @@ module Ivar
     # @param klass [Class] The class being checked
     # @param allowed_ivars [Array<Symbol>] List of allowed instance variables
     def handle_unknown_ivars(unknown_refs, _klass, allowed_ivars)
-      unknown_refs.each do |ref|
-        ivar = ref[:name]
-        suggestion = find_closest_match(ivar, allowed_ivars)
-        $stderr.write(format_warning(ref, suggestion))
-      end
+      emit_warnings_for_refs(unknown_refs, allowed_ivars)
     end
   end
 
@@ -60,11 +67,7 @@ module Ivar
       return if Ivar.class_checked?(klass)
 
       # Emit warnings
-      unknown_refs.each do |ref|
-        ivar = ref[:name]
-        suggestion = find_closest_match(ivar, allowed_ivars)
-        $stderr.write(format_warning(ref, suggestion))
-      end
+      emit_warnings_for_refs(unknown_refs, allowed_ivars)
 
       # Mark this class as having been checked
       Ivar.mark_class_checked(klass)

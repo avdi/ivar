@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Updated policies to use Ruby's built-in `warn` method instead of `$stderr.write`
+- Reduced duplication in policy classes by moving common warning logic to the base class
+
 ## [0.4.7] - 2025-05-07
 
 ## [0.4.6] - 2025-05-07
