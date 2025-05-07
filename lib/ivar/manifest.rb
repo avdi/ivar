@@ -55,7 +55,7 @@ module Ivar
       ancestor_manifests
         .flat_map(&:declarations)
         .+(declarations)
-        .reduce({}) { |acc, decl| acc.merge(decl.name => decl) }
+        .each_with_object({}) { |decl, acc| acc[decl.name] = decl }
         .values
     end
 
