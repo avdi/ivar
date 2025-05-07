@@ -103,10 +103,11 @@ class TestChecked < Minitest::Test
     assert_match(/unknown instance variable @child_typo/, warnings)
   end
 
-  def test_checked_warns_for_every_instance
+  def test_checked_with_warn_policy
     # Create a class with a typo in an instance variable
     klass = Class.new do
       include Ivar::Checked
+      ivar_check_policy :warn
 
       def initialize
         @correct = "value"

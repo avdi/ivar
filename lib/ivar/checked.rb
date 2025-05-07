@@ -27,7 +27,7 @@ module Ivar
 
       # Set default policy for Checked to :warn
       # This can be overridden by calling ivar_check_policy in the class
-      base.ivar_check_policy(:warn)
+      base.ivar_check_policy(Ivar.check_policy)
     end
   end
 end

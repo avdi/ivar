@@ -331,7 +331,7 @@ class TestPolicies < Minitest::Test
     end
 
     # Check that the class has the warn policy
-    assert_equal :warn, klass.ivar_check_policy
+    assert_equal Ivar.check_policy, klass.ivar_check_policy
   end
 
   def test_checked_with_warn_once_policy
