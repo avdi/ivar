@@ -9,7 +9,7 @@ module Ivar
     # When this module is extended, it adds class methods to the extending class
     def self.extended(base)
       # Get or create a manifest for this class
-      Ivar.get_manifest(base)
+      Ivar.get_or_create_manifest(base)
     end
 
     # Declares instance variables that should be considered valid
@@ -31,7 +31,7 @@ module Ivar
     # @yield [varname] Block to generate initial values based on variable name
     #   Example: ivar(:@foo, :@bar) { |varname| "#{varname} default" }
     def ivar(*ivars, value: UNSET, init: nil, reader: false, writer: false, accessor: false, **ivars_with_values, &block)
-      manifest = Ivar.get_manifest(self)
+      manifest = Ivar.get_or_create_manifest(self)
 
       ivar_hash = ivars.map { |ivar| [ivar, value] }.to_h.merge(ivars_with_values)
 

@@ -107,6 +107,13 @@ module Ivar
     end
   end
 
+  # Alias for get_manifest that makes it clearer that it may create a manifest
+  # @param klass [Class, Module] The class or module to get a manifest for
+  # @return [Manifest] The manifest for the class or module
+  def self.get_or_create_manifest(klass)
+    get_manifest(klass, create: true)
+  end
+
   # Check if a manifest exists for a class or module
   # @param klass [Class, Module] The class or module to check
   # @return [Boolean] Whether a manifest exists for the class or module

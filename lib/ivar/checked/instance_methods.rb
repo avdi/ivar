@@ -24,7 +24,7 @@ module Ivar
           super
         else
           @__ivar_skip_init = true
-          manifest = Ivar.get_manifest(self.class)
+          manifest = Ivar.get_or_create_manifest(self.class)
           manifest.process_before_init(self, args, kwargs)
           super
           check_ivars

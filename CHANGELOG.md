@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added CheckPolicy module to handle class-level check policy configuration
 - Added support for policy inheritance in subclasses
 - Added method stash abstraction with `stash_method`, `get_method_stash`, and `get_stashed_method` on the Ivar module
+- Added `get_or_create_manifest` method to make it clearer when a manifest may be created
 
 ### Changed
 - Centralized handling of internal variables (those starting with `@__ivar_`) to avoid explicit declarations

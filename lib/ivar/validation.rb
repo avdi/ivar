@@ -11,7 +11,7 @@ module Ivar
     def check_ivars(add: [], policy: nil)
       policy ||= get_check_policy
       analyses = Ivar.get_ancestral_analyses(self.class)
-      manifest = Ivar.get_manifest(self.class)
+      manifest = Ivar.get_or_create_manifest(self.class)
       declared_ivars = manifest.all_declarations.map(&:name)
       allowed_ivars = (Ivar.known_internal_ivars | instance_variables | declared_ivars | add).uniq
       instance_refs = analyses.flat_map(&:references)
