@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.1] - 2025-05-07
+
 ### Added
 - Enhanced release script to automatically push changes and tags to the remote repository
 
