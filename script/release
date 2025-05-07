@@ -124,32 +124,17 @@ def push_changes_and_tag(new_version)
   success "Changes and tag pushed successfully!"
 end
 
-def check_gemfile_lock_changes
-  info "Checking for Gemfile.lock changes..."
-  # Check if Gemfile.lock has changes
-  gemfile_lock_status = `git status --porcelain Gemfile.lock`.strip
-  if gemfile_lock_status.empty?
-    info "No changes to Gemfile.lock detected."
-    false
-  else
-    info "Changes to Gemfile.lock detected, will include in commit."
-    true
-  end
+def update_gemfile_lock
+  info "Updating Gemfile.lock with new version..."
+  system("bundle install") || error("Failed to update Gemfile.lock. Run 'bundle install' manually and try again.")
+  info "Gemfile.lock updated successfully."
 end
 
 def commit_and_tag(new_version, skip_push = false)
   info "Committing version bump..."
 
-  # Always add version file and changelog
-  files_to_commit = ["lib/ivar/version.rb", "CHANGELOG.md"]
-
-  # Check if Gemfile.lock has changes and add it if needed
-  if check_gemfile_lock_changes
-    files_to_commit << "Gemfile.lock"
-  end
-
-  # Add all files to staging
-  system("git add #{files_to_commit.join(" ")}")
+  # Add all relevant files to staging
+  system("git add lib/ivar/version.rb CHANGELOG.md Gemfile.lock")
 
   # Commit the changes
   system("git commit -m \"Bump version to #{new_version}\"")
@@ -197,6 +182,7 @@ if confirmation == "y"
   run_linter
   update_version_file(new_version)
   update_changelog(new_version)
+  update_gemfile_lock
   commit_and_tag(new_version, skip_push)
   success "Version bumped to #{new_version}!"
 

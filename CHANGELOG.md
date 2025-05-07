@@ -7,10 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.4.3] - 2025-05-07
-
 ### Changed
 - Enhanced release script to detect and handle uncommitted changes after the release process
+- Improved release script to update Gemfile.lock before committing version changes
 
 ## [0.4.2] - 2025-05-07
 
