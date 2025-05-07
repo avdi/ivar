@@ -19,6 +19,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `get_or_create_manifest` method to make it clearer when a manifest may be created
 
 ### Changed
+- Split declaration classes into separate files for better organization:
+  - `Declaration` → `lib/ivar/declaration.rb`
+  - `ExplicitDeclaration` → `lib/ivar/explicit_declaration.rb`
+  - `ExplicitKeywordDeclaration` → `lib/ivar/explicit_keyword_declaration.rb`
+  - `ExplicitPositionalDeclaration` → `lib/ivar/explicit_positional_declaration.rb`
 - Centralized handling of internal variables (those starting with `@__ivar_`) to avoid explicit declarations
 - Improved filtering of internal variables during analysis phase rather than validation phase
 - Refactored internal variable tracking to use the Manifest system
