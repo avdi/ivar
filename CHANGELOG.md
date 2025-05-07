@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Fixed GitHub Actions workflow to prevent "frozen Gemfile.lock" errors during gem publishing
+
 ## [0.4.0] - 2025-05-07
 
 ### Added

@@ -17,7 +17,17 @@ jobs:
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: '3.3.0'
-          bundler-cache: true
+          # Don't use bundler-cache: true to avoid frozen Gemfile.lock issues
+          bundler-cache: false
+
+      - name: Update Gemfile.lock
+        run: |
+          # Run bundle install without deployment mode to update Gemfile.lock
+          bundle install --jobs 4
+          # Commit the updated Gemfile.lock if it changed
+          git config --local user.email "github-actions@github.com"
+          git config --local user.name "GitHub Actions"
+          git diff --exit-code Gemfile.lock || git commit -m "Update Gemfile.lock for release" Gemfile.lock
 
       - name: Run tests
         run: bundle exec rake test
