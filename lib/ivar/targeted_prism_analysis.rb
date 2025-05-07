@@ -35,7 +35,8 @@ module Ivar
       instance_methods = @klass.instance_methods(false) | @klass.private_instance_methods(false)
 
       instance_methods.each do |method_name|
-        method_obj = @klass.instance_method(method_name)
+        method_impl_stash = @klass.instance_variable_get(:@__ivar_method_impl_stash) || {}
+        method_obj = method_impl_stash[method_name] || @klass.instance_method(method_name)
         next unless method_obj.source_location
 
         file_path, line_number = method_obj.source_location

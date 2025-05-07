@@ -68,6 +68,18 @@ module Ivar
     # Instance methods that will be prepended to the including class.
     # These methods provide the core functionality for automatic instance variable validation.
     module InstanceMethods
+      # The semantics of prepend are such that the super method becomes wholly inaccessible. So if we override a method
+      # (like, say, initialize), we have to stash the original method implementation if we ever want to find out its
+      # file and line number.
+      def self.prepend_features(othermod)
+        (instance_methods(false) | private_instance_methods(false)).each do |method_name|
+          stash = othermod.instance_variable_get(:@__ivar_method_impl_stash) ||
+            othermod.instance_variable_set(:@__ivar_method_impl_stash, {})
+          stash[method_name] = othermod.instance_method(method_name)
+        end
+        super
+      end
+
       # Wrap the initialize method to automatically call check_ivars
       # This method handles the initialization process, including:
       # 1. Processing manifest declarations before calling super
@@ -83,13 +95,6 @@ module Ivar
           check_ivars
         end
       end
-
-      private
-
-      # Valid initialization methods for keyword arguments
-      # These are the allowed values for the :init option in ivar declarations
-      # Used to identify instance variables that should be initialized from keyword arguments
-      KWARG_INIT_METHODS = [:kwarg, :keyword].freeze
     end
   end
 end

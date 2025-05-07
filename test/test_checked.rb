@@ -25,7 +25,7 @@ class TestChecked < Minitest::Test
     # Force the analysis to be created and include our method
     analysis = Ivar::PrismAnalysis.new(klass)
     # Monkey patch the analysis to include our typo
-    def analysis.ivar_references
+    def analysis.references
       [
         {name: :@correct, path: "test_file.rb", line: 1, column: 1},
         {name: :@typo_veriable, path: "test_file.rb", line: 2, column: 1}
@@ -72,7 +72,7 @@ class TestChecked < Minitest::Test
 
     # Force the analysis to be created for parent class
     parent_analysis = Ivar::PrismAnalysis.new(parent_klass)
-    def parent_analysis.ivar_references
+    def parent_analysis.references
       [
         {name: :@parent_var, path: "test_file.rb", line: 1, column: 1},
         {name: :@parent_typo, path: "test_file.rb", line: 2, column: 1}
@@ -82,7 +82,7 @@ class TestChecked < Minitest::Test
 
     # Force the analysis to be created for child class
     child_analysis = Ivar::PrismAnalysis.new(child_klass)
-    def child_analysis.ivar_references
+    def child_analysis.references
       [
         {name: :@parent_var, path: "test_file.rb", line: 1, column: 1},
         {name: :@child_var, path: "test_file.rb", line: 2, column: 1},
@@ -120,7 +120,7 @@ class TestChecked < Minitest::Test
     # Force the analysis to be created and include our method
     analysis = Ivar::PrismAnalysis.new(klass)
     # Monkey patch the analysis to include our typo
-    def analysis.ivar_references
+    def analysis.references
       [
         {name: :@correct, path: "test_file.rb", line: 1, column: 1},
         {name: :@typo_veriable, path: "test_file.rb", line: 2, column: 1}
@@ -164,7 +164,7 @@ class TestChecked < Minitest::Test
     # Force the analysis to be created and include our method
     analysis = Ivar::PrismAnalysis.new(klass)
     # Monkey patch the analysis to include our typo
-    def analysis.ivar_references
+    def analysis.references
       [
         {name: :@correct, path: "test_file.rb", line: 1, column: 1},
         {name: :@typo_veriable, path: "test_file.rb", line: 2, column: 1}

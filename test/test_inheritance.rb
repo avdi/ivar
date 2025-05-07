@@ -86,8 +86,8 @@ class TestInheritance < Minitest::Test
       end
 
       # Force the analysis to be created for child class
-      child_analysis = Ivar::PrismAnalysis.new(child_klass)
-      def child_analysis.ivar_references
+      child_analysis = Ivar::TargetedPrismAnalysis.new(child_klass)
+      def child_analysis.references
         [
           {name: :@parent_var, path: "test_file.rb", line: 1, column: 1},
           {name: :@child_var, path: "test_file.rb", line: 3, column: 1},
@@ -140,8 +140,8 @@ class TestInheritance < Minitest::Test
       assert_equal :warn_once, child_klass.ivar_check_policy
 
       # Force the analysis to be created for child class
-      child_analysis = Ivar::PrismAnalysis.new(child_klass)
-      def child_analysis.ivar_references
+      child_analysis = Ivar::TargetedPrismAnalysis.new(child_klass)
+      def child_analysis.references
         [
           {name: :@parent_var, path: "test_file.rb", line: 1, column: 1},
           {name: :@child_var, path: "test_file.rb", line: 2, column: 1},
@@ -206,8 +206,8 @@ class TestInheritance < Minitest::Test
       assert_equal :warn, parent_klass.ivar_check_policy
 
       # Force the analysis to be created for child class
-      child_analysis = Ivar::PrismAnalysis.new(child_klass)
-      def child_analysis.ivar_references
+      child_analysis = Ivar::TargetedPrismAnalysis.new(child_klass)
+      def child_analysis.references
         [
           {name: :@parent_var, path: "test_file.rb", line: 1, column: 1},
           {name: :@child_var, path: "test_file.rb", line: 2, column: 1},
@@ -274,8 +274,8 @@ class TestInheritance < Minitest::Test
       end
 
       # Force the analysis to be created for leaf class
-      leaf_analysis = Ivar::PrismAnalysis.new(leaf_klass)
-      def leaf_analysis.ivar_references
+      leaf_analysis = Ivar::TargetedPrismAnalysis.new(leaf_klass)
+      def leaf_analysis.references
         [
           {name: :@base_var, path: "test_file.rb", line: 1, column: 1},
           {name: :@middle_var, path: "test_file.rb", line: 2, column: 1},

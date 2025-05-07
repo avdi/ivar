@@ -26,9 +26,9 @@ class TestWarnOncePolicy < Minitest::Test
     instance = klass.new
 
     # Force the analysis to be created and include our method
-    analysis = Ivar::PrismAnalysis.new(klass)
+    analysis = Ivar::TargetedPrismAnalysis.new(klass)
     # Monkey patch the analysis to include our typo
-    def analysis.ivar_references
+    def analysis.references
       [
         {name: :@correct, path: "test_file.rb", line: 1, column: 1},
         {name: :@typo_veriable, path: "test_file.rb", line: 2, column: 1}
@@ -65,9 +65,9 @@ class TestWarnOncePolicy < Minitest::Test
     instance = klass.new
 
     # Force the analysis to be created and include our method
-    analysis = Ivar::PrismAnalysis.new(klass)
+    analysis = Ivar::TargetedPrismAnalysis.new(klass)
     # Monkey patch the analysis to include our typo
-    def analysis.ivar_references
+    def analysis.references
       [
         {name: :@correct, path: "test_file.rb", line: 1, column: 1},
         {name: :@typo_veriable, path: "test_file.rb", line: 2, column: 1}
@@ -124,9 +124,9 @@ class TestWarnOncePolicy < Minitest::Test
     instance2 = klass2.new
 
     # Force the analysis to be created for klass1
-    analysis1 = Ivar::PrismAnalysis.new(klass1)
+    analysis1 = Ivar::TargetedPrismAnalysis.new(klass1)
     # Monkey patch the analysis to include our typo
-    def analysis1.ivar_references
+    def analysis1.references
       [
         {name: :@correct, path: "test_file.rb", line: 1, column: 1},
         {name: :@typo_in_class1, path: "test_file.rb", line: 2, column: 1}
@@ -136,9 +136,9 @@ class TestWarnOncePolicy < Minitest::Test
     Ivar.instance_variable_get(:@analysis_cache)[klass1] = analysis1
 
     # Force the analysis to be created for klass2
-    analysis2 = Ivar::PrismAnalysis.new(klass2)
+    analysis2 = Ivar::TargetedPrismAnalysis.new(klass2)
     # Monkey patch the analysis to include our typo
-    def analysis2.ivar_references
+    def analysis2.references
       [
         {name: :@correct, path: "test_file.rb", line: 1, column: 1},
         {name: :@typo_in_class2, path: "test_file.rb", line: 2, column: 1}
@@ -197,9 +197,9 @@ class TestWarnOncePolicy < Minitest::Test
     instance = klass.new
 
     # Force the analysis to be created and include our method
-    analysis = Ivar::PrismAnalysis.new(klass)
+    analysis = Ivar::TargetedPrismAnalysis.new(klass)
     # Monkey patch the analysis to include our variables
-    def analysis.ivar_references
+    def analysis.references
       [
         {name: :@correct, path: "test_file.rb", line: 1, column: 1},
         {name: :@allowed_var, path: "test_file.rb", line: 2, column: 1},

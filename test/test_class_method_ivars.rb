@@ -44,7 +44,7 @@ class TestClassMethodIvars < Minitest::Test
     # Force the analysis to be created for the class with our custom references
     analysis = Ivar::PrismAnalysis.new(klass)
     # Monkey patch the analysis to include our variables with context
-    def analysis.ivar_references
+    def analysis.references
       [
         # Class method references (should be ignored)
         {name: :@config, path: "test_file.rb", line: 1, column: 1, context: :class},
@@ -100,7 +100,7 @@ class TestClassMethodIvars < Minitest::Test
     # Force the analysis to be created for the class with our custom references
     analysis = Ivar::PrismAnalysis.new(klass)
     # Monkey patch the analysis to include our variables with context
-    def analysis.ivar_references
+    def analysis.references
       [
         # Class method reference (should be ignored)
         {name: :@shared_var, path: "test_file.rb", line: 1, column: 1, context: :class},

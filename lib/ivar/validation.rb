@@ -14,7 +14,7 @@ module Ivar
       manifest = Ivar.get_manifest(self.class)
       declared_ivars = manifest.all_declarations.map(&:name)
       allowed_ivars = (Ivar.known_internal_ivars | instance_variables | declared_ivars | add).uniq
-      instance_refs = analysis.instance_level_references
+      instance_refs = analysis.references
       unknown_refs = instance_refs.reject { |ref| allowed_ivars.include?(ref[:name]) }
       policy_instance = Ivar.get_policy(policy)
       policy_instance.handle_unknown_ivars(unknown_refs, self.class, allowed_ivars)

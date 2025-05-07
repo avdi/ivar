@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require_relative "ivar/version"
-require_relative "ivar/prism_analysis"
 require_relative "ivar/policies"
 require_relative "ivar/validation"
 require_relative "ivar/macros"
@@ -9,6 +8,7 @@ require_relative "ivar/project_root"
 require_relative "ivar/check_all_manager"
 require_relative "ivar/auto_check"
 require_relative "ivar/manifest"
+require_relative "ivar/targeted_prism_analysis"
 require "prism"
 require "did_you_mean"
 require "pathname"
@@ -48,7 +48,7 @@ module Ivar
     return @analysis_cache[klass] if @analysis_cache.key?(klass)
 
     MUTEX.synchronize do
-      @analysis_cache[klass] ||= PrismAnalysis.new(klass)
+      @analysis_cache[klass] ||= TargetedPrismAnalysis.new(klass)
     end
   end
 

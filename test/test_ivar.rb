@@ -12,18 +12,18 @@ require_relative "fixtures/child_with_checked_ivars"
 
 class TestIvar < Minitest::Test
   def test_ivar_analysis
-    analysis = Ivar::PrismAnalysis.new(Sandwich)
+    analysis = Ivar::TargetedPrismAnalysis.new(Sandwich)
     assert_equal %i[@bread @cheese @chese @condiments @side], analysis.ivars
   end
 
   def test_ivar_analysis_with_split_class
-    analysis = Ivar::PrismAnalysis.new(SplitClass)
+    analysis = Ivar::TargetedPrismAnalysis.new(SplitClass)
     expected_ivars = %i[@part1_var1 @part1_var2 @part2_var1 @part2_var2 @part2_var3]
     assert_equal expected_ivars, analysis.ivars
   end
 
   def test_ivar_references
-    analysis = Ivar::PrismAnalysis.new(Sandwich)
+    analysis = Ivar::TargetedPrismAnalysis.new(Sandwich)
     references = analysis.ivar_references
 
     assert_equal 8, references.size
@@ -54,7 +54,7 @@ class TestIvar < Minitest::Test
   def test_get_analysis_returns_prism_analysis
     setup_analysis_cache
     analysis = Ivar.get_analysis(Sandwich)
-    assert_instance_of Ivar::PrismAnalysis, analysis
+    assert_instance_of Ivar::TargetedPrismAnalysis, analysis
     assert_equal %i[@bread @cheese @chese @condiments @side], analysis.ivars
   end
 
@@ -91,13 +91,13 @@ class TestIvar < Minitest::Test
         def method_with_typo
           @unknown_var = "unknown"
         end
+
+        def method_with_typo
+          @unknown_var = "unknown"
+        end
       end
 
       instance = klass.new
-
-      def instance.method_with_typo
-        @unknown_var = "unknown"
-      end
 
       instance.check_ivars(add: [:@allowed_var])
     end
@@ -120,13 +120,13 @@ class TestIvar < Minitest::Test
         def method_with_typo
           @typo_veriable = "misspelled"
         end
+
+        def method_with_typo
+          @typo_veriable = "misspelled"
+        end
       end
 
       instance = klass.new
-
-      def instance.method_with_typo
-        @typo_veriable = "misspelled"
-      end
 
       instance.check_ivars
     end
@@ -152,7 +152,7 @@ class TestIvar < Minitest::Test
       Thread.new do
         test_classes.shuffle.each do |klass|
           analysis = Ivar.get_analysis(klass)
-          assert_instance_of Ivar::PrismAnalysis, analysis
+          assert_instance_of Ivar::TargetedPrismAnalysis, analysis
         end
       end
     end

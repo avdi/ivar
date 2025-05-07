@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative "test_helper"
+require "ivar/prism_analysis"
 
 class TestClassLevelIvars < Minitest::Test
   def setup
@@ -33,9 +34,9 @@ class TestClassLevelIvars < Minitest::Test
     end
 
     # Force the analysis to be created for the class
-    analysis = Ivar::PrismAnalysis.new(klass)
+    analysis = Ivar::TargetedPrismAnalysis.new(klass)
     # Monkey patch the analysis to include our variables
-    def analysis.ivar_references
+    def analysis.references
       [
         {name: :@class_level_var, path: "test_file.rb", line: 1, column: 1}
       ]
@@ -89,9 +90,9 @@ class TestClassLevelIvars < Minitest::Test
     end
 
     # Force the analysis to be created for the class
-    analysis = Ivar::PrismAnalysis.new(klass)
+    analysis = Ivar::TargetedPrismAnalysis.new(klass)
     # Monkey patch the analysis to include our variables
-    def analysis.ivar_references
+    def analysis.references
       [
         {name: :@instance_var, path: "test_file.rb", line: 1, column: 1}
       ]
@@ -152,9 +153,9 @@ class TestClassLevelIvars < Minitest::Test
     klass.configure(api_key: "secret", timeout: 30)
 
     # Force the analysis to be created for the class
-    analysis = Ivar::PrismAnalysis.new(klass)
+    analysis = Ivar::TargetedPrismAnalysis.new(klass)
     # Monkey patch the analysis to include our variables
-    def analysis.ivar_references
+    def analysis.references
       [
         {name: :@instance_var, path: "test_file.rb", line: 1, column: 1}
       ]

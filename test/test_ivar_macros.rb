@@ -140,7 +140,7 @@ class TestMacros < Minitest::Test
     # Force the analysis to be created and include our method
     analysis = Ivar::PrismAnalysis.new(klass)
     # Monkey patch the analysis to include our variables
-    def analysis.ivar_references
+    def analysis.references
       [
         {name: :@normal_var, path: "test_file.rb", line: 1, column: 1},
         {name: :@declared_var, path: "test_file.rb", line: 2, column: 1}

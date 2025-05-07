@@ -20,9 +20,9 @@ module Ivar
     def enable(project_root, &block)
       disable if @trace_point
       root_pathname = Pathname.new(project_root)
-
       @mutex.synchronize do
-        @trace_point = TracePoint.new(:class) do |tp|
+        # :end means "end of module or class definition" in TracePoint
+        @trace_point = TracePoint.new(:end) do |tp|
           next unless tp.path
           file_path = Pathname.new(File.expand_path(tp.path))
 

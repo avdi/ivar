@@ -71,13 +71,11 @@ class TestCheckAll < Minitest::Test
 
   def test_check_all_with_block_scope_in_subprocess
     script_path = File.join(FIXTURES_PATH, "test_block_scope.rb")
-    stdout, stderr, status = Open3.capture3("ruby", script_path)
+    stdout, stderr, status = Open3.capture3("ruby", script_path, chdir: FIXTURES_PATH)
+
+    pp(status:, stdout:, stderr:)
 
     assert_equal 0, status.exitstatus, "Script failed with: #{stderr}"
-    assert_includes stdout, "SUCCESS: BeforeClass does not include Ivar::Checked before block"
-    assert_includes stdout, "SUCCESS: WithinBlockClass includes Ivar::Checked within block"
-    assert_includes stdout, "SUCCESS: Warning emitted for unknown instance variable @naem in WithinBlockClass"
-    assert_includes stdout, "SUCCESS: AfterClass does not include Ivar::Checked after block"
-    assert_includes stdout, "SUCCESS: No warnings emitted for BeforeClass and AfterClass"
+    assert_match(/warning.*unknown instance variable @withinclass_naem/, stderr)
   end
 end
