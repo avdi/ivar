@@ -403,7 +403,7 @@ Ivar is not yet stable but is very much ready for people to kick the tires and [
 
 ## Acknowledgements
 
-Thanks first to [Joel Draper](https://github.com/joeldrapper) for creating [strict_ivars](https://github.com/joeldrapper/strict_ivars), which inspired this gem. If `ivar` isn't quite what you're looking for, check out `strict_ivars` instead!
+Thanks first to [Joel Drapper](https://github.com/joeldrapper) for creating [strict_ivars](https://github.com/joeldrapper/strict_ivars), which inspired this gem. If `ivar` isn't quite what you're looking for, check out `strict_ivars` instead!
 
 Thanks also to [Augment Code](https://www.augmentcode.com/), which served as my "hands" for building this. I'm not at a point in my life where I can actually afford the time to build random passion projects, so this project wouldn't exist without help from the robot.
 
