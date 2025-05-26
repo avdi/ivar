@@ -5,6 +5,9 @@
     "dockerfile": "Dockerfile"
   },
   "remoteUser": "devcontainer",
+  "mounts": [
+    "source=ivar-vendor-bundle,target=${containerWorkspaceFolder}/vendor/bundle,type=volume"
+  ],
   "features": {
     "ghcr.io/devcontainers/features/github-cli:1": {},
     "ghcr.io/jungaretti/features/ripgrep:1": {}
@@ -21,7 +24,7 @@
         "EditorConfig.EditorConfig"
       ],
       "settings": {
-        "standardRuby.commandPath": "/usr/local/bundle/bin/standardrb",
+        "standardRuby.commandPath": "${containerWorkspaceFolder}/vendor/bundle/bin/standardrb",
         "solargraph.bundlerPath": "/usr/local/bin/bundle"
       }
     }
